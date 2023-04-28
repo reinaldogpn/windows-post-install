@@ -24,7 +24,6 @@
 "RARLab.WinRAR"
 "ApacheFriends.Xampp.8.2"
 "Python.Python.3.11"
-"Anaconda.Anaconda3"
 "9NKSQGP7F2NH"
 "9NCBCSZSJRSB"
 "HyperX NGENUITY"
