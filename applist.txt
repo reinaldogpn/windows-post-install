@@ -1,5 +1,4 @@
 "Audacity.Audacity"
-"Blitz.Blitz"
 "Codeblocks.Codeblocks"
 "Discord.Discord"
 "Dropbox.Dropbox"
