@@ -1,4 +1,4 @@
 @echo off
 
-echo Juliana, eu te amo.
-pause
+@echo Juliana, eu te amo.
+@pause
