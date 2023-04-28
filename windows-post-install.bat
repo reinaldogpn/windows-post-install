@@ -31,7 +31,7 @@ net session >nul 2>&1
 if !errorlevel! neq 0 (
     echo Este script precisa ser executado com privilégios de administrador.
     pause
-    exit /b 1
+    goto :fimdoscript
 )
 echo Privilégios de administrador verificados com sucesso.
 
@@ -41,7 +41,7 @@ ping -n 1 8.8.8.8 >nul 2>&1
 if !errorlevel! neq 0 (
     echo Não há conexão com a internet. O script será encerrado.
     pause
-    exit /b 1
+    goto :fimdoscript
 ) else (
     echo Conexão com a internet OK.
 )
@@ -69,7 +69,7 @@ echo Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>
 if not exist %APP_LIST_FILE% (
   echo Arquivo de lista de aplicativos não encontrado: %APP_LIST_FILE%
   pause
-  exit /b 2
+  goto :fimdoscript
 )
 for /f "usebackq delims=" %%a in (%APP_LIST_FILE%) do (
   set "APP_NAME=%%a"
@@ -85,6 +85,8 @@ for /f "usebackq delims=" %%a in (%APP_LIST_FILE%) do (
 :extraConfig
 echo Aplicando tema escuro.
 REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v AppsUseLightTheme /t REG_DWORD /d 0 /f
+REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v ColorPrevalence /t REG_DWORD /d 1 /f
+REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v SystemUsesLightTheme /t REG_DWORD /d 0 /f
 echo Ativando o recurso DirectPlay...
 powershell.exe -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /all /featurename:DirectPlay}"
 echo Ativando o recurso .NET Framework 3.5...
@@ -104,8 +106,13 @@ if /i "%answer%"=="s" (
 ) else (
     echo A atualização foi cancelada pelo usuário.
     pause
-    exit /b
+    goto :fimdoscript
 )
+
+:fimdoscript
+endlocal
+pause
+exit /b
 
 :: ------------ EXECUÇÃO ------------ ::
 
@@ -115,8 +122,6 @@ call :checkNecessaryTools
 call :installApps
 call :extraConfig
 call :updateWindows
+call :fimdoscript
 
 :: ------------ FIM ------------ ::
-endlocal
-pause
-exit /b
