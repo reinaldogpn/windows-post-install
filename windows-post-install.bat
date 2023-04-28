@@ -17,21 +17,13 @@
 :: ---------------------------------------------------------------------------------------
 
 @echo off
+
 setlocal EnableDelayedExpansion
-
-:: Altera o local de execução do script conforme o modo de execução (remoto ou local).
-if "%HTTP_USER_AGENT:~0,5%"=="curl/" (
-    set APP_LIST_FILE="C:\Users\%USERNAME%\Downloads\applist.txt"
-    cd "C:\Users\%USERNAME%\Downloads"
-) else (
-    set APP_LIST_FILE="applist.txt"
-    cd %~dp0
-)
-
 chcp 65001 > nul
+cd %~dp0
 
 :: ------------ VARIÁVEIS ------------ ::
-set APP_LIST_FILE="C:\Users\%USERNAME%\Downloads\applist.txt"
+set APP_LIST_FILE="applist.txt"
 
 :: ------------ FUNÇÕES ------------ ::
 :checkAdminPrivileges
@@ -40,7 +32,7 @@ net session >nul 2>&1
 if !errorlevel! neq 0 (
     echo Este script precisa ser executado com privilégios de administrador.
     pause
-    goto :fimdoscript
+    goto :end
 )
 echo Privilégios de administrador verificados com sucesso.
 
@@ -50,7 +42,7 @@ ping -n 1 8.8.8.8 >nul 2>&1
 if !errorlevel! neq 0 (
     echo Não há conexão com a internet. O script será encerrado.
     pause
-    goto :fimdoscript
+    goto :end
 ) else (
     echo Conexão com a internet OK.
 )
@@ -76,20 +68,20 @@ echo Para acrescentar ou remover programas ao script, modifique o arquivo "appli
 echo Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal.
 
 if not exist %APP_LIST_FILE% (
-  echo Arquivo de lista de aplicativos não encontrado: %APP_LIST_FILE%
-  echo Tentando fazer o download...
-  powershell -c "Invoke-WebRequest https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/applist.txt -OutFile applist.txt"
-)
-
-for /f "usebackq delims=" %%a in (%APP_LIST_FILE%) do (
-  set "APP_NAME=%%a"
-  winget list !APP_NAME! > nul 2>&1
-  if !errorlevel! equ 0 (
-    echo !APP_NAME! já está instalado...
-  ) else (
-    echo Instalando !APP_NAME!...
-    winget install !APP_NAME! -h --accept-package-agreements --accept-source-agreements
-  )
+    echo Arquivo de lista de aplicativos não encontrado: %APP_LIST_FILE%
+    echo Tentando fazer o download...
+    powershell -c "Invoke-WebRequest https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/applist.txt -OutFile applist.txt"
+    ) else (
+        for /f "usebackq delims=" %%a in (%APP_LIST_FILE%) do (
+        set "APP_NAME=%%a"
+        winget list !APP_NAME! > nul 2>&1
+        if !errorlevel! equ 0 (
+            echo !APP_NAME! já está instalado...
+        ) else (
+            echo Instalando !APP_NAME!...
+            winget install !APP_NAME! -h --accept-package-agreements --accept-source-agreements
+        )
+    )
 )
 
 :extraConfig
@@ -116,10 +108,10 @@ if /i "%answer%"=="s" (
 ) else (
     echo A atualização foi cancelada pelo usuário.
     pause
-    goto :fimdoscript
 )
+goto :end
 
-:fimdoscript
+:end
 endlocal
 pause
 exit /b
@@ -132,6 +124,6 @@ call :checkNecessaryTools
 call :installApps
 call :extraConfig
 call :updateWindows
-call :fimdoscript
+call :end
 
 :: ------------ FIM ------------ ::
