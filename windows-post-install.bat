@@ -84,6 +84,9 @@ if exist %APP_LIST_FILE% (
             winget install !APP_NAME! -h --accept-package-agreements --accept-source-agreements
         )
     )
+) else (
+    echo Falha ao fazer o download da lista de aplicativos: %APP_LIST_FILE%
+    goto :end
 )
 
 :extraConfig
