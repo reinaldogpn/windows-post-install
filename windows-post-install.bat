@@ -17,19 +17,21 @@
 :: ---------------------------------------------------------------------------------------
 
 @echo off
+setlocal EnableDelayedExpansion
 
 :: Altera o local de execução do script conforme o modo de execução (remoto ou local).
 if "%HTTP_USER_AGENT:~0,5%"=="curl/" (
+    set APP_LIST_FILE="C:\Users\%USERNAME%\Downloads\applist.txt"
     cd "C:\Users\%USERNAME%\Downloads"
 ) else (
+    set APP_LIST_FILE="applist.txt"
     cd %~dp0
 )
 
 chcp 65001 > nul
-setlocal EnableDelayedExpansion
 
 :: ------------ VARIÁVEIS ------------ ::
-set APP_LIST_FILE="applist.txt"
+set APP_LIST_FILE="C:\Users\%USERNAME%\Downloads\applist.txt"
 
 :: ------------ FUNÇÕES ------------ ::
 :checkAdminPrivileges
