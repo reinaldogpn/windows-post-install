@@ -10,59 +10,24 @@
 ::      - Criação do script bruto, polimentos serão feitos futuramente =D. O script
 ::      realiza testes, instala as ferramentas necessárias para a execução, instala 
 ::      alguns programas úteis e faz a atualização do sistema.
-::
+::  v1.1 28/04/2023, reinaldogpn:
+::      - Correção do uso da variável de ambiente "!errorlevel!" para funcionar
+::      corretamente no Windows 10; agora os aplicativos a serem instalados são definidos
+::      dentro do arquivo "applist.txt" e não mais em variáveis dentro do script.
 :: ---------------------------------------------------------------------------------------
+
 @echo off
 chcp 65001 > nul
 setlocal EnableDelayedExpansion
+
 :: ------------ VARIÁVEIS ------------ ::
-
-:: ATUALIZAR A CHAMADA DA FUNÇÃO "installApp" SEMPRE QUE ACRESCENTAR ALGUM PROGRAMA!!
-:: Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal.
-
-set apps[0]="Audacity.Audacity"
-set apps[1]="Blitz.Blitz"
-set apps[2]="Codeblocks.Codeblocks"
-set apps[3]="Discord.Discord"
-set apps[4]="Dropbox.Dropbox"
-set apps[5]="GIMP.GIMP"
-set apps[6]="Git.Git"
-set apps[7]="Google.Chrome"
-set apps[8]="Google.Drive"
-set apps[9]="Inkscape.Inkscape"
-set apps[10]="RiotGames.LeagueOfLegends.BR"
-set apps[11]="Microsoft.VCRedist.2010.x86"
-set apps[12]="Microsoft.VCRedist.2010.x64"
-set apps[13]="Microsoft.VCRedist.2012.x86"
-set apps[14]="Microsoft.VCRedist.2012.x64"
-set apps[15]="Microsoft.VCRedist.2013.x86"
-set apps[16]="Microsoft.VCRedist.2013.x64"
-set apps[17]="Microsoft.VCRedist.2015+.x86"
-set apps[18]="Microsoft.VCRedist.2015+.x64"
-set apps[19]="Microsoft.VisualStudioCode"
-set apps[20]="Notepad++.Notepad++"
-set apps[21]="PostgreSQL.PostgreSQL"
-set apps[22]="qBittorrent.qBittorrent"
-set apps[23]="Valve.Steam"
-set apps[24]="VideoLAN.VLC"
-set apps[25]="RARLab.WinRAR"
-set apps[26]="ApacheFriends.Xampp.8.2"
-set apps[27]="Python.Python.3.11"
-set apps[28]="Anaconda.Anaconda3"
-set apps[29]="WhatsApp.WhatsApp"
-set apps[30]="Spotify.Spotify"
-set apps[31]="HyperX NGENUITY"
-set apps[32]="IObit.DriverBooster"
-set apps[33]="OpenJS.NodeJS.LTS"
-set apps[34]="Oracle.JavaRuntimeEnvironment"
-set apps[35]="Oracle.JDK.19"
-set apps[36]="Oracle.VirtualBox"
+set "APP_LIST_FILE=applist.txt"
 
 :: ------------ FUNÇÕES ------------ ::
 :checkAdminPrivileges
 echo Verificando privilégios de administrador...
 net session >nul 2>&1
-if %errorlevel% neq 0 (
+if !errorlevel! neq 0 (
     echo Este script precisa ser executado com privilégios de administrador.
     pause
     exit /b
@@ -72,7 +37,7 @@ echo Privilégios de administrador verificados com sucesso.
 :checkInternetConnection
 echo Verificando conexão com a internet...
 ping -n 1 8.8.8.8 >nul 2>&1
-if %errorlevel% neq 0 (
+if !errorlevel! neq 0 (
     echo Não há conexão com a internet. O script será encerrado.
     pause
     exit
@@ -97,16 +62,23 @@ where wuauclt.exe >nul 2>&1 || (
 echo Todas as ferramentas necessárias estão instaladas!
 
 :installApps
-for /L %%i in (0,1,36) do (
-    winget list !apps[%%i]! > nul 2>&1
-    if %errorlevel% equ 0 (
-        echo !apps[%%i]! já está instalado...
-    ) else (
-        echo Instalando !apps[%%i]!...
-        winget install !apps[%%i]! -h --accept-package-agreements --accept-source-agreements
-    )
+echo Para acrescentar ou remover programas ao script, modifique o arquivo "applist.txt"
+echo Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal.
+
+if not exist "%APP_LIST_FILE%" (
+  echo Arquivo de lista de aplicativos não encontrado: "%APP_LIST_FILE%"
+  exit /b 1
 )
-endlocal
+for /f "usebackq delims=" %%a in ("%APP_LIST_FILE%") do (
+  set "APP_NAME=%%a"
+  winget list !APP_NAME! > nul 2>&1
+  if !errorlevel! equ 0 (
+    echo !APP_NAME! já está instalado...
+  ) else (
+    echo Instalando !APP_NAME!...
+    winget install !APP_NAME! -h --accept-package-agreements --accept-source-agreements
+  )
+)
 
 :extraConfig
 echo Aplicando tema escuro.
@@ -145,5 +117,6 @@ call :extraConfig
 call :updateWindows
 
 :: Fim do script
+endlocal
 pause
 exit /b
