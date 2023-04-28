@@ -131,6 +131,8 @@ if /i "%answer%"=="s" (
     echo As atualizações foram instaladas com sucesso!
 ) else (
     echo A atualização foi cancelada pelo usuário.
+    pause
+    exit
 )
 
 :: ------------ EXECUÇÃO ------------ ::
