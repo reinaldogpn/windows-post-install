@@ -7,7 +7,7 @@ Works fine on Windows 10/11.
 #
 ### How to use
 * Define the programs to be installed in file "applist.txt" by it's "winget ID". 
-* In case you don't know the ID of a program, use ```winget search <appname>``` on terminal.
+* In case you don't know the ID of an app, use `winget search <appname>` on terminal.
 * Always run the .bat file as admin.
 
 <!-- If you don't want to change the app list, just run the command:
