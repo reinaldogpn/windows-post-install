@@ -17,7 +17,14 @@
 :: ---------------------------------------------------------------------------------------
 
 @echo off
-cd %~dp0
+
+:: Altera o local de execução do script conforme o modo de execução (remoto ou local).
+if "%HTTP_USER_AGENT:~0,5%"=="curl/" (
+    cd "C:\Users\%USERNAME%\Downloads"
+) else (
+    cd %~dp0
+)
+
 chcp 65001 > nul
 setlocal EnableDelayedExpansion
 
