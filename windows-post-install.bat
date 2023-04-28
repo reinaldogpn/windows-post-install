@@ -71,8 +71,10 @@ if not exist %APP_LIST_FILE% (
     echo Arquivo de lista de aplicativos não encontrado: %APP_LIST_FILE%
     echo Tentando fazer o download...
     powershell -c "Invoke-WebRequest https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/applist.txt -OutFile applist.txt"
-    ) else (
-        for /f "usebackq delims=" %%a in (%APP_LIST_FILE%) do (
+) 
+    
+if exist %APP_LIST_FILE% (
+    for /f "usebackq delims=" %%a in (%APP_LIST_FILE%) do (
         set "APP_NAME=%%a"
         winget list !APP_NAME! > nul 2>&1
         if !errorlevel! equ 0 (
