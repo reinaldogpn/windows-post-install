@@ -1,8 +1,6 @@
 :: ---------------------------------------------------------------------------------------
 :: * Descrição: Script batch para instalação automatizada de aplicações no Windows 10/11.
-::
 :: * Autor: Reinaldo G. P. Neto (com ajuda do ChatGPT ;)
-::
 :: * Criado em: 28/04/2023
 :: ---------------------------------------------------------------------------------------
 ::
@@ -17,8 +15,9 @@
 @echo off
 setlocal EnableDelayedExpansion
 :: ------------ VARIÁVEIS ------------ ::
-:: Simulando um array de apps a serem instalados
+
 :: ATUALIZAR A CHAMADA DA FUNÇÃO "installApp" SEMPRE QUE ACRESCENTAR ALGUM PROGRAMA!!
+
 set apps[0]="Audacity.Audacity"
 set apps[1]="Blitz.Blitz"
 set apps[2]="Codeblocks.Codeblocks"
@@ -98,9 +97,15 @@ echo Todas as ferramentas necessárias estão instaladas!
 
 :installApps
 for /L %%i in (0,1,36) do (
-    echo Instalando !apps[%%i]!...
-    winget install !apps[%%i]! -h --accept-package-agreements --accept-source-agreements
+    winget list !apps[%%i]! > nul 2>&1
+    if %errorlevel% equ 0 (
+        echo !apps[%%i]! já está instalado...
+    ) else (
+        echo Instalando !apps[%%i]!...
+        winget install !apps[%%i]! -h --accept-package-agreements --accept-source-agreements
+    )
 )
+endlocal
 
 :extraConfig
 REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v AppsUseLightTheme /t REG_DWORD /d 0 /f
@@ -127,22 +132,11 @@ if /i "%answer%"=="s" (
 
 :: ------------ EXECUÇÃO ------------ ::
 
-:: Chamando a função que testa se o script foi executado como admin
 call :checkAdminPrivileges
-
-:: Chamando a função de teste de conexão
 call :checkInternetConnection
-
-:: Chamando a função que testa se as ferramentas necessárias estão instaladas
 call :checkNecessaryTools
-
-:: Chamando a função "installApp" para cada item do array "apps"
 call :installApps
-
-:: Chamando a função "extraConfig"
 call :extraConfig
-
-:: Chamando a função de atualização do Windows
 call :updateWindows
 
 :: Fim do script
