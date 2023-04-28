@@ -16,7 +16,6 @@
 :: ---------------------------------------------------------------------------------------
 @echo off
 setlocal EnableDelayedExpansion
-
 :: ------------ VARIÁVEIS ------------ ::
 :: Simulando um array de apps a serem instalados
 :: ATUALIZAR A CHAMADA DA FUNÇÃO "installApp" SEMPRE QUE ACRESCENTAR ALGUM PROGRAMA!!
@@ -69,7 +68,6 @@ if %errorlevel% neq 0 (
     exit /b
 )
 echo Privilégios de administrador verificados com sucesso.
-goto :eof
 
 :checkInternetConnection
 echo Verificando conexão com a internet...
@@ -81,7 +79,6 @@ if errorlevel 1 (
     echo Conexão com a internet OK.
     set internetConnected=1
 )
-goto :eof
 
 :checkNecessaryTools
 echo Verificando a existência das ferramentas necessárias...
@@ -98,22 +95,20 @@ where wuauclt.exe >nul 2>&1 || (
     powershell -c "Start-Process wuinstall.exe -Verb RunAs"
 )
 echo Todas as ferramentas necessárias estão instaladas!
-goto :eof
 
 :installApps
-set app=%1
-echo Instalando %app%...
-winget install %app% -h --disable-interactivity
-goto :eof
+for /L %%i in (0,1,36) do (
+    echo Instalando !apps[%%i]!...
+    winget install !apps[%%i]! -h --accept-package-agreements --accept-source-agreements
+)
 
 :extraConfig
 REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v AppsUseLightTheme /t REG_DWORD /d 0 /f
-dism /online /enable-feature /featurename:DirectPlay
+dism /online /enable-feature /all /featurename:DirectPlay
 dism /online /enable-feature /featurename:NetFx4
-winget uninstall "OneDrive" -h --disable-interactivity
-winget uninstall "Microsoft.OneDrive" -h --disable-interactivity
-winget upgrade --all -h --disable-interactivity
-goto :eof
+winget uninstall "OneDrive" -h --accept-source-agreements
+winget uninstall "Microsoft.OneDrive" -h --accept-source-agreements
+winget upgrade --all -h --accept-package-agreements --accept-source-agreements
 
 :updateWindows
 set /p answer="Deseja atualizar o Windows agora? (S/N) "
@@ -129,7 +124,6 @@ if /i "%answer%"=="s" (
 ) else (
     echo A atualização foi cancelada pelo usuário.
 )
-goto :eof
 
 :: ------------ EXECUÇÃO ------------ ::
 
@@ -148,10 +142,7 @@ if %internetConnected%==0 (
 call :checkNecessaryTools
 
 :: Chamando a função "installApp" para cada item do array "apps"
-for /L %%i in (0,1,36) do (
-    set app=!apps[%%i]!
-    call :installApp !app!
-)
+call :installApps
 
 :: Chamando a função "extraConfig"
 call :extraConfig
