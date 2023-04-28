@@ -31,7 +31,7 @@ net session >nul 2>&1
 if !errorlevel! neq 0 (
     echo Este script precisa ser executado com privilégios de administrador.
     pause
-    exit /b
+    exit /b 1
 )
 echo Privilégios de administrador verificados com sucesso.
 
@@ -41,7 +41,7 @@ ping -n 1 8.8.8.8 >nul 2>&1
 if !errorlevel! neq 0 (
     echo Não há conexão com a internet. O script será encerrado.
     pause
-    exit
+    exit /b 1
 ) else (
     echo Conexão com a internet OK.
 )
@@ -68,7 +68,7 @@ echo Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>
 
 if not exist %APP_LIST_FILE% (
   echo Arquivo de lista de aplicativos não encontrado: %APP_LIST_FILE%
-  exit /b 1
+  exit /b 2
 )
 for /f "usebackq delims=" %%a in (%APP_LIST_FILE%) do (
   set "APP_NAME=%%a"
@@ -103,7 +103,7 @@ if /i "%answer%"=="s" (
 ) else (
     echo A atualização foi cancelada pelo usuário.
     pause
-    exit
+    exit /b
 )
 
 :: ------------ EXECUÇÃO ------------ ::
