@@ -12,5 +12,5 @@ Works fine on Windows 10/11.
 #
 If you don't want to change the app list, just run the command:
 ```
-curl -sSf https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/windows-post-install.bat | cmd
+curl -sSf https://bit.ly/windows-post-install | cmd
 ```
