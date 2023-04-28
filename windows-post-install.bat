@@ -17,6 +17,7 @@ setlocal EnableDelayedExpansion
 :: ------------ VARIÁVEIS ------------ ::
 
 :: ATUALIZAR A CHAMADA DA FUNÇÃO "installApp" SEMPRE QUE ACRESCENTAR ALGUM PROGRAMA!!
+:: Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal.
 
 set apps[0]="Audacity.Audacity"
 set apps[1]="Blitz.Blitz"
