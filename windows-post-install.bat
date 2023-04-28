@@ -1,5 +1,5 @@
 :: ---------------------------------------------------------------------------------------
-:: * Descrição: Script batch para instalação automatizada de aplicações no Windows 11.
+:: * Descrição: Script batch para instalação automatizada de aplicações no Windows 10/11.
 :: * Autor: Reinaldo G. P. Neto
 :: * Criado em: 28/04/2023
 :: ---------------------------------------------------------------------------------------
@@ -17,11 +17,12 @@
 :: ---------------------------------------------------------------------------------------
 
 @echo off
+cd %~dp0
 chcp 65001 > nul
 setlocal EnableDelayedExpansion
 
 :: ------------ VARIÁVEIS ------------ ::
-set "APP_LIST_FILE=applist.txt"
+set APP_LIST_FILE="applist.txt"
 
 :: ------------ FUNÇÕES ------------ ::
 :checkAdminPrivileges
@@ -65,11 +66,11 @@ echo Todas as ferramentas necessárias estão instaladas!
 echo Para acrescentar ou remover programas ao script, modifique o arquivo "applist.txt"
 echo Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal.
 
-if not exist "%APP_LIST_FILE%" (
-  echo Arquivo de lista de aplicativos não encontrado: "%APP_LIST_FILE%"
+if not exist %APP_LIST_FILE% (
+  echo Arquivo de lista de aplicativos não encontrado: %APP_LIST_FILE%
   exit /b 1
 )
-for /f "usebackq delims=" %%a in ("%APP_LIST_FILE%") do (
+for /f "usebackq delims=" %%a in (%APP_LIST_FILE%) do (
   set "APP_NAME=%%a"
   winget list !APP_NAME! > nul 2>&1
   if !errorlevel! equ 0 (
