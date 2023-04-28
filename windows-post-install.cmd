@@ -13,7 +13,7 @@
 ::
 :: ---------------------------------------------------------------------------------------
 @echo off
-chcp 65001
+chcp 65001 > nul
 setlocal EnableDelayedExpansion
 :: ------------ VARIÁVEIS ------------ ::
 
@@ -109,25 +109,25 @@ for /L %%i in (0,1,36) do (
 endlocal
 
 :extraConfig
+echo Aplicando tema escuro.
 REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v AppsUseLightTheme /t REG_DWORD /d 0 /f
-::dism /online /enable-feature /all /featurename:DirectPlay
+echo Ativando o recurso DirectPlay...
 powershell.exe -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /all /featurename:DirectPlay}"
-::dism /online /enable-feature /featurename:NetFx4
+echo Ativando o recurso .NET Framework 4...
 powershell.exe -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName NetFx4 -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /featurename:NetFx4}"
+echo Desinstalando OneDrive...
 winget uninstall "OneDrive" -h --accept-source-agreements
 winget uninstall "Microsoft.OneDrive" -h --accept-source-agreements
+echo Atualizando aplicações...
 winget upgrade --all -h
 
 :updateWindows
 set /p answer="Deseja atualizar o Windows agora? (S/N) "
-
 if /i "%answer%"=="s" (
     echo Procurando por atualizações...
     wuauclt.exe /detectnow /updatenow
-
     echo Aguarde enquanto as atualizações são baixadas e instaladas...
     timeout /t 300 /nobreak
-
     echo As atualizações foram instaladas com sucesso!
 ) else (
     echo A atualização foi cancelada pelo usuário.
