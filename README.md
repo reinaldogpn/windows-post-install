@@ -2,7 +2,7 @@
 
 This batch script automatically installs the programs I use in my PC, runs updates and apply some personal preferences.
 
-Works fine on Windows 10/11.
+Works fine on Windows 10 or higher.
 
 #
 ### How to use
