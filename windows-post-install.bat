@@ -99,9 +99,7 @@ set /p answer="Deseja atualizar o Windows agora? (S/N) "
 if /i "%answer%"=="s" (
     echo Procurando por atualizações...
     wuauclt.exe /detectnow /updatenow
-    echo Aguarde enquanto as atualizações são baixadas e instaladas...
-    timeout /t 300 /nobreak
-    echo As atualizações foram instaladas com sucesso!
+    echo Atualizações serão baixadas e instaladas...
 ) else (
     echo A atualização foi cancelada pelo usuário.
     pause
@@ -117,7 +115,7 @@ call :installApps
 call :extraConfig
 call :updateWindows
 
-:: Fim do script
+:: ------------ FIM ------------ ::
 endlocal
 pause
 exit /b
