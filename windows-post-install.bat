@@ -33,8 +33,9 @@ if !errorlevel! neq 0 (
     echo Este script precisa ser executado com privilégios de administrador.
     pause
     goto :end
+) else (
+    echo Privilégios de administrador verificados com sucesso.
 )
-echo Privilégios de administrador verificados com sucesso.
 
 :checkInternetConnection
 echo Verificando conexão com a internet...
@@ -53,10 +54,12 @@ where winget >nul 2>&1 || (
     echo Instalando o winget...
     powershell -c "Invoke-WebRequest https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle -OutFile winget.msixbundle; .\winget.msixbundle"
 )
+
 where dism >nul 2>&1 || (
     echo Instalando o dism...
     dism /online /enable-feature /featurename:NetFx3 /all /norestart
 )
+
 where wuauclt.exe >nul 2>&1 || (
     echo Instalando o wuauclt.exe...
     powershell -c "Start-Process wuinstall.exe -Verb RunAs"
@@ -71,22 +74,21 @@ if not exist %APP_LIST_FILE% (
     echo Arquivo de lista de aplicativos não encontrado: %APP_LIST_FILE%
     echo Tentando fazer o download...
     powershell -c "Invoke-WebRequest https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/applist.txt -OutFile applist.txt"
-) 
-    
-if exist %APP_LIST_FILE% (
-    for /f "usebackq delims=" %%a in (%APP_LIST_FILE%) do (
-        set "APP_NAME=%%a"
-        winget list !APP_NAME! > nul 2>&1
-        if !errorlevel! equ 0 (
-            echo !APP_NAME! já está instalado...
-        ) else (
-            echo Instalando !APP_NAME!...
-            winget install !APP_NAME! -h --accept-package-agreements --accept-source-agreements
-        )
+    if not exist "%APP_LIST_FILE%" (
+        echo "Falha ao fazer o download da lista de aplicativos: %APP_LIST_FILE%"
+        goto :end
     )
-) else (
-    echo Falha ao fazer o download da lista de aplicativos: %APP_LIST_FILE%
-    goto :end
+)
+    
+for /f "usebackq delims=" %%a in (%APP_LIST_FILE%) do (
+    set "APP_NAME=%%a"
+    winget list !APP_NAME! > nul 2>&1
+    if !errorlevel! equ 0 (
+        echo !APP_NAME! já está instalado...
+    ) else (
+        echo Instalando !APP_NAME!...
+        winget install !APP_NAME! -h --accept-package-agreements --accept-source-agreements
+    )
 )
 
 :extraConfig
