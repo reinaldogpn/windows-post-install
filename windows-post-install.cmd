@@ -13,6 +13,7 @@
 ::
 :: ---------------------------------------------------------------------------------------
 @echo off
+chcp 65001
 setlocal EnableDelayedExpansion
 :: ------------ VARIÁVEIS ------------ ::
 
@@ -109,11 +110,13 @@ endlocal
 
 :extraConfig
 REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v AppsUseLightTheme /t REG_DWORD /d 0 /f
-dism /online /enable-feature /all /featurename:DirectPlay
-dism /online /enable-feature /featurename:NetFx4
+::dism /online /enable-feature /all /featurename:DirectPlay
+powershell.exe -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /all /featurename:DirectPlay}"
+::dism /online /enable-feature /featurename:NetFx4
+powershell.exe -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName NetFx4 -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /featurename:NetFx4}"
 winget uninstall "OneDrive" -h --accept-source-agreements
 winget uninstall "Microsoft.OneDrive" -h --accept-source-agreements
-winget upgrade --all -h --accept-package-agreements --accept-source-agreements
+winget upgrade --all -h
 
 :updateWindows
 set /p answer="Deseja atualizar o Windows agora? (S/N) "
