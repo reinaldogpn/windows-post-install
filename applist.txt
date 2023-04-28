@@ -8,7 +8,6 @@
 "Google.Chrome"
 "Google.Drive"
 "Inkscape.Inkscape"
-"RiotGames.LeagueOfLegends.BR"
 "Microsoft.VCRedist.2010.x86"
 "Microsoft.VCRedist.2010.x64"
 "Microsoft.VCRedist.2012.x86"
