@@ -62,7 +62,6 @@ echo Verificando privilégios de administrador...
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo Este script precisa ser executado com privilégios de administrador.
-    echo Por favor, execute o script como administrador e tente novamente.
     pause
     exit /b
 )
@@ -70,8 +69,8 @@ echo Privilégios de administrador verificados com sucesso.
 
 :checkInternetConnection
 echo Verificando conexão com a internet...
-ping -n 1 8.8.8.8 >nul
-if errorlevel 1 (
+ping -n 1 8.8.8.8 >nul 2>&1
+if %errorlevel% neq 0 (
     echo Não há conexão com a internet. O script será encerrado.
     pause
     exit
