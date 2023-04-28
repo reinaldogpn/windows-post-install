@@ -19,6 +19,7 @@ setlocal EnableDelayedExpansion
 
 :: ------------ VARIÁVEIS ------------ ::
 :: Simulando um array de apps a serem instalados
+:: ATUALIZAR A CHAMADA DA FUNÇÃO "installApp" SEMPRE QUE ACRESCENTAR ALGUM PROGRAMA!!
 set apps[0]="Audacity.Audacity"
 set apps[1]="Blitz.Blitz"
 set apps[2]="Codeblocks.Codeblocks"
@@ -30,26 +31,32 @@ set apps[7]="Google.Chrome"
 set apps[8]="Google.Drive"
 set apps[9]="Inkscape.Inkscape"
 set apps[10]="RiotGames.LeagueOfLegends.BR"
-set apps[11]="Microsoft.VCRedist.2015+.x86"
-set apps[12]="Microsoft.VCRedist.2015+.x64"
-set apps[13]="Microsoft.VisualStudioCode"
-set apps[14]="Notepad++.Notepad++"
-set apps[15]="PostgreSQL.PostgreSQL"
-set apps[16]="qBittorrent.qBittorrent"
-set apps[17]="Valve.Steam"
-set apps[18]="VideoLAN.VLC"
-set apps[19]="RARLab.WinRAR"
-set apps[20]="ApacheFriends.Xampp.8.2"
-set apps[21]="Python.Python.3.11"
-set apps[22]="Anaconda.Anaconda3"
-set apps[23]="WhatsApp.WhatsApp"
-set apps[24]="Spotify.Spotify"
-set apps[25]="HyperX NGENUITY"
-set apps[26]="IObit.DriverBooster"
-set apps[27]="OpenJS.NodeJS.LTS"
-set apps[28]="Oracle.JavaRuntimeEnvironment"
-set apps[29]="Oracle.JDK.19"
-set apps[30]="Oracle.VirtualBox"
+set apps[11]="Microsoft.VCRedist.2010.x86"
+set apps[12]="Microsoft.VCRedist.2010.x64"
+set apps[13]="Microsoft.VCRedist.2012.x86"
+set apps[14]="Microsoft.VCRedist.2012.x64"
+set apps[15]="Microsoft.VCRedist.2013.x86"
+set apps[16]="Microsoft.VCRedist.2013.x64"
+set apps[17]="Microsoft.VCRedist.2015+.x86"
+set apps[18]="Microsoft.VCRedist.2015+.x64"
+set apps[19]="Microsoft.VisualStudioCode"
+set apps[20]="Notepad++.Notepad++"
+set apps[21]="PostgreSQL.PostgreSQL"
+set apps[22]="qBittorrent.qBittorrent"
+set apps[23]="Valve.Steam"
+set apps[24]="VideoLAN.VLC"
+set apps[25]="RARLab.WinRAR"
+set apps[26]="ApacheFriends.Xampp.8.2"
+set apps[27]="Python.Python.3.11"
+set apps[28]="Anaconda.Anaconda3"
+set apps[29]="WhatsApp.WhatsApp"
+set apps[30]="Spotify.Spotify"
+set apps[31]="HyperX NGENUITY"
+set apps[32]="IObit.DriverBooster"
+set apps[33]="OpenJS.NodeJS.LTS"
+set apps[34]="Oracle.JavaRuntimeEnvironment"
+set apps[35]="Oracle.JDK.19"
+set apps[36]="Oracle.VirtualBox"
 
 :: ------------ FUNÇÕES ------------ ::
 :checkAdminPrivileges
@@ -141,7 +148,7 @@ if %internetConnected%==0 (
 call :checkNecessaryTools
 
 :: Chamando a função "installApp" para cada item do array "apps"
-for /L %%i in (0,1,30) do (
+for /L %%i in (0,1,36) do (
     set app=!apps[%%i]!
     call :installApp !app!
 )
