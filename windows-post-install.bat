@@ -68,9 +68,10 @@ echo Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>
 
 if not exist %APP_LIST_FILE% (
   echo Arquivo de lista de aplicativos não encontrado: %APP_LIST_FILE%
-  pause
-  goto :fimdoscript
+  echo Tentando fazer o download...
+  powershell -c "Invoke-WebRequest https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/applist.txt -OutFile applist.txt"
 )
+
 for /f "usebackq delims=" %%a in (%APP_LIST_FILE%) do (
   set "APP_NAME=%%a"
   winget list !APP_NAME! > nul 2>&1
@@ -83,7 +84,7 @@ for /f "usebackq delims=" %%a in (%APP_LIST_FILE%) do (
 )
 
 :extraConfig
-echo Aplicando tema escuro.
+echo Aplicando tema escuro...
 REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v AppsUseLightTheme /t REG_DWORD /d 0 /f
 REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v ColorPrevalence /t REG_DWORD /d 1 /f
 REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v SystemUsesLightTheme /t REG_DWORD /d 0 /f
