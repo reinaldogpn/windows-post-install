@@ -73,11 +73,11 @@ echo Privilégios de administrador verificados com sucesso.
 echo Verificando conexão com a internet...
 ping -n 1 8.8.8.8 >nul
 if errorlevel 1 (
-    echo Sem conexão com a internet.
-    set internetConnected=0
+    echo Não há conexão com a internet. O script será encerrado.
+    pause
+    exit
 ) else (
     echo Conexão com a internet OK.
-    set internetConnected=1
 )
 
 :checkNecessaryTools
@@ -132,11 +132,6 @@ call :checkAdminPrivileges
 
 :: Chamando a função de teste de conexão
 call :checkInternetConnection
-if %internetConnected%==0 (
-    echo Não há conexão com a internet. O script será encerrado.
-    pause
-    exit
-)
 
 :: Chamando a função que testa se as ferramentas necessárias estão instaladas
 call :checkNecessaryTools
