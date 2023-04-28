@@ -1,2 +1,6 @@
-# windows-post-install
-Script de configuração pós instalação do Windows 10/11.
+# windows-post-install.bat
+
+This batch script automatically installs all programs I use in my PC, runs updates and apply some personal preferences.
+
+### How to use
+* Just download and run the .bat file as admin.
