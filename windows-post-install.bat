@@ -68,6 +68,7 @@ echo Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>
 
 if not exist %APP_LIST_FILE% (
   echo Arquivo de lista de aplicativos não encontrado: %APP_LIST_FILE%
+  pause
   exit /b 2
 )
 for /f "usebackq delims=" %%a in (%APP_LIST_FILE%) do (
