@@ -76,7 +76,7 @@ if not exist %APP_LIST_FILE% (
     echo Tentando fazer o download...
     powershell -c "Invoke-WebRequest https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/applist.txt -OutFile applist.txt"
     if not exist %APP_LIST_FILE% (
-        echo "Falha ao fazer o download da lista de aplicativos: %APP_LIST_FILE%"
+        echo Falha ao fazer o download da lista de aplicativos: %APP_LIST_FILE%
         goto :end
     )
 )
