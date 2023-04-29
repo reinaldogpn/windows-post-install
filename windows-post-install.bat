@@ -14,7 +14,8 @@
 ::      - Correção do uso da variável de ambiente "!errorlevel!" para funcionar
 ::      corretamente no Windows 10; agora os aplicativos a serem instalados são definidos
 ::      dentro do arquivo "applist.txt" e não mais em variáveis dentro do script.
-::
+::  v1.2 28/04/2023, reinaldogpn:
+::      - Mudanças na estrutura geral do script, além de pequenas correções e ajustes.
 :: ---------------------------------------------------------------------------------------
 @echo off
 
@@ -74,7 +75,7 @@ if not exist %APP_LIST_FILE% (
     echo Arquivo de lista de aplicativos não encontrado: %APP_LIST_FILE%
     echo Tentando fazer o download...
     powershell -c "Invoke-WebRequest https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/applist.txt -OutFile applist.txt"
-    if not exist "%APP_LIST_FILE%" (
+    if not exist %APP_LIST_FILE% (
         echo "Falha ao fazer o download da lista de aplicativos: %APP_LIST_FILE%"
         goto :end
     )
