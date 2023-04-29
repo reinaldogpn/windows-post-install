@@ -14,8 +14,8 @@
 ::      - Correção do uso da variável de ambiente "!errorlevel!" para funcionar
 ::      corretamente no Windows 10; agora os aplicativos a serem instalados são definidos
 ::      dentro do arquivo "applist.txt" e não mais em variáveis dentro do script.
+::
 :: ---------------------------------------------------------------------------------------
-
 @echo off
 
 setlocal EnableDelayedExpansion
@@ -24,7 +24,7 @@ cd %~dp0
 
 :: ------------ VARIÁVEIS ------------ ::
 set APP_LIST_FILE="applist.txt"
-
+set COUNT=0
 :: ------------ FUNÇÕES ------------ ::
 :checkAdminPrivileges
 echo Verificando privilégios de administrador...
@@ -88,49 +88,35 @@ for /f "usebackq delims=" %%a in (%APP_LIST_FILE%) do (
     ) else (
         echo Instalando !APP_NAME!...
         winget install !APP_NAME! -h --accept-package-agreements --accept-source-agreements
+        if !errorlevel! equ 0 set /a COUNT+=1
     )
 )
+echo %COUNT% aplicativos foram instalados com sucesso.
 
-:extraConfig
+:applyDarkTheme
 echo Aplicando tema escuro...
 REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v AppsUseLightTheme /t REG_DWORD /d 0 /f
 REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v ColorPrevalence /t REG_DWORD /d 1 /f
 REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v SystemUsesLightTheme /t REG_DWORD /d 0 /f
+
+:extraConfig
 echo Ativando o recurso DirectPlay...
 powershell.exe -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /all /featurename:DirectPlay}"
 echo Ativando o recurso .NET Framework 3.5...
 powershell.exe -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /all /featurename:NetFx3}"
 echo Desinstalando OneDrive...
 winget uninstall "OneDrive" -h --accept-source-agreements
-winget uninstall "Microsoft.OneDrive" -h --accept-source-agreements
 echo Atualizando aplicações...
 winget upgrade --all -h
 
 :updateWindows
-set /p answer="Deseja atualizar o Windows agora? (S/N) "
-if /i "%answer%"=="s" (
-    echo Procurando por atualizações...
-    wuauclt.exe /detectnow /updatenow
-    echo Atualizações serão baixadas e instaladas...
-) else (
-    echo A atualização foi cancelada pelo usuário.
-    pause
-)
-goto :end
+echo Procurando por atualizações...
+wuauclt.exe /detectnow /updatenow
+echo Se disponíveis, atualizações serão baixadas e instaladas...
+
+:: ------------ FIM ------------ ::
 
 :end
 endlocal
 pause
 exit /b
-
-:: ------------ EXECUÇÃO ------------ ::
-
-call :checkAdminPrivileges
-call :checkInternetConnection
-call :checkNecessaryTools
-call :installApps
-call :extraConfig
-call :updateWindows
-call :end
-
-:: ------------ FIM ------------ ::
