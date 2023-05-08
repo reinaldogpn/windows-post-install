@@ -31,3 +31,4 @@
 "Oracle.JavaRuntimeEnvironment"
 "Oracle.JDK.18"
 "Oracle.VirtualBox"
+"DigitalScholar.Zotero"
