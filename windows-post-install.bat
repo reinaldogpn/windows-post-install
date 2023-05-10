@@ -20,6 +20,8 @@
 :: -----------------------------------------------------------------------------------------
 @echo off
 
+color 0a
+
 setlocal EnableDelayedExpansion
 chcp 65001 > nul
 cd %~dp0
