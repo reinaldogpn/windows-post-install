@@ -110,6 +110,16 @@ winget uninstall "OneDrive" -h --accept-source-agreements
 echo Atualizando aplicações...
 winget upgrade --all -h
 
+:addRules
+echo Criando regras no firewall para abrir portas para servers dedicados...
+netsh advfirewall firewall add rule name="PZ Dedicated Server" dir=in action=allow protocol=UDP localport=16261,16262
+netsh advfirewall firewall add rule name="PZ Dedicated Server" dir=out action=allow protocol=UDP localport=16261,16262
+netsh advfirewall firewall add rule name="Valheim Dedicated Server" dir=in action=allow protocol=UDP localport=2456,2457
+netsh advfirewall firewall add rule name="Valheim Dedicated Server" dir=out action=allow protocol=UDP localport=2456,2457
+netsh advfirewall firewall add rule name="DST Dedicated Server" dir=in action=allow protocol=UDP localport=10889
+netsh advfirewall firewall add rule name="DST Dedicated Server" dir=out action=allow protocol=UDP localport=10889
+echo As regras foram criadas.
+
 :updateWindows
 echo Procurando por atualizações...
 wuauclt.exe /detectnow /updatenow
