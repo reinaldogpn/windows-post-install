@@ -1,8 +1,8 @@
-:: ---------------------------------------------------------------------------------------
-:: * Descrição: Script batch para instalação automatizada de aplicações no Windows 10/11.
+:: -----------------------------------------------------------------------------------------
+:: * Descrição: Script batch para instalação automatizada de aplicações no Windows 10 e 11.
 :: * Autor: Reinaldo G. P. Neto
 :: * Criado em: 28/04/2023
-:: ---------------------------------------------------------------------------------------
+:: -----------------------------------------------------------------------------------------
 ::
 :: * Changelog:
 ::
@@ -16,7 +16,8 @@
 ::      dentro do arquivo "applist.txt" e não mais em variáveis dentro do script.
 ::  v1.2 28/04/2023, reinaldogpn:
 ::      - Mudanças na estrutura geral do script, além de pequenas correções e ajustes.
-:: ---------------------------------------------------------------------------------------
+::
+:: -----------------------------------------------------------------------------------------
 @echo off
 
 setlocal EnableDelayedExpansion
@@ -34,9 +35,6 @@ if !errorlevel! neq 0 (
     echo Este script precisa ser executado com privilégios de administrador.
     pause
     goto :end
-) else (
-    echo Privilégios de administrador verificados com sucesso.
-)
 
 :checkInternetConnection
 echo Verificando conexão com a internet...
@@ -45,9 +43,6 @@ if !errorlevel! neq 0 (
     echo Não há conexão com a internet. O script será encerrado.
     pause
     goto :end
-) else (
-    echo Conexão com a internet OK.
-)
 
 :checkNecessaryTools
 echo Verificando a existência das ferramentas necessárias...
@@ -99,6 +94,7 @@ echo Aplicando tema escuro...
 REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v AppsUseLightTheme /t REG_DWORD /d 0 /f
 REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v ColorPrevalence /t REG_DWORD /d 1 /f
 REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v SystemUsesLightTheme /t REG_DWORD /d 0 /f
+echo Tema escuro aplicado.
 
 :extraConfig
 echo Ativando o recurso DirectPlay...
@@ -107,8 +103,6 @@ echo Ativando o recurso .NET Framework 3.5...
 powershell.exe -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /all /featurename:NetFx3}"
 echo Desinstalando OneDrive...
 winget uninstall "OneDrive" -h --accept-source-agreements
-echo Atualizando aplicações...
-winget upgrade --all -h
 
 :addRules
 echo Criando regras no firewall e aplicando configurações de rede...
