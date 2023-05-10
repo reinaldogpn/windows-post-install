@@ -89,22 +89,7 @@ for /f "usebackq delims=" %%a in (%APP_LIST_FILE%) do (
 )
 echo %COUNT% aplicativos foram instalados com sucesso.
 
-:applyDarkTheme
-echo Aplicando tema escuro...
-REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v AppsUseLightTheme /t REG_DWORD /d 0 /f
-REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v ColorPrevalence /t REG_DWORD /d 1 /f
-REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v SystemUsesLightTheme /t REG_DWORD /d 0 /f
-echo Tema escuro aplicado.
-
-:extraConfig
-echo Ativando o recurso DirectPlay...
-powershell.exe -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /all /featurename:DirectPlay}"
-echo Ativando o recurso .NET Framework 3.5...
-powershell.exe -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /all /featurename:NetFx3}"
-echo Desinstalando OneDrive...
-winget uninstall "OneDrive" -h --accept-source-agreements
-
-:addRules
+:netConfig
 echo Criando regras no firewall e aplicando configurações de rede...
 :: Configurações da rede
 netsh interface ipv4 set address name="Ethernet" static 192.168.0.116 255.255.255.0 192.168.0.1
@@ -120,6 +105,21 @@ netsh advfirewall firewall add rule name="DST Dedicated Server" dir=out action=a
 :: Fim das regras
 ipconfig /all
 echo Configurações de rede aplicadas.
+
+:applyDarkTheme
+echo Aplicando tema escuro...
+REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v AppsUseLightTheme /t REG_DWORD /d 0 /f
+REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v ColorPrevalence /t REG_DWORD /d 1 /f
+REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v SystemUsesLightTheme /t REG_DWORD /d 0 /f
+echo Tema escuro aplicado.
+
+:extraConfig
+echo Ativando o recurso DirectPlay...
+powershell.exe -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /all /featurename:DirectPlay}"
+echo Ativando o recurso .NET Framework 3.5...
+powershell.exe -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /all /featurename:NetFx3}"
+echo Desinstalando OneDrive...
+winget uninstall "OneDrive" -h --accept-source-agreements
 
 :updateWindows
 echo Procurando por atualizações...
