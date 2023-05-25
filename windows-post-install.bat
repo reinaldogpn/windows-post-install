@@ -37,6 +37,7 @@ if !errorlevel! neq 0 (
     echo Este script precisa ser executado com privilégios de administrador.
     pause
     goto :end
+)
 
 :checkInternetConnection
 echo Verificando conexão com a internet...
@@ -45,6 +46,7 @@ if !errorlevel! neq 0 (
     echo Não há conexão com a internet. O script será encerrado.
     pause
     goto :end
+)
 
 :checkNecessaryTools
 echo Verificando a existência das ferramentas necessárias...
