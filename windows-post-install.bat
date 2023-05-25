@@ -38,6 +38,7 @@ if !errorlevel! neq 0 (
     pause
     goto :end
 )
+:: FIM ::
 
 :checkInternetConnection
 echo Verificando conexão com a internet...
@@ -47,6 +48,7 @@ if !errorlevel! neq 0 (
     pause
     goto :end
 )
+:: FIM ::
 
 :checkNecessaryTools
 echo Verificando a existência das ferramentas necessárias...
@@ -65,6 +67,7 @@ where wuauclt.exe >nul 2>&1 || (
     powershell -c "Start-Process wuinstall.exe -Verb RunAs"
 )
 echo Todas as ferramentas necessárias estão instaladas!
+:: FIM ::
 
 :installApps
 echo Para acrescentar ou remover programas ao script, modifique o arquivo "applist.txt"
@@ -92,6 +95,7 @@ for /f "usebackq delims=" %%a in (%APP_LIST_FILE%) do (
     )
 )
 echo %COUNT% aplicativos foram instalados com sucesso.
+:: FIM ::
 
 :netConfig
 echo Criando regras no firewall e aplicando configurações de rede...
@@ -109,6 +113,7 @@ netsh advfirewall firewall add rule name="DST Dedicated Server" dir=out action=a
 :: Fim das regras
 ipconfig /all
 echo Configurações de rede aplicadas.
+:: FIM ::
 
 :applyDarkTheme
 echo Aplicando tema escuro...
@@ -116,6 +121,7 @@ REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v App
 REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v ColorPrevalence /t REG_DWORD /d 1 /f
 REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v SystemUsesLightTheme /t REG_DWORD /d 0 /f
 echo Tema escuro aplicado.
+:: FIM ::
 
 :extraConfig
 echo Ativando o recurso DirectPlay...
@@ -124,11 +130,13 @@ echo Ativando o recurso .NET Framework 3.5...
 powershell.exe -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /all /featurename:NetFx3}"
 echo Desinstalando OneDrive...
 winget uninstall "OneDrive" -h --accept-source-agreements
+:: FIM ::
 
 :updateWindows
 echo Procurando por atualizações...
 wuauclt.exe /detectnow /updatenow
 echo Se disponíveis, atualizações serão baixadas e instaladas...
+:: FIM ::
 
 :: ------------ FIM ------------ ::
 
