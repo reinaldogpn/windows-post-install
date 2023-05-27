@@ -18,3 +18,12 @@ Works fine on **Windows 10** & **Windows 11**.
 * [Windows 11 Cursors Concept](https://www.deviantart.com/jepricreations/art/Windows-11-Cursors-Concept-v2-886489356)
 * [TranslucentTB](https://apps.microsoft.com/store/detail/translucenttb/9PF4KZ2VN4W9?hl=en-us&gl=us)
 * [ViVeTool](https://github.com/thebookisclosed/ViVe)
+
+#
+### Useful commands
+
+> * Fix for TranslucentTB (making toolbar translucent):
+> 
+> ``` batch
+> vivetool /disable /id:26008830 && vivetool /disable /id:38764045
+> ```
