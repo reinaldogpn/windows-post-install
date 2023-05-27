@@ -1,26 +1,26 @@
-:: -----------------------------------------------------------------------------------------
-:: * Descrição: Script batch para instalação automatizada de aplicações no Windows 10 e 11.
-:: * Autor: Reinaldo G. P. Neto
-:: * Criado em: 28/04/2023
-:: -----------------------------------------------------------------------------------------
-::
-:: * Changelog:
-::
-::  v1.0 28/04/2023, reinaldogpn:
-::      - Criação do script bruto, polimentos serão feitos futuramente =D. O script
-::      realiza testes, instala as ferramentas necessárias para a execução, instala 
-::      alguns programas úteis e faz a atualização do sistema.
-::  v1.1 28/04/2023, reinaldogpn:
-::      - Correção do uso da variável de ambiente "!errorlevel!" para funcionar
-::      corretamente no Windows 10; agora os aplicativos a serem instalados são definidos
-::      dentro do arquivo "applist.txt" e não mais em variáveis dentro do script.
-::  v1.2 28/04/2023, reinaldogpn:
-::      - Mudanças na estrutura geral do script, além de pequenas correções e ajustes.
-::  v1.3 27/05/2023, reinaldogpn:
-::      - Inclusão de novas funções para criação de dois pontos de restauração do sistema
-::      e para download de ferramentas de personalização de elementos do Windows.
-::
-:: -----------------------------------------------------------------------------------------
+:: ----------------------------------------------------------------------------------------- ::
+:: * Descrição: Script batch para instalação automatizada de aplicações no Windows 10 e 11.  ::
+:: * Autor: Reinaldo G. P. Neto                                                              ::
+:: * Criado em: 28/04/2023                                                                   ::
+:: ----------------------------------------------------------------------------------------- ::
+::                                                                                           ::
+:: * Changelog:                                                                              ::
+::                                                                                           ::
+::  v1.0 28/04/2023, reinaldogpn:                                                            ::
+::      - Criação do script bruto, polimentos serão feitos futuramente =D. O script          ::
+::      realiza testes, instala as ferramentas necessárias para a execução, instala          ::
+::      alguns programas úteis e faz a atualização do sistema.                               ::
+::  v1.1 28/04/2023, reinaldogpn:                                                            ::
+::      - Correção do uso da variável de ambiente "!errorlevel!" para funcionar              ::
+::      corretamente no Windows 10; agora os aplicativos a serem instalados são definidos    ::
+::      dentro do arquivo "applist.txt" e não mais em variáveis dentro do script.            ::
+::  v1.2 28/04/2023, reinaldogpn:                                                            ::
+::      - Mudanças na estrutura geral do script, além de pequenas correções e ajustes.       ::
+::  v1.3 27/05/2023, reinaldogpn:                                                            ::
+::      - Inclusão de novas funções para criação de dois pontos de restauração do sistema    ::
+::      e para download de ferramentas de personalização de elementos do Windows.            ::
+::                                                                                           ::
+:: ----------------------------------------------------------------------------------------- ::
 
 @echo off
 
