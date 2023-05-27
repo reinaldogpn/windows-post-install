@@ -1,5 +1,4 @@
 "Adobe.Acrobat.Reader.64-bit"
-"ApacheFriends.Xampp.8.2"
 "Audacity.Audacity"
 "Codeblocks.Codeblocks"
 "DigitalScholar.Zotero"
