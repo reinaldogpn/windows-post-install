@@ -29,6 +29,7 @@ cd %~dp0
 :: ------------ VARIÁVEIS ------------ ::
 set APP_LIST_FILE="applist.txt"
 set COUNT=0
+set DOWNLOAD_FOLDER=C:\Users\%USERNAME%\Downloads\CustomTools
 :: ------------ FUNÇÕES ------------ ::
 :checkAdminPrivileges
 echo Verificando privilégios de administrador...
@@ -48,6 +49,12 @@ if !errorlevel! neq 0 (
     pause
     goto :end
 )
+:: FIM ::
+
+:createRestorePoint1
+echo Criando ponto de restauração do sistema...
+powershell -Command "Checkpoint-Computer -Description 'Execução do Script Windows Post Install'"
+echo Ponto de restauração do sistema criado.
 :: FIM ::
 
 :checkNecessaryTools
@@ -123,6 +130,15 @@ REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v Sys
 echo Tema escuro aplicado.
 :: FIM ::
 
+:downloadCustomTools
+echo Fazendo download de ferramentas de customização do sistema...
+mkdir "%DOWNLOAD_FOLDER%"
+powershell -c "Invoke-WebRequest 'https://github.com/MicaForEveryone/MicaForEveryone/releases/latest/download/MicaForEveryone-x64-Release-Installer.exe' -OutFile '%DOWNLOAD_FOLDER%\MicaForEveryone.exe'"
+powershell -c "Invoke-WebRequest 'https://github.com/MicaForEveryone/ExplorerFrame/releases/download/v0.2.0.0/ExplorerFrame-0.2.0.0-x64.zip' -OutFile '%DOWNLOAD_FOLDER%\ExplorerFrame.zip'"
+powershell -c "Invoke-WebRequest 'https://github.com/MishaProductions/Rectify11Installer/releases/download/v-3.0-rp3/Rectify11Installer.exe' -OutFile '%DOWNLOAD_FOLDER%\Rectify11Installer.exe'"
+echo Download completo. Arquivos salvos em: "%DOWNLOAD_FOLDER%"
+:: FIM ::
+
 :extraConfig
 echo Ativando o recurso DirectPlay...
 powershell.exe -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /all /featurename:DirectPlay}"
@@ -136,6 +152,12 @@ winget uninstall "OneDrive" -h --accept-source-agreements
 echo Procurando por atualizações...
 wuauclt.exe /detectnow /updatenow
 echo Se disponíveis, atualizações serão baixadas e instaladas...
+:: FIM ::
+
+:createRestorePoint2
+echo Criando ponto de restauração do sistema...
+powershell -Command "Checkpoint-Computer -Description 'Pós Execução do Script Windows Post Install'"
+echo Ponto de restauração do sistema criado.
 :: FIM ::
 
 :: ------------ FIM ------------ ::
