@@ -58,7 +58,7 @@ if !errorlevel! neq 0 (
 
 :createRestorePoint1
 echo Criando ponto de restauração do sistema...
-REG ADD HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore /v SystemRestorePointCreationFrequency /t REG_DWORD /d 5 /f
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /t REG_DWORD /d 5 /f
 powershell -Command "Checkpoint-Computer -Description 'Execução do Script Windows Post Install'"
 echo Ponto de restauração do sistema criado.
 :: FIM ::
@@ -168,7 +168,7 @@ echo Se disponíveis, atualizações serão baixadas e instaladas...
 :createRestorePoint2
 echo Criando ponto de restauração do sistema...
 powershell -Command "Checkpoint-Computer -Description 'Pós Execução do Script Windows Post Install'"
-REG ADD HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore /v SystemRestorePointCreationFrequency /t REG_DWORD /d 1440 /f
+REG ADD "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /t REG_DWORD /d 1440 /f
 echo Ponto de restauração do sistema criado.
 :: FIM ::
 
