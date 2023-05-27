@@ -29,7 +29,7 @@ cd %~dp0
 :: ------------ VARIÁVEIS ------------ ::
 set APP_LIST_FILE="applist.txt"
 set COUNT=0
-set DOWNLOAD_FOLDER=C:\Users\%USERNAME%\Downloads\CustomTools
+set DOWNLOAD_FOLDER=C:\Users\%USERNAME%\Downloads\Tools
 :: ------------ FUNÇÕES ------------ ::
 :checkAdminPrivileges
 echo Verificando privilégios de administrador...
@@ -130,12 +130,15 @@ REG ADD HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize /v Sys
 echo Tema escuro aplicado.
 :: FIM ::
 
-:downloadCustomTools
+:downloadTools
 echo Fazendo download de ferramentas de customização do sistema...
 mkdir "%DOWNLOAD_FOLDER%"
 powershell -c "Invoke-WebRequest 'https://github.com/MicaForEveryone/MicaForEveryone/releases/latest/download/MicaForEveryone-x64-Release-Installer.exe' -OutFile '%DOWNLOAD_FOLDER%\MicaForEveryone.exe'"
 powershell -c "Invoke-WebRequest 'https://github.com/MicaForEveryone/ExplorerFrame/releases/download/v0.2.0.0/ExplorerFrame-0.2.0.0-x64.zip' -OutFile '%DOWNLOAD_FOLDER%\ExplorerFrame.zip'"
 powershell -c "Invoke-WebRequest 'https://github.com/MishaProductions/Rectify11Installer/releases/download/v-3.0-rp3/Rectify11Installer.exe' -OutFile '%DOWNLOAD_FOLDER%\Rectify11Installer.exe'"
+powershell -c "Invoke-WebRequest 'https://windows.php.net/downloads/releases/php-8.2.6-nts-Win32-vs16-x64.zip' -OutFile '%DOWNLOAD_FOLDER%\php-8.2.6.zip'"
+powershell -c "Invoke-WebRequest 'https://sourceforge.net/projects/luabinaries/files/latest/download' -OutFile '%DOWNLOAD_FOLDER%\lua-5.4.2.zip'"
+powershell -c "Invoke-WebRequest 'https://github.com/liballeg/allegro5/releases/download/5.2.8.0/allegro-x86_64-w64-mingw32-gcc-12.1.0-posix-seh-static-5.2.8.0.zip' -OutFile '%DOWNLOAD_FOLDER%\allegro-static-5.2.8.zip'"
 echo Download completo. Arquivos salvos em: "%DOWNLOAD_FOLDER%"
 :: FIM ::
 
