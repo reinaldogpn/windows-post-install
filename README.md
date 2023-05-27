@@ -22,8 +22,10 @@ Works fine on **Windows 10** & **Windows 11**.
 #
 ### Useful commands
 
-> * Fix for TranslucentTB (making toolbar translucent):
-> 
-> ``` batch
-> vivetool /disable /id:26008830 && vivetool /disable /id:38764045
-> ```
+* Fix for TranslucentTB (making toolbar translucent):
+ 
+``` batch
+vivetool /disable /id:26008830 && vivetool /disable /id:38764045
+```
+
+#
