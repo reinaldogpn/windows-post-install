@@ -29,6 +29,7 @@
 "Python.Python.3.11"
 "9NKSQGP7F2NH"
 "9NCBCSZSJRSB"
+"9PF4KZ2VN4W9"
 "HyperX NGENUITY"
 "OpenJS.NodeJS.LTS"
 "Oracle.JavaRuntimeEnvironment"
