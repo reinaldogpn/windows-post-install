@@ -16,7 +16,9 @@
 ::      dentro do arquivo "applist.txt" e não mais em variáveis dentro do script.
 ::  v1.2 28/04/2023, reinaldogpn:
 ::      - Mudanças na estrutura geral do script, além de pequenas correções e ajustes.
-::
+::  v1.3 27/05/2023, reinaldogpn:
+::      - Inclusão de novas funções para criação de dois pontos de restauração do sistema
+::      e para download de ferramentas de personalização de elementos do Windows.
 :: -----------------------------------------------------------------------------------------
 
 @echo off
