@@ -155,7 +155,10 @@ powershell.exe -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName Di
 echo Ativando o recurso .NET Framework 3.5...
 powershell.exe -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /all /featurename:NetFx3}"
 echo Desinstalando OneDrive...
-winget uninstall "OneDrive" -h --accept-source-agreements
+winget uninstall "Microsoft.OneDriveSync_8wekyb3d8bbwe" -h --accept-source-agreements
+winget uninstall "Microsoft.OneDrive" -h --accept-source-agreements
+powershell.exe -Command "Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\OneDrive' -Name DisableFileSyncNGSC -Value 1"
+powershell.exe -Command "gpupdate /force"
 :: FIM ::
 
 :updateWindows
@@ -167,7 +170,7 @@ echo Se disponíveis, atualizações serão baixadas e instaladas...
 :createRestorePoint2
 echo Criando ponto de restauração do sistema...
 powershell -Command "Checkpoint-Computer -Description 'Pós Execução do Script Windows Post Install'"
-REG ADD "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /t REG_DWORD /d 1440 /f
+REG DELETE "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /f
 echo Ponto de restauração do sistema criado.
 :: FIM ::
 
