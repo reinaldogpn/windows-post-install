@@ -169,6 +169,7 @@ echo Ponto de restauração do sistema criado.
 :: ------------ FIM ------------ ::
 
 :end
+echo Fim do script!
 endlocal
 pause
 exit /b
