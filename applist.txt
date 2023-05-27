@@ -11,6 +11,7 @@
 "Google.Drive"
 "Inkscape.Inkscape"
 "IObit.DriverBooster"
+"Microsoft.DotNet.DesktopRuntime.3_1"
 "Microsoft.VCRedist.2010.x86"
 "Microsoft.VCRedist.2010.x64"
 "Microsoft.VCRedist.2012.x86"
