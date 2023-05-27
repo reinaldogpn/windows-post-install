@@ -145,6 +145,7 @@ powershell -c "Invoke-WebRequest 'https://github.com/MishaProductions/Rectify11I
 powershell -c "Invoke-WebRequest 'https://github.com/thebookisclosed/ViVe/releases/latest/download/ViVeTool-v0.3.3.zip' -OutFile '%DOWNLOAD_FOLDER%\ViVeTool.zip'"
 powershell -c "Invoke-WebRequest 'https://windows.php.net/downloads/releases/php-8.2.6-nts-Win32-vs16-x64.zip' -OutFile '%DOWNLOAD_FOLDER%\php-8.2.6.zip'"
 powershell -c "Invoke-WebRequest 'https://sourceforge.net/projects/luabinaries/files/latest/download' -OutFile '%DOWNLOAD_FOLDER%\lua-5.4.2.zip'"
+powershell -c "Invoke-WebRequest 'https://download.virtualbox.org/virtualbox/7.0.8/Oracle_VM_VirtualBox_Extension_Pack-7.0.8.vbox-extpack' -OutFile '%DOWNLOAD_FOLDER%\Oracle_VM_VirtualBox_Extension_Pack-7.0.8.vbox-extpack'"
 powershell -c "Invoke-WebRequest 'https://github.com/liballeg/allegro5/releases/download/5.2.8.0/allegro-x86_64-w64-mingw32-gcc-12.1.0-posix-seh-static-5.2.8.0.zip' -OutFile '%DOWNLOAD_FOLDER%\allegro-static-5.2.8.zip'"
 echo Download completo. Arquivos salvos em: "%DOWNLOAD_FOLDER%"
 :: FIM ::
