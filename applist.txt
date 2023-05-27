@@ -37,3 +37,4 @@
 "Oracle.JDK.18"
 "Oracle.VirtualBox"
 "TeamViewer.TeamViewer"
+"MAMP.MAMP"
