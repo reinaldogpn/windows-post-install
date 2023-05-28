@@ -139,14 +139,15 @@ echo Tema escuro aplicado.
 :downloadTools
 echo Fazendo download de ferramentas de customização do sistema...
 mkdir "%DOWNLOAD_FOLDER%"
-powershell -c "Invoke-WebRequest "https://github.com/MicaForEveryone/MicaForEveryone/releases/latest/download/MicaForEveryone-x64-Release-Installer.exe" -OutFile "%DOWNLOAD_FOLDER%\MicaForEveryone.exe""
-powershell -c "Invoke-WebRequest "https://github.com/MicaForEveryone/ExplorerFrame/releases/download/v0.2.0.0/ExplorerFrame-0.2.0.0-x64.zip" -OutFile "%DOWNLOAD_FOLDER%\ExplorerFrame.zip""
-powershell -c "Invoke-WebRequest "https://github.com/MishaProductions/Rectify11Installer/releases/download/v-3.0-rp3/Rectify11Installer.exe" -OutFile "%DOWNLOAD_FOLDER%\Rectify11Installer.exe""
-powershell -c "Invoke-WebRequest "https://github.com/thebookisclosed/ViVe/releases/latest/download/ViVeTool-v0.3.3.zip" -OutFile "%DOWNLOAD_FOLDER%\ViVeTool.zip""
-powershell -c "Invoke-WebRequest "https://windows.php.net/downloads/releases/php-8.2.6-nts-Win32-vs16-x64.zip" -OutFile "%DOWNLOAD_FOLDER%\php-8.2.6.zip""
-powershell -c "Invoke-WebRequest "https://sonik.dl.sourceforge.net/project/luabinaries/5.4.2/Tools%20Executables/lua-5.4.2_Win64_bin.zip" -OutFile "%DOWNLOAD_FOLDER%\lua-5.4.2.zip""
-powershell -c "Invoke-WebRequest "https://download.virtualbox.org/virtualbox/7.0.8/Oracle_VM_VirtualBox_Extension_Pack-7.0.8.vbox-extpack" -OutFile "%DOWNLOAD_FOLDER%\Oracle_VM_VirtualBox_Extension_Pack-7.0.8.vbox-extpack""
-powershell -c "Invoke-WebRequest "https://github.com/liballeg/allegro5/releases/download/5.2.8.0/allegro-x86_64-w64-mingw32-gcc-12.1.0-posix-seh-static-5.2.8.0.zip" -OutFile "%DOWNLOAD_FOLDER%\allegro-static-5.2.8.zip""
+curl -L "https://github.com/MicaForEveryone/MicaForEveryone/releases/latest/download/MicaForEveryone-x64-Release-Installer.exe" -o "%DOWNLOAD_FOLDER%\MicaForEveryone.exe"
+curl -L "https://github.com/MicaForEveryone/ExplorerFrame/releases/download/v0.2.0.0/ExplorerFrame-0.2.0.0-x64.zip" -o "%DOWNLOAD_FOLDER%\ExplorerFrame.zip"
+curl -L "https://github.com/thebookisclosed/ViVe/releases/latest/download/ViVeTool-v0.3.3.zip" -o "%DOWNLOAD_FOLDER%\ViVeTool.zip"
+curl -L "https://windows.php.net/downloads/releases/php-8.2.6-nts-Win32-vs16-x64.zip" -o "%DOWNLOAD_FOLDER%\php-8.2.6.zip"
+curl -L "https://sonik.dl.sourceforge.net/project/luabinaries/5.4.2/Tools%20Executables/lua-5.4.2_Win64_bin.zip" -o "%DOWNLOAD_FOLDER%\lua-5.4.2.zip"
+curl -L "https://download.virtualbox.org/virtualbox/7.0.8/Oracle_VM_VirtualBox_Extension_Pack-7.0.8.vbox-extpack" -o "%DOWNLOAD_FOLDER%\Oracle_VM_VirtualBox_Extension_Pack-7.0.8.vbox-extpack"
+curl -L "https://github.com/liballeg/allegro5/releases/download/5.2.8.0/allegro-x86_64-w64-mingw32-gcc-12.1.0-posix-seh-static-5.2.8.0.zip" -o "%DOWNLOAD_FOLDER%\allegro-static-5.2.8.zip"
+curl -L "https://get.enterprisedb.com/postgresql/postgresql-15.3-1-windows-x64.exe" -o "%DOWNLOAD_FOLDER%\PostgreSQL15.exe"
+curl -L "https://github.com/MishaProductions/Rectify11Installer/releases/download/v-3.0-rp3/Rectify11Installer.exe" -o "%DOWNLOAD_FOLDER%\Rectify11.exe"
 echo Download completo. Arquivos salvos em: "%DOWNLOAD_FOLDER%"
 :: FIM ::
 
