@@ -166,18 +166,25 @@ winget uninstall "Microsoft.OneDriveSync_8wekyb3d8bbwe" -h --accept-source-agree
 winget uninstall "Microsoft.OneDrive" -h --accept-source-agreements
 powershell.exe -Command "Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\OneDrive' -Name DisableFileSyncNGSC -Value 1"
 powershell.exe -Command "gpupdate /force"
-if not exist "%USERPROFILE%\Área de Trabalho\" mkdir "%USERPROFILE%\Área de Trabalho\"
-move /Y "%USERPROFILE%\OneDrive\Área de Trabalho\*" "%USERPROFILE%\Área de Trabalho\"
-if exist "%USERPROFILE%\OneDrive\Área de Trabalho" rmdir /s /q "%USERPROFILE%\OneDrive\Área de Trabalho"
-if not exist "%USERPROFILE%\Pictures\" mkdir "%USERPROFILE%\Pictures\"
-move /Y "%USERPROFILE%\OneDrive\Pictures\*" "%USERPROFILE%\Pictures\"
-if exist "%USERPROFILE%\OneDrive\Pictures" rmdir /s /q "%USERPROFILE%\OneDrive\Pictures"
-if not exist "%USERPROFILE%\Documents" mkdir "%USERPROFILE%\Documents"
-move /Y "%USERPROFILE%\OneDrive\Documents\*" "%USERPROFILE%\Documents\"
-if exist "%USERPROFILE%\OneDrive\Documents" rmdir /s /q "%USERPROFILE%\OneDrive\Documents"
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v "Desktop" /t REG_EXPAND_SZ /d "%USERPROFILE%\Área de Trabalho" /f
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v "Personal" /t REG_EXPAND_SZ /d "%USERPROFILE%\Documents" /f
-reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v "My Pictures" /t REG_EXPAND_SZ /d "%USERPROFILE%\Pictures" /f
+:: Restaurando caminho padrão das pastas de usuário
+ver | findstr /i "Windows 11"
+if %errorlevel%==0 (
+    echo Você está usando o Windows 11.
+    if not exist "%USERPROFILE%\Área de Trabalho\" mkdir "%USERPROFILE%\Área de Trabalho\"
+    move /Y "%USERPROFILE%\OneDrive\Área de Trabalho\*" "%USERPROFILE%\Área de Trabalho\"
+    if exist "%USERPROFILE%\OneDrive\Área de Trabalho" rmdir /s /q "%USERPROFILE%\OneDrive\Área de Trabalho"
+    if not exist "%USERPROFILE%\Pictures\" mkdir "%USERPROFILE%\Pictures\"
+    move /Y "%USERPROFILE%\OneDrive\Pictures\*" "%USERPROFILE%\Pictures\"
+    if exist "%USERPROFILE%\OneDrive\Pictures" rmdir /s /q "%USERPROFILE%\OneDrive\Pictures"
+    if not exist "%USERPROFILE%\Documents" mkdir "%USERPROFILE%\Documents"
+    move /Y "%USERPROFILE%\OneDrive\Documents\*" "%USERPROFILE%\Documents\"
+    if exist "%USERPROFILE%\OneDrive\Documents" rmdir /s /q "%USERPROFILE%\OneDrive\Documents"
+    reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v "Desktop" /t REG_EXPAND_SZ /d "%USERPROFILE%\Área de Trabalho" /f
+    reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v "Personal" /t REG_EXPAND_SZ /d "%USERPROFILE%\Documents" /f
+    reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v "My Pictures" /t REG_EXPAND_SZ /d "%USERPROFILE%\Pictures" /f
+) else (
+    echo Você não está usando o Windows 11.
+)
 echo OneDrive foi completamente expurgado!
 :: FIM ::
 
