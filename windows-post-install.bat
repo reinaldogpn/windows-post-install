@@ -18,7 +18,7 @@
 ::  v1.3 27/05/2023, reinaldogpn:                                                           
 ::      - Inclusão de novas funções para criação de dois pontos de restauração do sistema   
 ::      e para download de ferramentas de personalização de elementos do Windows.           
-::  v1.4 28/05/2023, reinaldogpn:                                                           
+::  v1.4 30/05/2023, reinaldogpn:                                                           
 ::      - Refatoração e implementação do commando 'curl' para fazer o download das          
 ::      ferramentas.                                                                        
 :: -------------------------------------------------------------------------------------------
@@ -59,7 +59,7 @@ if !errorlevel! neq 0 (
 
 :createRestorePoint1
 echo Criando ponto de restauração do sistema...
-REG ADD "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /t REG_DWORD /d 5 /f
+reg add "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /t REG_DWORD /d 5 /f
 powershell -Command "Checkpoint-Computer -Description 'Execução do Script Windows Post Install'"
 echo Ponto de restauração do sistema criado.
 :: FIM ::
@@ -131,10 +131,10 @@ echo Configurações de rede aplicadas.
 
 :applyDarkTheme
 echo Aplicando tema escuro...
-REG ADD "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v AppsUseLightTheme /t REG_DWORD /d 0 /f
-REG ADD "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v ColorPrevalence /t REG_DWORD /d 1 /f
-REG ADD "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v SystemUsesLightTheme /t REG_DWORD /d 0 /f
-TASKKILL /F /IM explorer.exe && START explorer.exe
+reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v AppsUseLightTheme /t REG_DWORD /d 0 /f
+reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v ColorPrevalence /t REG_DWORD /d 1 /f
+reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v SystemUsesLightTheme /t REG_DWORD /d 0 /f
+taskkill /F /IM explorer.exe && start explorer.exe
 echo Tema escuro aplicado.
 :: FIM ::
 
@@ -158,11 +158,27 @@ echo Ativando o recurso DirectPlay...
 powershell.exe -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /all /featurename:DirectPlay}"
 echo Ativando o recurso .NET Framework 3.5...
 powershell.exe -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /all /featurename:NetFx3}"
+:: FIM ::
+
+:purgeOneDrive
 echo Desinstalando OneDrive...
 winget uninstall "Microsoft.OneDriveSync_8wekyb3d8bbwe" -h --accept-source-agreements
 winget uninstall "Microsoft.OneDrive" -h --accept-source-agreements
 powershell.exe -Command "Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\OneDrive' -Name DisableFileSyncNGSC -Value 1"
 powershell.exe -Command "gpupdate /force"
+if not exist "%USERPROFILE%\Área de Trabalho\" mkdir "%USERPROFILE%\Área de Trabalho\"
+move /Y "%USERPROFILE%\OneDrive\Área de Trabalho\*" "%USERPROFILE%\Área de Trabalho\"
+if exist "%USERPROFILE%\OneDrive\Área de Trabalho" del /S /F /Q "%USERPROFILE%\OneDrive\Área de Trabalho"
+if not exist "%USERPROFILE%\Pictures\" mkdir "%USERPROFILE%\Pictures\"
+move /Y "%USERPROFILE%\OneDrive\Pictures\*" "%USERPROFILE%\Pictures\"
+if exist "%USERPROFILE%\OneDrive\Pictures" del /S /F /Q "%USERPROFILE%\OneDrive\Pictures"
+if not exist "%USERPROFILE%\Documents" mkdir "%USERPROFILE%\Documents"
+move /Y "%USERPROFILE%\OneDrive\Documents\*" "%USERPROFILE%\Documents\"
+if exist "%USERPROFILE%\OneDrive\Documents" del /S /F /Q "%USERPROFILE%\OneDrive\Documents"
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v "Desktop" /t REG_EXPAND_SZ /d "%USERPROFILE%\Área de Trabalho" /f
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v "Personal" /t REG_EXPAND_SZ /d "%USERPROFILE%\Documents" /f
+reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v "My Pictures" /t REG_EXPAND_SZ /d "%USERPROFILE%\Pictures" /f
+echo OneDrive foi completamente expurgado!
 :: FIM ::
 
 :updateWindows
@@ -174,7 +190,7 @@ echo Se disponíveis, atualizações serão baixadas e instaladas...
 :createRestorePoint2
 echo Criando ponto de restauração do sistema...
 powershell -Command "Checkpoint-Computer -Description 'Pós Execução do Script Windows Post Install'"
-REG DELETE "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /f
+reg delete "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /f
 echo Ponto de restauração do sistema criado.
 :: FIM ::
 
