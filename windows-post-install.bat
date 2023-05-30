@@ -168,13 +168,13 @@ powershell.exe -Command "Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microso
 powershell.exe -Command "gpupdate /force"
 if not exist "%USERPROFILE%\Área de Trabalho\" mkdir "%USERPROFILE%\Área de Trabalho\"
 move /Y "%USERPROFILE%\OneDrive\Área de Trabalho\*" "%USERPROFILE%\Área de Trabalho\"
-if exist "%USERPROFILE%\OneDrive\Área de Trabalho" del /S /F /Q "%USERPROFILE%\OneDrive\Área de Trabalho"
+if exist "%USERPROFILE%\OneDrive\Área de Trabalho" rmdir /s /q "%USERPROFILE%\OneDrive\Área de Trabalho"
 if not exist "%USERPROFILE%\Pictures\" mkdir "%USERPROFILE%\Pictures\"
 move /Y "%USERPROFILE%\OneDrive\Pictures\*" "%USERPROFILE%\Pictures\"
-if exist "%USERPROFILE%\OneDrive\Pictures" del /S /F /Q "%USERPROFILE%\OneDrive\Pictures"
+if exist "%USERPROFILE%\OneDrive\Pictures" rmdir /s /q "%USERPROFILE%\OneDrive\Pictures"
 if not exist "%USERPROFILE%\Documents" mkdir "%USERPROFILE%\Documents"
 move /Y "%USERPROFILE%\OneDrive\Documents\*" "%USERPROFILE%\Documents\"
-if exist "%USERPROFILE%\OneDrive\Documents" del /S /F /Q "%USERPROFILE%\OneDrive\Documents"
+if exist "%USERPROFILE%\OneDrive\Documents" rmdir /s /q "%USERPROFILE%\OneDrive\Documents"
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v "Desktop" /t REG_EXPAND_SZ /d "%USERPROFILE%\Área de Trabalho" /f
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v "Personal" /t REG_EXPAND_SZ /d "%USERPROFILE%\Documents" /f
 reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v "My Pictures" /t REG_EXPAND_SZ /d "%USERPROFILE%\Pictures" /f
