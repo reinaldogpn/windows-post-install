@@ -30,8 +30,7 @@ vivetool /disable /id:26008830 && vivetool /disable /id:38764045
 
 #
 > **Note**
-> 
->   ID Names:
-> * "9NKSQGP7F2NH" = WhatsApp
-> * "9NCBCSZSJRSB" = Spotify
-> * "9PF4KZ2VN4W9" = TranslucentTB
+> * ID Names:
+>   - "9NKSQGP7F2NH" = WhatsApp
+>   - "9NCBCSZSJRSB" = Spotify
+>   - "9PF4KZ2VN4W9" = TranslucentTB
