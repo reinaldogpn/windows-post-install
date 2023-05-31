@@ -34,7 +34,7 @@ cd %~dp0
 
 set APP_LIST_FILE="applist.txt"
 set COUNT=0
-set DOWNLOAD_FOLDER=C:\Users\%USERNAME%\Downloads\Tools
+set DOWNLOAD_FOLDER=%USERPROFILE%\Downloads\Tools
 
 :: ------------ FUNÇÕES ------------ ::
 :checkAdminPrivileges
@@ -42,7 +42,6 @@ echo Verificando privilégios de administrador...
 net session >nul 2>&1
 if !errorlevel! neq 0 (
     echo Este script precisa ser executado com privilégios de administrador.
-    pause
     goto :end
 )
 :: FIM ::
@@ -52,7 +51,6 @@ echo Verificando conexão com a internet...
 ping -n 1 8.8.8.8 >nul 2>&1
 if !errorlevel! neq 0 (
     echo Não há conexão com a internet. O script será encerrado.
-    pause
     goto :end
 )
 :: FIM ::
@@ -80,7 +78,16 @@ where wuauclt.exe >nul 2>&1 || (
     echo Instalando o wuauclt.exe...
     powershell -c "Start-Process wuinstall.exe -Verb RunAs"
 )
-echo Todas as ferramentas necessárias estão instaladas!
+
+where curl > nul 2>&1 || (
+    echo Instalando o curl...
+    winget install cURL.cURL -h --accept-package-agreements --accept-source-agreements
+    if !errorlevel! neq 0 (
+        echo Erro ao instalar o curl!
+        goto :end
+    )
+)
+echo Todas as ferramentas necessárias estão instaladas.
 :: FIM ::
 
 :installApps
@@ -134,13 +141,14 @@ echo Aplicando tema escuro...
 reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v AppsUseLightTheme /t REG_DWORD /d 0 /f
 reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v ColorPrevalence /t REG_DWORD /d 1 /f
 reg add "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v SystemUsesLightTheme /t REG_DWORD /d 0 /f
+echo Tema escuro aplicado. O processo explorer.exe será reiniciado.
+pause
 taskkill /F /IM explorer.exe && start explorer.exe
-echo Tema escuro aplicado.
 :: FIM ::
 
 :downloadTools
 echo Fazendo download de ferramentas de customização do sistema...
-mkdir "%DOWNLOAD_FOLDER%"
+if not exist "%DOWNLOAD_FOLDER%" mkdir "%DOWNLOAD_FOLDER%"
 curl -L "https://github.com/MicaForEveryone/MicaForEveryone/releases/latest/download/MicaForEveryone-x64-Release-Installer.exe" -o "%DOWNLOAD_FOLDER%\MicaForEveryone.exe"
 curl -L "https://github.com/MicaForEveryone/ExplorerFrame/releases/download/v0.2.0.0/ExplorerFrame-0.2.0.0-x64.zip" -o "%DOWNLOAD_FOLDER%\ExplorerFrame.zip"
 curl -L "https://github.com/thebookisclosed/ViVe/releases/latest/download/ViVeTool-v0.3.3.zip" -o "%DOWNLOAD_FOLDER%\ViVeTool.zip"
@@ -150,6 +158,7 @@ curl -L "https://download.virtualbox.org/virtualbox/7.0.8/Oracle_VM_VirtualBox_E
 curl -L "https://github.com/liballeg/allegro5/releases/download/5.2.8.0/allegro-x86_64-w64-mingw32-gcc-12.1.0-posix-seh-static-5.2.8.0.zip" -o "%DOWNLOAD_FOLDER%\allegro-static-5.2.8.zip"
 curl -L "https://get.enterprisedb.com/postgresql/postgresql-15.3-1-windows-x64.exe" -o "%DOWNLOAD_FOLDER%\PostgreSQL15.exe"
 curl -L "https://github.com/MishaProductions/Rectify11Installer/releases/download/v-3.0-rp3/Rectify11Installer.exe" -o "%DOWNLOAD_FOLDER%\Rectify11.exe"
+curl -L "https://jrsoftware.org/download.php/is.exe" -o "%DOWNLOAD_FOLDER%\InnoSetup.exe"
 echo Download completo. Arquivos salvos em: "%DOWNLOAD_FOLDER%"
 :: FIM ::
 
