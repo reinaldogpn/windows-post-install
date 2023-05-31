@@ -5,7 +5,6 @@
 "Audacity.Audacity"
 "Blitz.Blitz"
 "Codeblocks.Codeblocks"
-"cURL.cURL"
 "DigitalScholar.Zotero"
 "Discord.Discord"
 "Dropbox.Dropbox"
