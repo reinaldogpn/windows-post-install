@@ -166,25 +166,36 @@ powershell.exe -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName Ne
 :: FIM ::
 
 :purgeOneDrive
+set OD_FOLDER=%USERPROFILE%\OneDrive
+set OD_DESKTOP=%USERPROFILE%\OneDrive\Desktop
+set OD_DOCUMENTS=%USERPROFILE%\OneDrive\Documents
+set OD_PICTURES=%USERPROFILE%\OneDrive\Pictures
+
 echo Desinstalando OneDrive...
-winget uninstall "Microsoft.OneDriveSync_8wekyb3d8bbwe" -h --accept-source-agreements > nul
-winget uninstall "Microsoft.OneDrive" -h --accept-source-agreements > nul
+winget uninstall "Microsoft.OneDriveSync_8wekyb3d8bbwe" -h --accept-source-agreements >nul 2>&1
+winget uninstall "Microsoft.OneDrive" -h --accept-source-agreements >nul 2>&1
 powershell.exe -Command "Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\OneDrive' -Name DisableFileSyncNGSC -Value 1"
 powershell.exe -Command "gpupdate /force"
-:: Restaurando caminho padrão das pastas de usuário
+
+echo Restaurando caminho padrão das pastas de usuário...
 ver | findstr /i "Windows 11"
 if %errorlevel%==0 (
     echo Você está usando o Windows 11.
+
     if not exist "%USERPROFILE%\Desktop" mkdir "%USERPROFILE%\Desktop"
-    move /Y "%USERPROFILE%\OneDrive\Desktop\*" "%USERPROFILE%\Desktop"
-    if not exist "%USERPROFILE%\Pictures" mkdir "%USERPROFILE%\Pictures"
-    move /Y "%USERPROFILE%\OneDrive\Pictures\*" "%USERPROFILE%\Pictures"
+    if exist "%OD_DESKTOP%" move /Y "%OD_DESKTOP%\*" "%USERPROFILE%\Desktop"
+
     if not exist "%USERPROFILE%\Documents" mkdir "%USERPROFILE%\Documents"
-    move /Y "%USERPROFILE%\OneDrive\Documents\*" "%USERPROFILE%\Documents"
+    if exist "%OD_DOCUMENTS%" move /Y "%OD_DOCUMENTS%\*" "%USERPROFILE%\Documents"
+
+    if not exist "%USERPROFILE%\Pictures" mkdir "%USERPROFILE%\Pictures"
+    if exist "%OD_PICTURES%" move /Y "%OD_PICTURES%\*" "%USERPROFILE%\Pictures"
+
     reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v "Desktop" /t REG_EXPAND_SZ /d "%USERPROFILE%\Desktop" /f
     reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v "My Pictures" /t REG_EXPAND_SZ /d "%USERPROFILE%\Pictures" /f
     reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v "Personal" /t REG_EXPAND_SZ /d "%USERPROFILE%\Documents" /f
-    if exist "%USERPROFILE%\OneDrive" rmdir /s /q "%USERPROFILE%\OneDrive"
+
+    if exist "%OD_FOLDER%" rmdir /s /q "%OD_FOLDER%"
 ) else (
     echo Você não está usando o Windows 11.
 )
