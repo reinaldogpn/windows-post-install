@@ -6,8 +6,9 @@ Works fine on **Windows 10** & **Windows 11**.
 
 #
 ### How To
-* Define the programs to be installed in file "applist.txt" by it's "winget ID". 
+* Define the programs to be installed in file "apps.txt" by it's "winget ID". 
 * In case you don't know the ID of an app, use `winget search <appname>` on terminal.
+* Define the download url of programs to be downloaded in file "urls.txt".
 * Always run the .bat file as admin.
 
 #
