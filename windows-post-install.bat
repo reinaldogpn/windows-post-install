@@ -32,8 +32,8 @@ cd %~dp0
 
 :: ------------ VARIÁVEIS ------------ ::
 
-set APP_LIST="apps.txt"
-set URL_LIST="urls.txt"
+set APP_LIST=apps.txt
+set URL_LIST=urls.txt
 set COUNT=0
 set DOWNLOAD_FOLDER=%USERPROFILE%\Downloads\Tools
 
@@ -92,14 +92,14 @@ echo Todas as ferramentas necessárias estão instaladas.
 :: FIM ::
 
 :installApps
-echo Para acrescentar ou remover programas ao script, modifique o arquivo "applist.txt"
+echo Para acrescentar ou remover programas ao script, modifique o arquivo "%APP_LIST%"
 echo Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal.
 if not exist %APP_LIST% (
-    echo Arquivo de lista de aplicativos não encontrado: %APP_LIST%
+    echo Arquivo de lista de aplicativos não encontrado: "%APP_LIST%"
     echo Tentando fazer o download...
-    powershell -c "Invoke-WebRequest https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/applist.txt -OutFile applist.txt"
+    powershell -c "Invoke-WebRequest https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/%APP_LIST% -OutFile %APP_LIST%"
     if not exist %APP_LIST% (
-        echo Falha ao fazer o download da lista de aplicativos: %APP_LIST%
+        echo Falha ao fazer o download da lista de aplicativos: "%APP_LIST%"
         goto :end
     ) 
 )
