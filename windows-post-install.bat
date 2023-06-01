@@ -32,7 +32,8 @@ cd %~dp0
 
 :: ------------ VARIÁVEIS ------------ ::
 
-set APP_LIST_FILE="applist.txt"
+set APP_LIST="apps.txt"
+set URL_LIST="urls.txt"
 set COUNT=0
 set DOWNLOAD_FOLDER=%USERPROFILE%\Downloads\Tools
 
@@ -93,23 +94,23 @@ echo Todas as ferramentas necessárias estão instaladas.
 :installApps
 echo Para acrescentar ou remover programas ao script, modifique o arquivo "applist.txt"
 echo Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal.
-if not exist %APP_LIST_FILE% (
-    echo Arquivo de lista de aplicativos não encontrado: %APP_LIST_FILE%
+if not exist %APP_LIST% (
+    echo Arquivo de lista de aplicativos não encontrado: %APP_LIST%
     echo Tentando fazer o download...
     powershell -c "Invoke-WebRequest https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/applist.txt -OutFile applist.txt"
-    if not exist %APP_LIST_FILE% (
-        echo Falha ao fazer o download da lista de aplicativos: %APP_LIST_FILE%
+    if not exist %APP_LIST% (
+        echo Falha ao fazer o download da lista de aplicativos: %APP_LIST%
         goto :end
     ) 
 )
-for /f "usebackq delims=" %%a in (%APP_LIST_FILE%) do (
+for /f "usebackq delims=" %%a in (%APP_LIST%) do (
     set "APP_NAME=%%a"
     winget list !APP_NAME! > nul 2>&1
     if !errorlevel! equ 0 (
         echo !APP_NAME! já está instalado...
     ) else (
         echo Instalando !APP_NAME!...
-        winget install !APP_NAME! -h --accept-package-agreements --accept-source-agreements
+        winget install !APP_NAME! -h --accept-package-agreements --accept-source-agreements > nul
         if !errorlevel! equ 0 set /a COUNT+=1
     )
 )
@@ -145,18 +146,15 @@ taskkill /F /IM explorer.exe && start explorer.exe
 :: FIM ::
 
 :downloadTools
-echo Fazendo download de ferramentas de customização do sistema...
+echo Fazendo download de ferramentas...
 if not exist "%DOWNLOAD_FOLDER%" mkdir "%DOWNLOAD_FOLDER%"
-curl -L "https://github.com/MicaForEveryone/MicaForEveryone/releases/latest/download/MicaForEveryone-x64-Release-Installer.exe" -o "%DOWNLOAD_FOLDER%\MicaForEveryone.exe"
-curl -L "https://github.com/MicaForEveryone/ExplorerFrame/releases/download/v0.2.0.0/ExplorerFrame-0.2.0.0-x64.zip" -o "%DOWNLOAD_FOLDER%\ExplorerFrame.zip"
-curl -L "https://github.com/thebookisclosed/ViVe/releases/latest/download/ViVeTool-v0.3.3.zip" -o "%DOWNLOAD_FOLDER%\ViVeTool.zip"
-curl -L "https://windows.php.net/downloads/releases/php-8.2.6-nts-Win32-vs16-x64.zip" -o "%DOWNLOAD_FOLDER%\php-8.2.6.zip"
-curl -L "https://sonik.dl.sourceforge.net/project/luabinaries/5.4.2/Tools%20Executables/lua-5.4.2_Win64_bin.zip" -o "%DOWNLOAD_FOLDER%\lua-5.4.2.zip"
-curl -L "https://download.virtualbox.org/virtualbox/7.0.8/Oracle_VM_VirtualBox_Extension_Pack-7.0.8.vbox-extpack" -o "%DOWNLOAD_FOLDER%\Oracle_VM_VirtualBox_Extension_Pack-7.0.8.vbox-extpack"
-curl -L "https://github.com/liballeg/allegro5/releases/download/5.2.8.0/allegro-x86_64-w64-mingw32-gcc-12.1.0-posix-seh-static-5.2.8.0.zip" -o "%DOWNLOAD_FOLDER%\allegro-static-5.2.8.zip"
-curl -L "https://get.enterprisedb.com/postgresql/postgresql-15.3-1-windows-x64.exe" -o "%DOWNLOAD_FOLDER%\PostgreSQL15.exe"
-curl -L "https://github.com/MishaProductions/Rectify11Installer/releases/download/v-3.0-rp3/Rectify11Installer.exe" -o "%DOWNLOAD_FOLDER%\Rectify11.exe"
-curl -L "https://jrsoftware.org/download.php/is.exe" -o "%DOWNLOAD_FOLDER%\InnoSetup.exe"
+for /f "usebackq delims=" %%i in (%URL_LIST%) do (
+    if not exist "%DOWNLOAD_FOLDER%\%%~nxi" (
+        curl -L "%%i" -o "%DOWNLOAD_FOLDER%\%%~nxi" > nul
+    ) else (
+        echo Arquivo "%%~nxi" já existe.
+    )
+)
 echo Download completo. Arquivos salvos em: "%DOWNLOAD_FOLDER%"
 :: FIM ::
 
@@ -169,26 +167,24 @@ powershell.exe -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName Ne
 
 :purgeOneDrive
 echo Desinstalando OneDrive...
-winget uninstall "Microsoft.OneDriveSync_8wekyb3d8bbwe" -h --accept-source-agreements
-winget uninstall "Microsoft.OneDrive" -h --accept-source-agreements
+winget uninstall "Microsoft.OneDriveSync_8wekyb3d8bbwe" -h --accept-source-agreements > nul
+winget uninstall "Microsoft.OneDrive" -h --accept-source-agreements > nul
 powershell.exe -Command "Set-ItemProperty -Path 'HKLM:\SOFTWARE\Policies\Microsoft\OneDrive' -Name DisableFileSyncNGSC -Value 1"
 powershell.exe -Command "gpupdate /force"
 :: Restaurando caminho padrão das pastas de usuário
 ver | findstr /i "Windows 11"
 if %errorlevel%==0 (
     echo Você está usando o Windows 11.
-    if not exist "%USERPROFILE%\Área de Trabalho\" mkdir "%USERPROFILE%\Área de Trabalho\"
-    move /Y "%USERPROFILE%\OneDrive\Área de Trabalho\*" "%USERPROFILE%\Área de Trabalho\"
-    if exist "%USERPROFILE%\OneDrive\Área de Trabalho" rmdir /s /q "%USERPROFILE%\OneDrive\Área de Trabalho"
-    if not exist "%USERPROFILE%\Pictures\" mkdir "%USERPROFILE%\Pictures\"
-    move /Y "%USERPROFILE%\OneDrive\Pictures\*" "%USERPROFILE%\Pictures\"
-    if exist "%USERPROFILE%\OneDrive\Pictures" rmdir /s /q "%USERPROFILE%\OneDrive\Pictures"
+    if not exist "%USERPROFILE%\Desktop" mkdir "%USERPROFILE%\Desktop"
+    move /Y "%USERPROFILE%\OneDrive\Desktop\*" "%USERPROFILE%\Desktop"
+    if not exist "%USERPROFILE%\Pictures" mkdir "%USERPROFILE%\Pictures"
+    move /Y "%USERPROFILE%\OneDrive\Pictures\*" "%USERPROFILE%\Pictures"
     if not exist "%USERPROFILE%\Documents" mkdir "%USERPROFILE%\Documents"
-    move /Y "%USERPROFILE%\OneDrive\Documents\*" "%USERPROFILE%\Documents\"
-    if exist "%USERPROFILE%\OneDrive\Documents" rmdir /s /q "%USERPROFILE%\OneDrive\Documents"
-    reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v "Desktop" /t REG_EXPAND_SZ /d "%USERPROFILE%\Área de Trabalho" /f
-    reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v "Personal" /t REG_EXPAND_SZ /d "%USERPROFILE%\Documents" /f
+    move /Y "%USERPROFILE%\OneDrive\Documents\*" "%USERPROFILE%\Documents"
+    reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v "Desktop" /t REG_EXPAND_SZ /d "%USERPROFILE%\Desktop" /f
     reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v "My Pictures" /t REG_EXPAND_SZ /d "%USERPROFILE%\Pictures" /f
+    reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v "Personal" /t REG_EXPAND_SZ /d "%USERPROFILE%\Documents" /f
+    if exist "%USERPROFILE%\OneDrive" rmdir /s /q "%USERPROFILE%\OneDrive"
 ) else (
     echo Você não está usando o Windows 11.
 )
