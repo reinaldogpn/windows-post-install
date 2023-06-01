@@ -93,7 +93,6 @@ echo Todas as ferramentas necessárias estão instaladas.
 :installApps
 echo Para acrescentar ou remover programas ao script, modifique o arquivo "applist.txt"
 echo Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal.
-
 if not exist %APP_LIST_FILE% (
     echo Arquivo de lista de aplicativos não encontrado: %APP_LIST_FILE%
     echo Tentando fazer o download...
@@ -101,21 +100,20 @@ if not exist %APP_LIST_FILE% (
     if not exist %APP_LIST_FILE% (
         echo Falha ao fazer o download da lista de aplicativos: %APP_LIST_FILE%
         goto :end
+    ) 
+)
+for /f "usebackq delims=" %%a in (%APP_LIST_FILE%) do (
+    set "APP_NAME=%%a"
+    winget list !APP_NAME! > nul 2>&1
+    if !errorlevel! equ 0 (
+        echo !APP_NAME! já está instalado...
     ) else (
-        for /f "usebackq delims=" %%a in (%APP_LIST_FILE%) do (
-            set "APP_NAME=%%a"
-            winget list !APP_NAME! > nul 2>&1
-            if !errorlevel! equ 0 (
-                echo !APP_NAME! já está instalado...
-            ) else (
-                echo Instalando !APP_NAME!...
-                winget install !APP_NAME! -h --accept-package-agreements --accept-source-agreements
-                if !errorlevel! equ 0 set /a COUNT+=1
-            )
-        )
-        echo %COUNT% aplicativos foram instalados com sucesso.
+        echo Instalando !APP_NAME!...
+        winget install !APP_NAME! -h --accept-package-agreements --accept-source-agreements
+        if !errorlevel! equ 0 set /a COUNT+=1
     )
 )
+echo %COUNT% aplicativos foram instalados com sucesso.
 :: FIM ::
 
 :netConfig
