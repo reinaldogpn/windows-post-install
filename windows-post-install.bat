@@ -20,7 +20,9 @@
 ::      e para download de ferramentas de personalização de elementos do Windows.           
 ::  v1.4 30/05/2023, reinaldogpn:                                                           
 ::      - Refatoração e implementação do commando 'curl' para fazer o download das          
-::      ferramentas.                                                                        
+::      ferramentas.            
+::  v1.5 01/06/2023, reinaldogpn:                                                           
+::      - Refatoração e tratamento de erros em algumas funções.
 :: -------------------------------------------------------------------------------------------
 
 @echo off
