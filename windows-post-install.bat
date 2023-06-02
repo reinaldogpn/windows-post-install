@@ -163,7 +163,7 @@ set OD_PICTURES=%USERPROFILE%\OneDrive\Pictures
 echo Desinstalando OneDrive...
 winget uninstall "Microsoft.OneDriveSync_8wekyb3d8bbwe" -h --accept-source-agreements >nul 2>&1
 winget uninstall "Microsoft.OneDrive" -h --accept-source-agreements >nul 2>&1
-powershell.exe -Command "Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\PolicyManager\default\System\DisableOneDriveFileSync' -Name DisableFileSyncNGSC -Value 1"
+powershell.exe -Command "Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\PolicyManager\default\System\DisableOneDriveFileSync' -Name value -Value 1"
 powershell.exe -Command "gpupdate /force"
 
 echo Restaurando caminho padrão das pastas de usuário...
