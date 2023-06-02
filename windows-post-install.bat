@@ -138,7 +138,7 @@ if not exist "%DOWNLOAD_FOLDER%" mkdir "%DOWNLOAD_FOLDER%"
 for /f "usebackq delims=" %%i in (%URL_LIST%) do (
     if not exist "%DOWNLOAD_FOLDER%\%%~nxi" (
         echo Fazendo o download de "%%~nxi"...
-        curl -L "%%i" -o "%DOWNLOAD_FOLDER%\%%~nxi" > nul
+        curl -sL "%%i" -o "%DOWNLOAD_FOLDER%\%%~nxi" > nul
     ) else (
         echo Arquivo "%%~nxi" já existe.
     )
