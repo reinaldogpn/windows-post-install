@@ -154,15 +154,6 @@ echo Ativando o recurso .NET Framework 3.5...
 powershell.exe -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /all /featurename:NetFx3}"
 :: FIM ::
 
-:purgeOneDrive
-echo Desinstalando OneDrive...
-winget uninstall "Microsoft.OneDriveSync_8wekyb3d8bbwe" -h --accept-source-agreements >nul 2>&1
-winget uninstall "Microsoft.OneDrive" -h --accept-source-agreements >nul 2>&1
-powershell.exe -Command "Set-ItemProperty -Path 'HKLM:\SOFTWARE\Microsoft\PolicyManager\default\System\DisableOneDriveFileSync' -Name value -Value 1"
-powershell.exe -Command "gpupdate /force"
-echo OneDrive foi completamente expurgado!
-:: FIM ::
-
 :installApps
 echo Para acrescentar ou remover programas ao script, modifique o arquivo "%APP_LIST%"
 echo Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal.
