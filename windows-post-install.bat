@@ -93,32 +93,6 @@ where curl > nul 2>&1 || (
 echo Todas as ferramentas necessárias estão instaladas.
 :: FIM ::
 
-:installApps
-echo Para acrescentar ou remover programas ao script, modifique o arquivo "%APP_LIST%"
-echo Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal.
-if not exist %APP_LIST% (
-    echo Arquivo de lista de aplicativos não encontrado: "%APP_LIST%"
-    echo Tentando fazer o download...
-    powershell -c "Invoke-WebRequest https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/%APP_LIST% -OutFile %APP_LIST%"
-    if not exist %APP_LIST% (
-        echo Falha ao fazer o download da lista de aplicativos: "%APP_LIST%"
-        goto :end
-    ) 
-)
-for /f "usebackq delims=" %%a in (%APP_LIST%) do (
-    set "APP_NAME=%%a"
-    winget list !APP_NAME! > nul 2>&1
-    if !errorlevel! equ 0 (
-        echo !APP_NAME! já está instalado...
-    ) else (
-        echo Instalando !APP_NAME!...
-        winget install !APP_NAME! -h --accept-package-agreements --accept-source-agreements
-        if !errorlevel! equ 0 set /a COUNT+=1
-    )
-)
-echo %COUNT% aplicativos foram instalados com sucesso.
-:: FIM ::
-
 :netConfig
 echo Criando regras no firewall e aplicando configurações de rede...
 :: Configurações da rede
@@ -215,6 +189,32 @@ if %errorlevel%==0 (
     echo Você não está usando o Windows 11.
 )
 echo OneDrive foi completamente expurgado!
+:: FIM ::
+
+:installApps
+echo Para acrescentar ou remover programas ao script, modifique o arquivo "%APP_LIST%"
+echo Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal.
+if not exist %APP_LIST% (
+    echo Arquivo de lista de aplicativos não encontrado: "%APP_LIST%"
+    echo Tentando fazer o download...
+    powershell -c "Invoke-WebRequest https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/%APP_LIST% -OutFile %APP_LIST%"
+    if not exist %APP_LIST% (
+        echo Falha ao fazer o download da lista de aplicativos: "%APP_LIST%"
+        goto :end
+    ) 
+)
+for /f "usebackq delims=" %%a in (%APP_LIST%) do (
+    set "APP_NAME=%%a"
+    winget list !APP_NAME! > nul 2>&1
+    if !errorlevel! equ 0 (
+        echo !APP_NAME! já está instalado...
+    ) else (
+        echo Instalando !APP_NAME!...
+        winget install !APP_NAME! -h --accept-package-agreements --accept-source-agreements
+        if !errorlevel! equ 0 set /a COUNT+=1
+    )
+)
+echo %COUNT% aplicativos foram instalados com sucesso.
 :: FIM ::
 
 :updateWindows
