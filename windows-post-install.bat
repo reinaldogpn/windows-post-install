@@ -110,7 +110,7 @@ for /f "usebackq delims=" %%a in (%APP_LIST%) do (
         echo !APP_NAME! já está instalado...
     ) else (
         echo Instalando !APP_NAME!...
-        winget install !APP_NAME! -h --accept-package-agreements --accept-source-agreements > nul
+        winget install !APP_NAME! -h --accept-package-agreements --accept-source-agreements
         if !errorlevel! equ 0 set /a COUNT+=1
     )
 )
@@ -147,6 +147,17 @@ taskkill /F /IM explorer.exe && start explorer.exe
 
 :downloadTools
 echo Fazendo download de ferramentas...
+
+if not exist %URL_LIST% (
+    echo Arquivo de lista de URLs não encontrado: "%URL_LIST%"
+    echo Tentando fazer o download...
+    powershell -c "Invoke-WebRequest https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/%URL_LIST% -OutFile %URL_LIST%"
+    if not exist %URL_LIST% (
+        echo Falha ao fazer o download da lista de aplicativos: "%URL_LIST%"
+        goto :end
+    ) 
+)
+
 if not exist "%DOWNLOAD_FOLDER%" mkdir "%DOWNLOAD_FOLDER%"
 for /f "usebackq delims=" %%i in (%URL_LIST%) do (
     if not exist "%DOWNLOAD_FOLDER%\%%~nxi" (
@@ -156,6 +167,7 @@ for /f "usebackq delims=" %%i in (%URL_LIST%) do (
         echo Arquivo "%%~nxi" já existe.
     )
 )
+
 echo Download completo. Arquivos salvos em: "%DOWNLOAD_FOLDER%"
 :: FIM ::
 
@@ -184,13 +196,13 @@ if %errorlevel%==0 (
     echo Você está usando o Windows 11.
 
     if not exist "%USERPROFILE%\Desktop" mkdir "%USERPROFILE%\Desktop"
-    if exist "%OD_DESKTOP%" move /Y "%OD_DESKTOP%\*" "%USERPROFILE%\Desktop"
+    if exist "%OD_DESKTOP%" move /y "%OD_DESKTOP%\*" "%USERPROFILE%\Desktop"
 
     if not exist "%USERPROFILE%\Documents" mkdir "%USERPROFILE%\Documents"
-    if exist "%OD_DOCUMENTS%" move /Y "%OD_DOCUMENTS%\*" "%USERPROFILE%\Documents"
+    if exist "%OD_DOCUMENTS%" move /y "%OD_DOCUMENTS%\*" "%USERPROFILE%\Documents"
 
     if not exist "%USERPROFILE%\Pictures" mkdir "%USERPROFILE%\Pictures"
-    if exist "%OD_PICTURES%" move /Y "%OD_PICTURES%\*" "%USERPROFILE%\Pictures"
+    if exist "%OD_PICTURES%" move /y "%OD_PICTURES%\*" "%USERPROFILE%\Pictures"
 
     reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v "Desktop" /t REG_EXPAND_SZ /d "%USERPROFILE%\Desktop" /f
     reg add "HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders" /v "My Pictures" /t REG_EXPAND_SZ /d "%USERPROFILE%\Pictures" /f
