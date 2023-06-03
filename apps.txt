@@ -4,7 +4,6 @@
 "9WZDNCRF0083"
 "Adobe.Acrobat.Reader.64-bit"
 "Audacity.Audacity"
-"Blitz.Blitz"
 "Codeblocks.Codeblocks"
 "DigitalScholar.Zotero"
 "Discord.Discord"
