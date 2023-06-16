@@ -6,9 +6,9 @@ Works fine on **Windows 10** & **Windows 11**.
 
 #
 ### Usage
-* (Optional) Define the programs to be installed in file `apps.txt` by it's "winget ID". 
+* *(Optional)* Define the programs to be installed in file `apps.txt` by it's "winget ID". 
   - **Note:** In case you don't know the ID of an app, use `winget search <appname>` on terminal.
-* (Optional) Define the download url of programs to be downloaded in file `urls.txt`.
+* *(Optional)* Define the download url of programs to be downloaded in file `urls.txt`.
 * Run `windows-post-install.bat` as admin.
 
 #
