@@ -9,3 +9,4 @@
 "https://get.enterprisedb.com/postgresql/postgresql-15.3-1-windows-x64.exe"
 "https://github.com/MishaProductions/Rectify11Installer/releases/download/v-3.0-rp3/Rectify11Installer.exe"
 "https://jrsoftware.org/download.php/is.exe"
+"https://download.virtualbox.org/virtualbox/7.0.8/VirtualBox-7.0.8-156879-Win.exe"
