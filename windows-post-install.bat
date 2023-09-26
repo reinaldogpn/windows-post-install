@@ -126,7 +126,6 @@ taskkill /F /IM explorer.exe && start explorer.exe
 
 :downloadTools
 echo Fazendo download de ferramentas...
-
 if not exist %URL_LIST% (
     echo Arquivo de lista de URLs não encontrado: "%URL_LIST%"
     echo Tentando fazer o download...
@@ -146,7 +145,6 @@ for /f "usebackq delims=" %%i in (%URL_LIST%) do (
         echo Arquivo "%%~nxi" já existe.
     )
 )
-
 echo Download completo. Arquivos salvos em: "%DOWNLOAD_FOLDER%"
 :: FIM ::
 
@@ -205,7 +203,6 @@ echo Ponto de restauração do sistema criado.
 :: FIM ::
 
 :: ------------ FIM ------------ ::
-
 :end
 echo Fim do script!
 endlocal
