@@ -27,6 +27,7 @@
 "OpenJS.NodeJS.LTS"
 "Oracle.JavaRuntimeEnvironment"
 "Oracle.JDK.18"
+"Oracle.VirtualBox"
 "Python.Python.3.11"
 "qBittorrent.qBittorrent"
 "RARLab.WinRAR"
