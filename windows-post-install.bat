@@ -23,6 +23,8 @@
 ::      ferramentas.            
 ::  v1.5 01/06/2023, reinaldogpn:                                                           
 ::      - Refatoração e tratamento de erros em algumas funções.
+::  v1.6 26/09/2023, reinaldogpn:                                                           
+::      - Adição de configurações de energia do Windows (tempo de suspensão e desligamento de monitor).
 :: -------------------------------------------------------------------------------------------
 
 @echo off
