@@ -96,14 +96,14 @@ echo Todas as ferramentas necessárias estão instaladas.
 :netConfig
 echo Criando regras no firewall e aplicando configurações de rede...
 :: Configurações da rede
-netsh interface ipv4 set address name="Ethernet" static 192.168.0.116 255.255.255.0 192.168.0.1
-netsh interface ipv4 set dns "Ethernet" static 8.8.8.8
-netsh interface ipv4 add dns "Ethernet" 8.8.4.4 index=2
+netsh interface ipv4 set address name="Ethernet" static 192.168.0.100 255.255.255.0 192.168.0.1
+netsh interface ipv4 set dns "Ethernet" static 192.168.0.1
+netsh interface ipv4 add dns "Ethernet" 8.8.8.8 index=2
 :: Regras para o firewall
 netsh advfirewall firewall add rule name="PZ Dedicated Server" dir=in action=allow protocol=UDP localport=16261,16262
 netsh advfirewall firewall add rule name="PZ Dedicated Server" dir=out action=allow protocol=UDP localport=16261,16262
-netsh advfirewall firewall add rule name="Valheim Dedicated Server" dir=in action=allow protocol=UDP localport=2456,2457
-netsh advfirewall firewall add rule name="Valheim Dedicated Server" dir=out action=allow protocol=UDP localport=2456,2457
+netsh advfirewall firewall add rule name="Valheim Dedicated Server" dir=in action=allow protocol=UDP localport=2456,2457,2458
+netsh advfirewall firewall add rule name="Valheim Dedicated Server" dir=out action=allow protocol=UDP localport=2456,2457,2458
 netsh advfirewall firewall add rule name="DST Dedicated Server" dir=in action=allow protocol=UDP localport=10889
 netsh advfirewall firewall add rule name="DST Dedicated Server" dir=out action=allow protocol=UDP localport=10889
 :: Fim das regras
@@ -156,6 +156,11 @@ powershell.exe -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName Ne
 echo Configurando o git...
 git config --global user.name reinaldogpn
 git config --global user.email reinaldogpn@outlook.com
+echo Alterando configurações de energia do Windows...
+powercfg /change monitor-timeout-ac 600
+powercfg /change monitor-timeout-dc 600
+powercfg /change standby-timeout-ac 0
+powercfg /change standby-timeout-dc 0
 :: FIM ::
 
 :installApps
