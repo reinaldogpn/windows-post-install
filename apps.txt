@@ -5,6 +5,7 @@
 "AnyDeskSoftwareGmbH.AnyDesk"
 "ApacheFriends.Xampp.8.2"
 "Audacity.Audacity"
+"calibre.calibre"
 "Codeblocks.Codeblocks"
 "CPUID.CPU-Z"
 "DigitalScholar.Zotero"
