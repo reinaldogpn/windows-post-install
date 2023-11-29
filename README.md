@@ -1,24 +1,25 @@
 # windows-post-install.bat
 
-This batch script automatically installs the programs I use in my PC, runs updates and apply some personal preferences.
+This batch script automatically installs the programs I use in my PC, runs updates and apply some personal preferences. Works fine on **Windows 10** & **Windows 11**.
 
-Works fine on **Windows 10** & **Windows 11**.
+## Winget Tool
+
+Winget is the Windows Package Manager (as good as *apt install* on Linux, no joke). The winget command line tool enables users to discover, install, upgrade, remove and configure applications on Windows 10 and Windows 11 computers. This tool is the client interface to the Windows Package Manager service. It's installed by default on Windows 10 and 11, but it may needs to be updated on MS Store just after installing the OS.
+
+For further information and troubleshooting, please visit [winget's Github repository](https://github.com/microsoft/winget-cli).
 
 #
 ### Usage
-* *(Optional)* Define the programs to be installed in file `apps.txt` by it's "winget ID". 
-  - **Note:** In case you don't know the ID of an app, use `winget search <appname>` on terminal.
-* *(Optional)* Define the download url of programs to be downloaded in file `urls.txt`.
-* Run `windows-post-install.bat` as admin.
+1. *(Important)* Define the programs to be installed in file `apps.txt` by it's "winget ID". 
+    - **Note:** In case you don't know the ID of an app, use `winget search <appname>` on terminal.
+2. *(Important)* Define the download url of programs to be downloaded in file `urls.txt`.
+3. Run `windows-post-install.bat` as admin.
 
 #
 ### Personalization Tools
-* [Mica For Everyone](https://github.com/MicaForEveryone/MicaForEveryone)
-  - [Explorer Frame (For Mica For Everyone)](https://github.com/MicaForEveryone/ExplorerFrame)
-* [Rectify](https://github.com/MishaProductions/Rectify11Installer)
-* [Windows 11 Cursors Concept](https://www.deviantart.com/jepricreations/art/Windows-11-Cursors-Concept-v2-886489356)
-* [TranslucentTB](https://apps.microsoft.com/store/detail/translucenttb/9PF4KZ2VN4W9?hl=en-us&gl=us)
-* [ViVeTool](https://github.com/thebookisclosed/ViVe)
+
+* [Windows 11 Cursors Concept](https://www.deviantart.com/jepricreations/art/Windows-11-Cursors-Concept-v2-886489356) - a modern option to customize Windows mouse cursor;
+* [TranslucentTB](https://apps.microsoft.com/store/detail/translucenttb/9PF4KZ2VN4W9?hl=en-us&gl=us) - a good choice for bringing a modern translucent look for Windows toolbar.
 
 #
 ### Useful Commands
@@ -30,8 +31,8 @@ vivetool /disable /id:26008830 && vivetool /disable /id:38764045
 ```
 
 #
-> **App ID Names**:
-> - "9NKSQGP7F2NH" = WhatsApp
-> - "9NCBCSZSJRSB" = Spotify
-> - "9PF4KZ2VN4W9" = TranslucentTB
-> - "9WZDNCRF0083" = Facebook Messenger
+**Popular App ID Names**:
+- "9NKSQGP7F2NH" = WhatsApp
+- "9NCBCSZSJRSB" = Spotify
+- "9PF4KZ2VN4W9" = TranslucentTB
+- "9WZDNCRF0083" = Facebook Messenger
