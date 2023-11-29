@@ -28,7 +28,7 @@ For further information and troubleshooting, please visit [winget's Github repos
 
     1. Download [ViVeTool](https://github.com/thebookisclosed/ViVe);
 
-    2. Run this command inside ViVe's directory:
+    2. Run this commands inside ViVe's directory as admin:
 
     ``` batch
     vivetool /disable /id:26008830 && vivetool /disable /id:38764045
