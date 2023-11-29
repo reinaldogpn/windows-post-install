@@ -10,9 +10,9 @@ For further information and troubleshooting, please visit [winget's Github repos
 
 #
 ### Usage
-1. *(Important)* Define the programs to be installed in file `apps.txt` by it's "winget ID". 
+1. Define the programs to be installed in file `apps.txt` by it's "winget ID". 
     - **Note:** In case you don't know the ID of an app, use `winget search <appname>` on terminal.
-2. *(Important)* Define the download url of programs to be downloaded in file `urls.txt`.
+2. Define the download url of programs to be downloaded in file `urls.txt`.
 3. Run `windows-post-install.bat` as admin.
 
 #
@@ -25,14 +25,18 @@ For further information and troubleshooting, please visit [winget's Github repos
 ### Useful Commands
 
 * Fix for TranslucentTB (making toolbar translucent):
- 
-``` batch
-vivetool /disable /id:26008830 && vivetool /disable /id:38764045
-```
+
+    1. Download [ViVeTool](https://github.com/thebookisclosed/ViVe);
+
+    2. Run this command inside ViVe's directory:
+
+    ``` batch
+    vivetool /disable /id:26008830 && vivetool /disable /id:38764045
+    ```
 
 #
 **Popular App ID Names**:
-- "9NKSQGP7F2NH" = WhatsApp
-- "9NCBCSZSJRSB" = Spotify
-- "9PF4KZ2VN4W9" = TranslucentTB
-- "9WZDNCRF0083" = Facebook Messenger
+- `9NKSQGP7F2NH` = WhatsApp Desktop
+- `9NCBCSZSJRSB` = Spotify Client
+- `9PF4KZ2VN4W9` = TranslucentTB
+- `9WZDNCRF0083` = Facebook Messenger
