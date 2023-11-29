@@ -12,13 +12,15 @@ For further information and troubleshooting, please visit [winget's Github repos
 ### Usage
 1. Define the programs to be installed in file `apps.txt` by it's "winget ID". 
     - **Note:** In case you don't know the ID of an app, use `winget search <appname>` on terminal.
+
 2. Define the download url of programs to be downloaded in file `urls.txt`.
+
 3. Run `windows-post-install.bat` as admin.
 
 #
 ### Personalization Tools
 
-* [Windows 11 Cursors Concept](https://www.deviantart.com/jepricreations/art/Windows-11-Cursors-Concept-v2-886489356) - a modern option to customize Windows mouse cursor;
+* [Windows 11 Cursors Concept](https://www.deviantart.com/jepricreations/art/Windows-11-Cursors-Concept-v2-886489356) - a modern option to customize Windows mouse cursor.
 * [TranslucentTB](https://apps.microsoft.com/store/detail/translucenttb/9PF4KZ2VN4W9?hl=en-us&gl=us) - a good choice for bringing a modern translucent look for Windows toolbar.
 
 #
@@ -26,7 +28,7 @@ For further information and troubleshooting, please visit [winget's Github repos
 
 * Fix for TranslucentTB (making toolbar translucent):
 
-    1. Download [ViVeTool](https://github.com/thebookisclosed/ViVe);
+    1. Download [ViVeTool](https://github.com/thebookisclosed/ViVe).
 
     2. Run this commands inside ViVe's directory as admin:
 
@@ -36,7 +38,7 @@ For further information and troubleshooting, please visit [winget's Github repos
 
 #
 **Popular App ID Names**:
-- `9NKSQGP7F2NH` = WhatsApp Desktop
-- `9NCBCSZSJRSB` = Spotify Client
-- `9PF4KZ2VN4W9` = TranslucentTB
-- `9WZDNCRF0083` = Facebook Messenger
+- `9NKSQGP7F2NH` = *WhatsApp Desktop*
+- `9NCBCSZSJRSB` = *Spotify Client*
+- `9PF4KZ2VN4W9` = *TranslucentTB*
+- `9WZDNCRF0083` = *Facebook Messenger*
