@@ -26,7 +26,7 @@ For further information and troubleshooting, please visit [winget's Github repos
 #
 ### Useful Commands
 
-* Fix for TranslucentTB (making toolbar translucent):
+* Fix for TranslucentTB (making taskbar translucent):
 
     1. Download [ViVeTool](https://github.com/thebookisclosed/ViVe).
 
