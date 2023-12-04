@@ -2,7 +2,7 @@
 
 This batch script automatically installs the programs I use in my PC, runs updates and apply some personal preferences. Works fine on **Windows 10** & **Windows 11**.
 
-## Winget Tool
+### Winget
 
 Winget is the Windows Package Manager (as good as '*apt install*' on Linux, no joke). The winget command line tool enables users to discover, install, upgrade, remove and configure applications on Windows 10 and Windows 11 computers. This tool is the client interface to the Windows Package Manager service. It's pre-installed by default on Windows 10 and 11, but it may needs to be updated just after installing the OS (relax, this script will do it for you).
 
