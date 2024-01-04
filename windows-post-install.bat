@@ -119,10 +119,10 @@ echo.
 
 :: Instalação de pacotes
 
-echo Para acrescentar ou remover programas ao script, modifique o arquivo "%APP_LIST%"
+echo Para acrescentar ou remover pacotes ao script, modifique o arquivo "%APP_LIST%"
 echo Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal.
 if not exist %APP_LIST% (
-    echo Arquivo de lista de aplicativos não encontrado: "%APP_LIST%"
+    echo Lista de pacotes não encontrada: "%APP_LIST%"
     goto :end
 )
 for /f "usebackq delims=" %%a in (%APP_LIST%) do (
@@ -136,7 +136,7 @@ for /f "usebackq delims=" %%a in (%APP_LIST%) do (
         if !errorlevel! equ 0 set /a COUNT+=1
     )
 )
-echo %COUNT% aplicativos foram instalados com sucesso.
+echo %COUNT% pacotes foram instalados com sucesso.
 
 echo Instalando DriverBooster...
 %RESOURCES_PATH%\driver_booster_setup.exe /verysilent /supressmsgboxes
