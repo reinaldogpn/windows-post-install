@@ -1,8 +1,8 @@
-:: -------------------------------------------------------------------------------------------
+:: -----------------------------------------------------------------------------------------------------
 :: * Descrição: Script batch para instalação automatizada de aplicações no Windows 10 e 11. 
 :: * Autor: Reinaldo G. P. Neto                                                             
 :: * Criado em: 28/04/2023                                                                  
-:: -------------------------------------------------------------------------------------------
+:: -----------------------------------------------------------------------------------------------------
 :: * Changelog:                                                                             
 ::                                                                                          
 ::  v1.0 28/04/2023, reinaldogpn:                                                           
@@ -25,7 +25,7 @@
 ::      - Refatoração e tratamento de erros em algumas funções.
 ::  v1.6 26/09/2023, reinaldogpn:                                                           
 ::      - Adição de configurações de energia do Windows (tempo de suspensão e desligamento de monitor).
-::  v2.0 04/01/2023, reinaldogpn:
+::  v2.0 04/01/2024, reinaldogpn:
 ::      - Remoção de pacotes e ferramentas não utilizadas, renovação do código e novas configurações 
 ::      pessoais para o sistema.
 :: -----------------------------------------------------------------------------------------------------
@@ -86,13 +86,16 @@ echo.
 echo Verificando a existência do Winget...
 where winget >nul 2>&1 || (
     echo Instalando o winget e suas dependências...
-    rem powershell -c Add-AppxPackage -Path "%RESOURCES_PATH%\winget\Microsoft.UI.Xaml_7.2208.15002.0_X64_msix_en-US.msix"
-    rem powershell -c Add-AppxPackage -Path "%RESOURCES_PATH%\winget\Microsoft.VC.2015.UWP.DRP_14.0.30704.0_X64_msix_en-US.msix"
-    rem powershell -c Add-AppxPackage -Path "%RESOURCES_PATH%\winget\App.Installer_1.21.3482.0_X64_msix_en-US.msix"
-    powershell -Command "Add-AppxPackage -RegisterByFamilyName -MainPackage Microsoft.DesktopAppInstaller_8wekyb3d8bbwe"
+    powershell -Command "Add-AppxPackage -Path '%RESOURCES_PATH%\winget\Microsoft.UI.Xaml_7.2208.15002.0_X64_msix_en-US.msix'"
+    powershell -Command "Add-AppxPackage -Path '%RESOURCES_PATH%\winget\Microsoft.VC.2015.UWP.DRP_14.0.30704.0_X64_msix_en-US.msix'"
+    powershell -Command "Invoke-WebRequest 'https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' -OutFile winget.msixbundle; .\winget.msi"
     echo y | winget list >nul 2>&1
+    if !errorlevel! equ 0 (
+        echo Winget está devidamente instalado e configurado.
+    ) else (
+        echo Ocorreu um erro.
+    )
 )
-echo Winget está devidamente instalado e configurado.
 
 echo.
 
@@ -175,9 +178,9 @@ echo.
 :: Outros recursos
 
 echo Ativando o recurso DirectPlay...
-powershell.exe -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /all /featurename:DirectPlay}"
+powershell -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /all /featurename:DirectPlay}"
 echo Ativando o recurso .NET Framework 3.5...
-powershell.exe -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /all /featurename:NetFx3}"
+powershell -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /all /featurename:NetFx3}"
 echo Configurando o git...
 %RESOURCES_PATH%\git.bat
 
