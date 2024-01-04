@@ -1,7 +1,0 @@
-"https://github.com/thebookisclosed/ViVe/releases/latest/download/ViVeTool-v0.3.3.zip"
-"https://github.com/liballeg/allegro5/releases/download/5.2.8.0/allegro-x86_64-w64-mingw32-gcc-12.1.0-posix-seh-static-5.2.8.0.zip"
-"https://us.download.nvidia.com/Windows/537.42/537.42-desktop-win10-win11-64bit-international-dch-whql.exe"
-"https://windows.php.net/downloads/releases/php-8.2.10-nts-Win32-vs16-x64.zip"
-"https://sonik.dl.sourceforge.net/project/luabinaries/5.4.2/Tools%20Executables/lua-5.4.2_Win64_bin.zip"
-"https://download.virtualbox.org/virtualbox/7.0.10/Oracle_VM_VirtualBox_Extension_Pack-7.0.10.vbox-extpack"
-"https://get.enterprisedb.com/postgresql/postgresql-16.0-1-windows-x64.exe"
