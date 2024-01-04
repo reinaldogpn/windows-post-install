@@ -45,7 +45,7 @@ For further information and troubleshooting, please visit [winget's Github repos
 
 #
 **Old tools URLs**:
-- https://github.com/thebookisclosed/ViVe/releases/latest/download/ViVeTool-v0.3.3.zip" = *ViVeTool*
+- https://github.com/thebookisclosed/ViVe/releases/latest/download/ViVeTool-v0.3.3.zip = *ViVeTool*
 - https://github.com/liballeg/allegro5/releases/download/5.2.8.0/allegro-x86_64-w64-mingw32-gcc-12.1.0-posix-seh-static-5.2.8.0.zip = *Allegro*
 - https://windows.php.net/downloads/releases/php-8.2.10-nts-Win32-vs16-x64.zip = *PHP*
 - https://sonik.dl.sourceforge.net/project/luabinaries/5.4.2/Tools%20Executables/lua-5.4.2_Win64_bin.zip = *Lua*
