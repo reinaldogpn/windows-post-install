@@ -145,16 +145,16 @@ echo Habilitando serviço FTP...
 powershell -Command "dism /online /enable-feature /featurename:IIS-WebServerRole /all"
 powershell -Command "dism /online /enable-feature /featurename:IIS-WebServer /all"
 powershell -Command "dism /online /enable-feature /featurename:IIS-FTPServer /all"
-netsh advfirewall firewall add rule name="FTP" dir=in action=allow protocol=TCP localport=21
 
 echo Habilitando serviço SSH...
 powershell -Command "Add-WindowsCapability -Online -Name OpenSSH.Client"
 powershell -Command "Add-WindowsCapability -Online -Name OpenSSH.Server"
 powershell -Command "Start-Service sshd"
 powershell -Command "Set-Service -Name sshd -StartupType 'Automatic'"
-netsh advfirewall firewall add rule name="SSH" dir=in action=allow protocol=TCP localport=22
 
-echo Aplicando configurações de firewall...
+echo Criando regras de firewall...
+netsh advfirewall firewall add rule name="FTP" dir=in action=allow protocol=TCP localport=21
+netsh advfirewall firewall add rule name="SSH" dir=in action=allow protocol=TCP localport=22
 netsh advfirewall firewall add rule name="PZ Dedicated Server" dir=in action=allow protocol=UDP localport=16261-16262
 netsh advfirewall firewall add rule name="PZ Dedicated Server" dir=out action=allow protocol=UDP localport=16261-16262
 netsh advfirewall firewall add rule name="Valheim Dedicated Server" dir=in action=allow protocol=UDP localport=2456-2458
