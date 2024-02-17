@@ -28,13 +28,15 @@
 ::  v2.0 04/01/2024, reinaldogpn:
 ::      - Remoção de pacotes e ferramentas não utilizadas, renovação do código e novas configurações 
 ::      pessoais para o sistema.
+::  v2.1 17/02/2024, reinaldogpn:
+::      - Inclusão de configurações adicionais de rede e firewall; redefinição de alguns testes.
 :: -----------------------------------------------------------------------------------------------------
 
 @echo off
 
 setlocal EnableDelayedExpansion
 chcp 65001 > nul
-cd %~dp0
+cd /d "%~dp0"
 
 :: ------------ VARIÁVEIS ------------ ::
 
@@ -105,13 +107,17 @@ where winget >nul 2>&1 || (
     powershell -Command "Add-AppxPackage -Path '%RESOURCES_PATH%\winget\Microsoft.VC.2015.UWP.DRP_14.0.30704.0_X64_msix_en-US.msix'"
     powershell -Command "Invoke-WebRequest 'https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' -OutFile winget.msixbundle; .\winget.msi"
     echo y | winget list >nul 2>&1
-    if !errorlevel! equ 0 (
-        echo Atualizando o winget...
-        winget upgrade Microsoft.AppInstaller --accept-package-agreements --accept-source-agreements --disable-interactivity --silent
-        echo Winget está devidamente instalado e atualizado.
-    ) else (
-        echo Ocorreu um erro.
+    if !errorlevel! neq 0 (
+        echo Falha ao tentar instalar o winget.
     )
+)
+
+echo Atualizando o winget...
+winget upgrade Microsoft.AppInstaller --accept-package-agreements --accept-source-agreements --disable-interactivity --silent >nul 2>&1
+if !errorlevel! equ 0 (
+    echo Winget está devidamente instalado e atualizado.
+) else (
+    echo Falha ao tentar atualizar o winget.
 )
 
 echo.
@@ -131,17 +137,17 @@ echo.
 
 :: Configurações e serviços de rede
 
-echo Habilitando serviço de FTP...
-powershell -c "dism /online /enable-feature /featurename:IIS-WebServerRole /all"
-powershell -c "dism /online /enable-feature /featurename:IIS-WebServer /all"
-powershell -c "dism /online /enable-feature /featurename:IIS-FTPServer /all"
+echo Habilitando serviço FTP...
+powershell -Command "dism /online /enable-feature /featurename:IIS-WebServerRole /all"
+powershell -Command "dism /online /enable-feature /featurename:IIS-WebServer /all"
+powershell -Command "dism /online /enable-feature /featurename:IIS-FTPServer /all"
 netsh advfirewall firewall add rule name="FTP" dir=in action=allow protocol=TCP localport=21
 
-echo Habilitando serviço de SSH...
-powershell -c "Add-WindowsCapability -Online -Name OpenSSH.Client"
-powershell -c "Add-WindowsCapability -Online -Name OpenSSH.Server"
-powershell -c "Start-Service sshd"
-powershell -c "Set-Service -Name sshd -StartupType 'Automatic'"
+echo Habilitando serviço SSH...
+powershell -Command "Add-WindowsCapability -Online -Name OpenSSH.Client"
+powershell -Command "Add-WindowsCapability -Online -Name OpenSSH.Server"
+powershell -Command "Start-Service sshd"
+powershell -Command "Set-Service -Name sshd -StartupType 'Automatic'"
 netsh advfirewall firewall add rule name="SSH" dir=in action=allow protocol=TCP localport=22
 
 echo Aplicando configurações de firewall...
