@@ -52,7 +52,7 @@ set "OS_version="
 echo Verificando privilégios de administrador...
 net session >nul 2>&1
 if !errorlevel! neq 0 (
-    echo Este script precisa ser executado com privilégios de administrador.
+    echo Este script precisa ser executado com privilégios de administrador. O script será encerrado.
     goto :end
 )
 
@@ -112,7 +112,8 @@ where winget >nul 2>&1 || (
     powershell -Command "Invoke-WebRequest 'https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' -OutFile winget.msixbundle; .\winget.msi"
     echo y | winget list >nul 2>&1
     if !errorlevel! neq 0 (
-        echo Falha ao tentar instalar o winget.
+        echo Falha ao tentar instalar o winget. O script será encerrado.
+        goto :end
     )
 )
 
