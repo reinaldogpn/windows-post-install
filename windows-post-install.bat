@@ -42,7 +42,6 @@ cd /d "%~dp0"
 
 set "APP_LIST=%~dp0apps.txt"
 set "RESOURCES_PATH=%~dp0resources"
-set "COUNT=0"
 set "OS_name="
 set "OS_version="
 
@@ -93,6 +92,11 @@ for /f "tokens=7" %%c in ('systeminfo ^| findstr /B /C:"Nome do sistema operacio
 )
 
 echo Sistema operacional identificado: %OS_name%
+
+if %OS_version% lt 10 (
+    echo Versão do Windows não suportada. O script será encerrado.
+    goto :end
+)
 
 echo.
 
@@ -173,18 +177,20 @@ if not exist %APP_LIST% (
     echo Lista de pacotes não encontrada: "%APP_LIST%"
     goto :end
 )
+
+set "count=0"
 for /f "usebackq delims=" %%a in (%APP_LIST%) do (
-    set "APP_NAME=%%a"
-    winget list !APP_NAME! > nul 2>&1
+    set "app_name=%%a"
+    winget list !app_name! > nul 2>&1
     if !errorlevel! equ 0 (
-        echo !APP_NAME! já está instalado...
+        echo !app_name! já está instalado...
     ) else (
-        echo Instalando !APP_NAME!...
-        winget install --id !APP_NAME! --accept-package-agreements --accept-source-agreements --disable-interactivity --silent
-        if !errorlevel! equ 0 set /a COUNT+=1
+        echo Instalando !app_name!...
+        winget install --id !app_name! --accept-package-agreements --accept-source-agreements --disable-interactivity --silent
+        if !errorlevel! equ 0 set /a count+=1
     )
 )
-echo %COUNT% pacotes foram instalados com sucesso.
+echo %count% pacotes foram instalados com sucesso.
 
 echo Instalando DriverBooster...
 %RESOURCES_PATH%\driver_booster_setup.exe /verysilent /supressmsgboxes
@@ -231,7 +237,7 @@ rem echo Ativando o recurso .NET Framework 3.5...
 rem powershell -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /all /featurename:NetFx3}"
 
 echo Configurando o git...
-copy "%RESOURCES_PATH%\.gitconfig" "%USERPROFILE%"
+copy "%RESOURCES_PATH%\gitconfig.txt" "%USERPROFILE%\.gitconfig"
 
 echo.
 
