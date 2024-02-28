@@ -1,6 +1,6 @@
 # windows-post-install.bat
 
-This batch script automatically installs the programs I use in my PC, runs updates and apply some personal preferences. Works fine on **Windows 10** & **Windows 11**.
+This batch script automatically installs the programs I use in my PC, runs updates and apply some personal preferences. Tested on **Windows 10** & **Windows 11**.
 
 ### Winget
 
@@ -13,9 +13,7 @@ For further information and troubleshooting, please visit [winget's Github repos
 1. Define the programs to be installed in file `apps.txt` by it's "winget ID". 
     - **Note:** In case you don't know the ID of an app, use `winget search <appname>` on terminal.
 
-2. Define the download url of programs to be downloaded in file `urls.txt`.
-
-3. Run `windows-post-install.bat` as admin.
+2. Run `windows-post-install.bat` as admin.
 
 #
 ### Customization Tools
@@ -42,11 +40,3 @@ For further information and troubleshooting, please visit [winget's Github repos
 - `9NCBCSZSJRSB` = *Spotify Client*
 - `9PF4KZ2VN4W9` = *TranslucentTB*
 - `9WZDNCRF0083` = *Facebook Messenger*
-
-#
-**Old tools URLs**:
-- https://github.com/thebookisclosed/ViVe/releases/latest/download/ViVeTool-v0.3.3.zip = *ViVeTool*
-- https://github.com/liballeg/allegro5/releases/download/5.2.8.0/allegro-x86_64-w64-mingw32-gcc-12.1.0-posix-seh-static-5.2.8.0.zip = *Allegro*
-- https://windows.php.net/downloads/releases/php-8.2.10-nts-Win32-vs16-x64.zip = *PHP*
-- https://sonik.dl.sourceforge.net/project/luabinaries/5.4.2/Tools%20Executables/lua-5.4.2_Win64_bin.zip = *Lua*
-- https://get.enterprisedb.com/postgresql/postgresql-16.0-1-windows-x64.exe = *PostgreSQL*
