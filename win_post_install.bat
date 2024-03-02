@@ -84,27 +84,26 @@ echo.
 
 :: Versão do Windows?
 
-for /f "tokens=*" %%a in ('systeminfo ^| findstr /B /C:"Nome do sistema operacional"') do (
-    set "count=0"
-    for %%b in (%%a) do (
-        set /a count+=1
-        if !count! geq 5 (
-            set "OS_name=!OS_name! %%b"
-        )
-    )
+for /f "skip=1 tokens=*" %%a in ('wmic os get Caption') do (
+    set "OS_name=%%a"
+    goto :next
 )
+:next
 
-set "OS_name=!OS_name:~1!"
-
-for /f "tokens=7" %%c in ('systeminfo ^| findstr /B /C:"Nome do sistema operacional"') do (
-    set "OS_version=%%c"
+for /f "tokens=3" %%b in ("%OS_name%") do (
+    set "OS_version=%%b"
+    goto :done
 )
+:done
 
 echo Sistema operacional identificado: %OS_name%
+echo Versão do Windows: %OS_version%
 
-if %OS_version% lt 10 (
-    echo Versão do Windows não suportada. O script será encerrado.
-    goto :end
+if "%OS_version%" neq "11" (
+    if "%OS_version%" neq "10" (
+        echo Versão do Windows não suportada. O script será encerrado.
+        goto :end
+    )
 )
 
 echo.
