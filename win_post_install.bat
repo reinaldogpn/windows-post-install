@@ -1,6 +1,6 @@
 :: -----------------------------------------------------------------------------------------------------
 :: * Descrição: Script batch para instalação automatizada de aplicações no Windows 10 e 11. 
-:: * Autor: Reinaldo G. P. Neto                                                             
+:: * Autor: reinaldogpn                                                         
 :: * Criado em: 28/04/2023                                                                  
 :: -----------------------------------------------------------------------------------------------------
 :: * Changelog:                                                                             
