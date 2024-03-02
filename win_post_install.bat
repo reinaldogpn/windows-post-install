@@ -118,7 +118,9 @@ where winget >nul 2>&1 || (
     echo Instalando o winget e suas dependências...
     powershell -Command "Add-AppxPackage -Path '%RES_DIR%\winget\Microsoft.UI.Xaml_7.2208.15002.0_X64_msix_en-US.msix'"
     powershell -Command "Add-AppxPackage -Path '%RES_DIR%\winget\Microsoft.VC.2015.UWP.DRP_14.0.30704.0_X64_msix_en-US.msix'"
-    powershell -Command "Invoke-WebRequest 'https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' -OutFile winget.msixbundle; .\winget.msi"
+    rem powershell -Command "Invoke-WebRequest 'https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' -OutFile winget.msixbundle; .\winget.msi"
+    powershell -Command "Invoke-WebRequest 'https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' -OutFile winget.msixbundle; Add-AppxPackage -Path .\winget.msixbundle"
+
     echo y | winget list >nul 2>&1
     if !errorlevel! neq 0 (
         echo Falha ao tentar instalar o winget. O script será encerrado.
@@ -153,17 +155,29 @@ echo.
 :: Configurações e serviços de rede
 
 echo Habilitando serviço FTP...
-powershell -Command "dism /online /enable-feature /featurename:IIS-WebServerRole /all"
-powershell -Command "dism /online /enable-feature /featurename:IIS-WebServer /all"
-powershell -Command "dism /online /enable-feature /featurename:IIS-FTPServer /all"
+sc query ftpsvc > nul 2>&1
+if %errorlevel% == 0 (
+    echo O serviço de FTP (ftpsvc) já está instalado.
+) else (
+    echo O serviço de FTP (ftpsvc) não está instalado, instalando agora...
+    powershell -Command "dism /online /enable-feature /featurename:IIS-WebServerRole /all"
+    powershell -Command "dism /online /enable-feature /featurename:IIS-WebServer /all"
+    powershell -Command "dism /online /enable-feature /featurename:IIS-FTPServer /all"
+)
 
 echo Habilitando serviço SSH...
-powershell -Command "Add-WindowsCapability -Online -Name OpenSSH.Client"
-powershell -Command "Add-WindowsCapability -Online -Name OpenSSH.Server"
-powershell -Command "Start-Service sshd"
-powershell -Command "Set-Service -Name sshd -StartupType 'Automatic'"
+sc query ssh-agent > nul 2>&1
+if %errorlevel% == 0 (
+    echo O serviço SSH (ssh-agent) já está instalado.
+) else (
+    echo O serviço SSH (ssh-agent) não está instalado, instalando agora...
+    powershell -Command "Add-WindowsCapability -Online -Name OpenSSH.Client"
+    powershell -Command "Add-WindowsCapability -Online -Name OpenSSH.Server"
+    powershell -Command "Start-Service sshd"
+    powershell -Command "Set-Service -Name sshd -StartupType 'Automatic'"
+)
 
-echo Criando regras de firewall...
+echo Criando regras de firewall para serviços e game servers...
 netsh advfirewall firewall add rule name="FTP" dir=in action=allow protocol=TCP localport=21
 netsh advfirewall firewall add rule name="SSH" dir=in action=allow protocol=TCP localport=22
 netsh advfirewall firewall add rule name="PZ Dedicated Server" dir=in action=allow protocol=UDP localport=16261-16262
@@ -248,9 +262,7 @@ rem echo Ativando o recurso .NET Framework 3.5...
 rem powershell -Command "if ((Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /all /featurename:NetFx3}"
 
 echo Configurando o git...
-
 rem copy "%RES_DIR%\gitconfig.txt" "%USERPROFILE%\.gitconfig"
-
 echo [user] >> %GIT_CONFIG_FILE%
 echo     name = %GIT_USER% >> %GIT_CONFIG_FILE%
 echo     email = %GIT_EMAIL% >> %GIT_CONFIG_FILE%
@@ -274,5 +286,5 @@ echo.
 echo Fim do script!
 endlocal
 pause
-color
+color 07
 exit /b
