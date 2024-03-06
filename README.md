@@ -1,6 +1,6 @@
 # win_post_install.bat
 
-This batch script automatically installs the programs I use in my PC, runs updates and apply some personal preferences. Tested on **Windows 10** & **Windows 11**.
+This batch script automatically installs the programs I use in my PC, runs updates and apply some personal preferences. Tested on **Windows 10**.
 
 ### Winget
 
