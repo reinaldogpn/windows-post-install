@@ -114,66 +114,69 @@ function exitScript {
     }
 }
 
-# ------------ TESTES ------------- #
+# ------------ FUNÇÃO DE TESTES ------------- #
 
-# Executando como admin?
+function checkRequisites {
 
-if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-    exitScript 1
-}
-
-# Conectado à internet?
-
-Write-Host "Verificando conexão com a internet..."
-
-Test-NetConnection -ErrorAction SilentlyContinue
-
-if (-not $?) {
-    exitScript 2
-}
-
-# O sistema é compatível?
-
-Write-Host "Verificando compatibilidade do sistema..."
-
-$OS_name = Get-CimInstance Win32_OperatingSystem | Select-Object -ExpandProperty Caption -ErrorAction SilentlyContinue
-
-if (-not $OS_name) {
-    Write-Warning -Message "Sistema operacional não encontrado."
-    exitScript 3
-} 
-else {
-    Write-Host "Sistema operacional identificado: $OS_name"
-    $OS_version = ($OS_name -split ' ')[2]
-
-    if ($OS_version -lt 10) {
+    # Executando como admin?
+    
+    if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+        exitScript 1
+    }
+    
+    # Conectado à internet?
+    
+    Write-Host "Verificando conexão com a internet..."
+    
+    Test-NetConnection -ErrorAction SilentlyContinue
+    
+    if (-not $?) {
+        exitScript 2
+    }
+    
+    # O sistema é compatível?
+    
+    Write-Host "Verificando compatibilidade do sistema..."
+    
+    $OS_name = Get-CimInstance Win32_OperatingSystem | Select-Object -ExpandProperty Caption -ErrorAction SilentlyContinue
+    
+    if (-not $OS_name) {
+        Write-Warning -Message "Sistema operacional não encontrado."
         exitScript 3
     } 
     else {
-        Write-Host "Versão do sistema operacional: $OS_version"
+        Write-Host "Sistema operacional identificado: $OS_name"
+        $OS_version = ($OS_name -split ' ')[2]
+    
+        if ($OS_version -lt 10) {
+            exitScript 3
+        } 
+        else {
+            Write-Host "Versão do sistema operacional: $OS_version"
+        }
     }
-}
-
-# Winget instalado?
-
-Write-Host "Verificando instalação do winget..."
-
-try {
-    $wingetVer = winget -v
-} 
-catch {
-    Write-Warning -Message "Winget não está instalado. Tentando instalar agora..."
-    Add-AppxPackage -Path $ResourcesPath\winget\Microsoft.UI.Xaml_7.2208.15002.0_X64_msix_en-US.msix -ErrorAction SilentlyContinue
-    Add-AppxPackage -Path $ResourcesPath\winget\Microsoft.VC.2015.UWP.DRP_14.0.30704.0_X64_msix_en-US.msix -ErrorAction SilentlyContinue
-    Add-AppxPackage -Path $ResourcesPath\winget\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle -ErrorAction SilentlyContinue
-}
-
-if ($wingetVer -cne 'v1.7.10582') {
-    Write-Host "Atualizando o Winget..."
-    Add-AppxPackage -Path $ResourcesPath\winget\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle -ForceApplicationShutdown -ErrorAction SilentlyContinue
-} 
-else {
-    Write-Host "Winget está devidamente instalado e atualizado."
+    
+    # Winget instalado?
+    
+    Write-Host "Verificando instalação do winget..."
+    
+    try {
+        $wingetVer = winget -v
+    } 
+    catch {
+        Write-Warning -Message "Winget não está instalado. Tentando instalar agora..."
+        Add-AppxPackage -Path $ResourcesPath\winget\Microsoft.UI.Xaml_7.2208.15002.0_X64_msix_en-US.msix -ErrorAction SilentlyContinue
+        Add-AppxPackage -Path $ResourcesPath\winget\Microsoft.VC.2015.UWP.DRP_14.0.30704.0_X64_msix_en-US.msix -ErrorAction SilentlyContinue
+        Add-AppxPackage -Path $ResourcesPath\winget\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle -ErrorAction SilentlyContinue
+    }
+    
+    if ($wingetVer -cne 'v1.7.10582') {
+        Write-Host "Atualizando o Winget..."
+        Add-AppxPackage -Path $ResourcesPath\winget\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle -ForceApplicationShutdown -ErrorAction SilentlyContinue
+    } 
+    else {
+        Write-Host "Winget está devidamente instalado e atualizado."
+    }
 }
 
 # ------------ FUNÇÕES ------------ #
@@ -364,6 +367,7 @@ function setSecondCheckpoint {
 # ------------ EXECUÇÃO ------------ #
 
 if ($option -ceq "-s" -or $option -ceq "--server") {
+    checkRequisites
     setFirstCheckpoint
     setNetworkOptions
     setPowerOptions
@@ -372,6 +376,7 @@ if ($option -ceq "-s" -or $option -ceq "--server") {
     exitScript 0
 }
 elseif ($option -ceq "-c" -or $option -ceq "--client") {
+    checkRequisites
     setFirstCheckpoint
     setCustomOptions
     setExtraOptions
@@ -380,6 +385,7 @@ elseif ($option -ceq "-c" -or $option -ceq "--client") {
     exitScript 0
 }
 elseif ($option -ceq "-f" -or $option -ceq "--full") {
+    checkRequisites
     setFirstCheckpoint
     setNetworkOptions
     setPowerOptions
