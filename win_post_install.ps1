@@ -203,14 +203,17 @@ function setFirstCheckpoint {
 # Configurações e serviços de rede
 
 function setNetworkOptions {
+
     # FTP service
 
     Write-Host "Habilitando serviço de FTP..."
-    $ftpService = Get-Service -Name "ftpsvc" -ErrorAction SilentlyContinue
+    Get-Service -Name "ftpsvc" -ErrorAction SilentlyContinue
 
-    if (-not $ftpService) {
+    if (-not $?) {
         Write-Host "O serviço de FTP (ftpsvc) não está habilitado, habilitando agora..."
-        Install-WindowsFeature Web-Ftp-Server
+        dism /online /enable-feature /featurename:IIS-WebServerRole /all
+        dism /online /enable-feature /featurename:IIS-WebServer /all
+        dism /online /enable-feature /featurename:IIS-FTPServer /all
     }
     else {
         Write-Host "O serviço de FTP (ftpsvc) já está habilitado."
@@ -222,12 +225,12 @@ function setNetworkOptions {
     # SSH service
 
     Write-Host "Habilitando serviço de SSH..."
-    $sshService = Get-Service -Name "sshd" -ErrorAction SilentlyContinue
+    Get-Service -Name "sshd" -ErrorAction SilentlyContinue
 
-    if (-not $sshService) {
+    if (-not $?) {
         Write-Host "O serviço SSH (sshd) não está habilitado, habilitando agora..."
-        Install-Module -Name OpenSSHUtils -Force -Confirm:$false
-        Install-SSHModule -Force
+        Add-WindowsCapability -Online -Name OpenSSH.Client
+        Add-WindowsCapability -Online -Name OpenSSH.Server
     }
     else {
         Write-Host "O serviço de SSH (sshd) já está habilitado."
