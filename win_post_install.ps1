@@ -70,12 +70,16 @@ $GitConfigFile = Join-Path -Path $UserProfile -ChildPath ".gitconfig"
 # ------------ FUNÇÃO DE SAÍDA ------------ #
 
 function exitScript {
-    param ([int]$err = 0)
+    param ([int]$err = -1)
 
     switch ($err) {
 
         0 {
-            Write-Host "Fim do script!"
+            Write-Host "Fim do script! `nO computador precisa ser reiniciado para que todas as alterações sejam aplicadas. Deseja reiniciar agora? (s = sim | n = não)" ; $i = Read-Host
+            if ($i -ceq "s") {
+                Write-Host "Reiniciando agora..."
+                Restart-Computer
+            }
             exit
         }
 
@@ -101,6 +105,10 @@ function exitScript {
 
         5 {
             Write-Error -Message "Parâmetro inválido! Para obter a lista de parâmetros use -? ou --help" -ErrorId $err -Category InvalidArgument
+            exit
+        }
+
+        default {
             exit
         }
     }
@@ -361,7 +369,7 @@ if ($option -ceq "-s" -or $option -ceq "--server") {
     setPowerOptions
     installServerPKGs
     setSecondCheckpoint
-    exitScript
+    exitScript 0
 }
 elseif ($option -ceq "-c" -or $option -ceq "--client") {
     setFirstCheckpoint
@@ -369,7 +377,7 @@ elseif ($option -ceq "-c" -or $option -ceq "--client") {
     setExtraOptions
     installClientPKGs
     setSecondCheckpoint
-    exitScript
+    exitScript 0
 }
 elseif ($option -ceq "-f" -or $option -ceq "--full") {
     setFirstCheckpoint
@@ -380,7 +388,7 @@ elseif ($option -ceq "-f" -or $option -ceq "--full") {
     installClientPKGs
     installServerPKGs
     setSecondCheckpoint
-    exitScript
+    exitScript 0
 }
 elseif ($option -ceq "-?" -or $option -ceq "--help") {
     Write-Warning "Parâmetros válidos: `n`n    -c | --client  =  Instala pacotes e configurações para máquinas do tipo CLIENTE `n    -s | --server  =  Instala pacotes e configurações para máquinas do tipo SERVER `n    -f | --full  =  Realiza uma instalação completa e aplica todas as configurações válidas `n    -? | --help  =  Exibe esta mensagem de ajuda"
