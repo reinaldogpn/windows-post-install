@@ -104,7 +104,7 @@ function exitScript {
         }
 
         5 {
-            Write-Error -Message "Parâmetro inválido! Para obter a lista de parâmetros use -? ou --help" -ErrorId $err -Category InvalidArgument
+            Write-Error -Message "Parâmetro inválido! Para obter a lista de parâmetros use .\win_post_install.ps1 --help" -ErrorId $err -Category InvalidArgument
             exit
         }
 
