@@ -13,7 +13,7 @@
 #>
 
 param (
-    [string]$option = "?" # ? = show options; -s | --server = install server tools only; -c | --client = install client tools only; -f | --full = full installation
+    [string]$option = "--help" # --help = show options | --server = install server tools only | --client = install client tools only | --full = full installation
 )
 
 # ------------ VARIÁVEIS ------------ #
@@ -366,7 +366,7 @@ function setSecondCheckpoint {
 
 # ------------ EXECUÇÃO ------------ #
 
-if ($option -ceq "-s" -or $option -ceq "--server") {
+if ($option -ceq "--server") {
     checkRequisites
     setFirstCheckpoint
     setNetworkOptions
@@ -375,7 +375,7 @@ if ($option -ceq "-s" -or $option -ceq "--server") {
     setSecondCheckpoint
     exitScript 0
 }
-elseif ($option -ceq "-c" -or $option -ceq "--client") {
+elseif ($option -ceq "--client") {
     checkRequisites
     setFirstCheckpoint
     setCustomOptions
@@ -384,7 +384,7 @@ elseif ($option -ceq "-c" -or $option -ceq "--client") {
     setSecondCheckpoint
     exitScript 0
 }
-elseif ($option -ceq "-f" -or $option -ceq "--full") {
+elseif ($option -ceq "--full") {
     checkRequisites
     setFirstCheckpoint
     setNetworkOptions
@@ -396,8 +396,8 @@ elseif ($option -ceq "-f" -or $option -ceq "--full") {
     setSecondCheckpoint
     exitScript 0
 }
-elseif ($option -ceq "-?" -or $option -ceq "--help") {
-    Write-Warning "Parâmetros válidos: `n`n    -c | --client  =  Instala pacotes e configurações para máquinas do tipo CLIENTE `n    -s | --server  =  Instala pacotes e configurações para máquinas do tipo SERVER `n    -f | --full  =  Realiza uma instalação completa e aplica todas as configurações válidas `n    -? | --help  =  Exibe esta mensagem de ajuda"
+elseif ($option -ceq "--help") {
+    Write-Warning "Parâmetros válidos: `n`n    --client  =  Instala pacotes e configurações para máquinas do tipo CLIENTE `n    --server  =  Instala pacotes e configurações para máquinas do tipo SERVER `n    --full  =  Realiza uma instalação completa e aplica todas as configurações válidas `n    --help  =  Exibe esta mensagem de ajuda"
     exitScript
 }
 else {
