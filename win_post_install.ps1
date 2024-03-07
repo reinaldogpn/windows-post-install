@@ -1,6 +1,6 @@
 ﻿<#
 .SYNOPSIS
-    Este é um script de customização do Windows.
+    Este é um script de customização do Windows (baseado no meu antigo script batch).
 
 .DESCRIPTION
     Este script automatiza a configuração e personalização do Windows. Compatível com Windows 10 ou superior.
@@ -10,6 +10,9 @@
 
 .DATE
     06/03/2024
+
+.VERSION
+    1.0
 #>
 
 param (
