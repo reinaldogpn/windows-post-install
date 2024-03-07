@@ -337,9 +337,9 @@ function setExtraOptions {
 
     Write-Host "Configurando o git..."
 
-    Write-Host "[user]" >> $GitConfigFile
-    Write-Host "    name = $GitUser >> $GitConfigFile"
-    Write-Host "    email = $GitEmail >> $GitConfigFile"
+    echo "[user]" >> $GitConfigFile
+    echo "    name = $GitUser >> $GitConfigFile"
+    echo "    email = $GitEmail >> $GitConfigFile"
 }
 
 # Ponto de restauração 2
