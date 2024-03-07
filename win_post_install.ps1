@@ -76,31 +76,26 @@ function exitScript {
 
         0 {
             Write-Host "Fim do script!"
-            pause
             exit
         }
 
         1 {
             Write-Error -Message "Este script deve ser executado como Administrador!" -ErrorId $err -Category PermissionDenied
-            pause
             exit
         }
 
         2 {
             Write-Error -Message "O computador precisa estar conectado à internet para executar este script!" -ErrorId $err -Category ConnectionError
-            pause
             exit
         }
 
         3 {
             Write-Error -Message "Versão do windows não suportada!" -ErrorId $err -Category DeviceError
-            pause
             exit
         }
 
         4 {
             Write-Error -Message "Script encerrado pelo usuário!" -ErrorId $err -Category ResourceUnavailable
-            pause
             exit
         }
 
@@ -121,7 +116,7 @@ if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdenti
 
 # Conectado à internet?
 
-Write-Host Verificando conexão com a internet...
+Write-Host "Verificando conexão com a internet..."
 
 Test-NetConnection -ErrorAction SilentlyContinue
 
@@ -131,7 +126,7 @@ if (-not $?) {
 
 # O sistema é compatível?
 
-Write-Host Verificando compatibilidade do sistema...
+Write-Host "Verificando compatibilidade do sistema..."
 
 $OS_name = Get-CimInstance Win32_OperatingSystem | Select-Object -ExpandProperty Caption -ErrorAction SilentlyContinue
 
@@ -153,7 +148,7 @@ else {
 
 # Winget instalado?
 
-Write-Host Verificando instalação do winget...
+Write-Host "Verificando instalação do winget..."
 
 try {
     $wingetVer = winget -v
@@ -166,11 +161,11 @@ catch {
 }
 
 if ($wingetVer -cne 'v1.7.10582') {
-    Write-Host Atualizando o Winget...
+    Write-Host "Atualizando o Winget..."
     Add-AppxPackage -Path $ResourcesPath\winget\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle -ForceApplicationShutdown -ErrorAction SilentlyContinue
 } 
 else {
-    Write-Host Winget está devidamente instalado e atualizado.
+    Write-Host "Winget está devidamente instalado e atualizado."
 }
 
 # ------------ FUNÇÕES ------------ #
@@ -178,7 +173,7 @@ else {
 # Ponto de restauração 1
 
 function setFirstCheckpoint {
-    Write-Host Criando ponto de restauração do sistema...
+    Write-Host "Criando ponto de restauração do sistema..."
     Enable-ComputerRestore -Drive 'C:\' -ErrorAction SilentlyContinue
     REG ADD "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /t REG_DWORD /d 1 /f
     Checkpoint-Computer -Description 'Pré Execução do Script Windows Post Install' -ErrorAction SilentlyContinue
@@ -190,7 +185,7 @@ function setFirstCheckpoint {
         }
     }
     else {
-        Write-Host Ponto de restauração do sistema criado.
+        Write-Host "Ponto de restauração do sistema criado."
     }
 }
 
@@ -199,15 +194,15 @@ function setFirstCheckpoint {
 function setNetworkOptions {
     # FTP service
 
-    Write-Host Habilitando serviço de FTP...
+    Write-Host "Habilitando serviço de FTP..."
     $ftpService = Get-Service -Name "ftpsvc" -ErrorAction SilentlyContinue
 
     if (-not $ftpService) {
-        Write-Host O serviço de FTP (ftpsvc) não está habilitado, habilitando agora...
+        Write-Host "O serviço de FTP (ftpsvc) não está habilitado, habilitando agora..."
         Install-WindowsFeature Web-Ftp-Server
     }
     else {
-        Write-Host O serviço de FTP (ftpsvc) já está habilitado.
+        Write-Host "O serviço de FTP (ftpsvc) já está habilitado."
     }
 
     Start-Service -Name "ftpsvc"
@@ -215,16 +210,16 @@ function setNetworkOptions {
 
     # SSH service
 
-    Write-Host Habilitando serviço de SSH...
+    Write-Host "Habilitando serviço de SSH..."
     $sshService = Get-Service -Name "sshd" -ErrorAction SilentlyContinue
 
     if (-not $sshService) {
-        Write-Host O serviço SSH (sshd) não está habilitado, habilitando agora...
+        Write-Host "O serviço SSH (sshd) não está habilitado, habilitando agora..."
         Install-Module -Name OpenSSHUtils -Force -Confirm:$false
         Install-SSHModule -Force
     }
     else {
-        Write-Host O serviço de SSH (sshd) já está habilitado.
+        Write-Host "O serviço de SSH (sshd) já está habilitado."
     }
 
     Start-Service -Name "sshd"
@@ -232,7 +227,7 @@ function setNetworkOptions {
 
     # Firewall rules
 
-    Write-Host Criando regras de firewall para serviços e game servers...
+    Write-Host "Criando regras de firewall para serviços e game servers..."
 
     netsh advfirewall firewall add rule name="FTP" dir=in action=allow protocol=TCP localport=21
     netsh advfirewall firewall add rule name="SSH" dir=in action=allow protocol=TCP localport=22
@@ -244,14 +239,14 @@ function setNetworkOptions {
     netsh advfirewall firewall add rule name="DST Dedicated Server" dir=out action=allow protocol=UDP localport=10889
     ipconfig /all
 
-    Write-Host Configurações de rede aplicadas.
+    Write-Host "Configurações de rede aplicadas."
 }
 
 # Instalação de pacotes (client)
 
 function installClientPKGs {
-    Write-Host Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável "CLIENT_PKGS"
-    Write-Host Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal.
+    Write-Host 'Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável "CLIENT_PKGS"'
+    Write-Host 'Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal.'
 
     $count = 0
 
@@ -259,26 +254,26 @@ function installClientPKGs {
         winget list $pkg > null
 
         if (-not $?) {
-            Write-Host Instalando $pkg ...
+            Write-Host "Instalando $pkg ..."
             winget install $pkg --accept-package-agreements --accept-source-agreements --disable-interactivity --silent
             if ($?) { $count++ }
         }
         else {
-            Write-Host $pkg já está instalado.
+            Write-Host "$pkg já está instalado."
         }
     }
 
-    Write-Host $count de $CLIENT_PKGS.Count pacotes foram instalados com sucesso.
+    Write-Host "$count de $CLIENT_PKGS.Count pacotes foram instalados com sucesso."
 
-    Write-Host Instalando DriverBooster...
+    Write-Host "Instalando DriverBooster..."
     .\$ResourcesPath\driver_booster_setup.exe /verysilent /supressmsgboxes
 }
 
 # Instalação de pacotes (server)
 
 function installServerPKGs {
-    Write-Host Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável "SERVER_PKGS"
-    Write-Host Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal.
+    Write-Host 'Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável "SERVER_PKGS"'
+    Write-Host 'Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal.'
 
     $count = 0
 
@@ -286,25 +281,25 @@ function installServerPKGs {
         winget list $pkg > null
 
         if (-not $?) {
-            Write-Host Instalando $pkg ...
+            Write-Host "Instalando $pkg ..."
             winget install $pkg --accept-package-agreements --accept-source-agreements --disable-interactivity --silent
             if ($?) { $count++ }
         }
         else {
-            Write-Host $pkg já está instalado.
+            Write-Host "$pkg já está instalado."
         }
     }
 
-    Write-Host $count de $SERVER_PKGS.Count pacotes foram instalados com sucesso.
+    Write-Host "$count de $SERVER_PKGS.Count pacotes foram instalados com sucesso."
 
-    Write-Host Instalando DriverBooster...
+    Write-Host "Instalando DriverBooster..."
     .\$ResourcesPath\driver_booster_setup.exe /verysilent /supressmsgboxes
 }
 
 # Personalização do sistema
 
 function setCustomOptions {
-    Write-Host Aplicando personalizações do sistema...
+    Write-Host "Aplicando personalizações do sistema..."
 
     REG ADD "HKCU\Software\Microsoft\Windows\CurrentVersion\Feeds" /v "ShellFeedsTaskbarViewMode" /t REG_DWORD /d 2 /f
     REG ADD "HKCU\Software\Microsoft\Windows\CurrentVersion\Search" /v "SearchBoxTaskbarMode" /t REG_DWORD /d 1 /f
@@ -316,7 +311,7 @@ function setCustomOptions {
     REG ADD "HKEY_CURRENT_USER\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "$UserProfile\wallpaper.png" /f
     rundll32.exe user32.dll, UpdatePerUserSystemParameters
 
-    Write-Host Personalizações aplicadas. O Windows Explorer será reiniciado.
+    Write-Host "Personalizações aplicadas. O Windows Explorer será reiniciado."
     pause
 
     taskkill /F /IM explorer.exe ; Start-Process explorer.exe
@@ -325,7 +320,7 @@ function setCustomOptions {
 # Configurações de energia
 
 function setPowerOptions {
-    Write-Host Alterando configurações de energia do Windows...
+    Write-Host "Alterando configurações de energia do Windows..."
 
     powercfg /change standby-timeout-ac 0
     powercfg /change standby-timeout-dc 0
@@ -334,13 +329,13 @@ function setPowerOptions {
 # Outros recursos
 
 function setExtraOptions {
-    Write-Host Ativando o recurso DirectPlay...
+    Write-Host "Ativando o recurso DirectPlay..."
     if ((Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction SilentlyContinue).State -ne 'Enabled') { dism /online /enable-feature /all /featurename:DirectPlay }
 
-    Write-Host Ativando o recurso .NET Framework 3.5...
+    Write-Host "Ativando o recurso .NET Framework 3.5..."
     if ((Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State -ne 'Enabled') { dism /online /enable-feature /all /featurename:NetFx3 }
 
-    Write-Host Configurando o git...
+    Write-Host "Configurando o git..."
 
     Write-Host "[user]" >> $GitConfigFile
     Write-Host "    name = $GitUser >> $GitConfigFile"
@@ -350,10 +345,10 @@ function setExtraOptions {
 # Ponto de restauração 2
 
 function setSecondCheckpoint {
-    Write-Host Criando ponto de restauração do sistema...
+    Write-Host "Criando ponto de restauração do sistema..."
     Checkpoint-Computer -Description 'Pós Execução do Script Windows Post Install' -ErrorAction SilentlyContinue
 
-    if (-not $?) { Write-Host Falha ao criar ponto de restauração do sistema. } else { Write-Host Ponto de restauração do sistema criado. }
+    if (-not $?) { Write-Host "Falha ao criar ponto de restauração do sistema." } else { Write-Host "Ponto de restauração do sistema criado." }
 
     REG DELETE "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /f
 }
