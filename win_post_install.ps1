@@ -80,31 +80,26 @@ function exitScript
 
         0 {
             Write-Host Fim do script!
-            pause
             exit
         }
 
         1 {
             Write-Error -Message "Este script deve ser executado como Administrador!" -ErrorId $err -Category PermissionDenied
-            pause
             exit
         }
 
         2 {
             Write-Error -Message "O computador precisa estar conectado à internet para executar este script!" -ErrorId $err -Category ConnectionError
-            pause
             exit
         }
 
         3 {
             Write-Error -Message "Versão do windows não suportada!" -ErrorId $err -Category DeviceError
-            pause
             exit
         }
 
         4 {
             Write-Error -Message "Script encerrado pelo usuário!" -ErrorId $err -Category ResourceUnavailable
-            pause
             exit
         }
 
