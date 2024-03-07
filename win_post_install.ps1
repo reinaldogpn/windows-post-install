@@ -1,6 +1,6 @@
-﻿<#
+<#
 .SYNOPSIS
-    Este é um script de customização do Windows (baseado no meu antigo script batch).
+    Este é um script de customização do Windows.
 
 .DESCRIPTION
     Este script automatiza a configuração e personalização do Windows. Compatível com Windows 10 ou superior.
@@ -10,9 +10,6 @@
 
 .DATE
     06/03/2024
-
-.VERSION
-    1.0
 #>
 
 param (
@@ -21,9 +18,9 @@ param (
 
 # ------------ VARIÁVEIS ------------ #
 
-$CLIENT_PKGS =  "9NKSQGP7F2NH",                   # Whatsapp Desktop
-                "9NCBCSZSJRSB",                   # Spotify Client
-                "9PF4KZ2VN4W9",                   # TranslucentTB
+$CLIENT_PKGS  = "9NKSQGP7F2NH", # Whatsapp Desktop
+                "9NCBCSZSJRSB", # Spotify Client
+                "9PF4KZ2VN4W9", # TranslucentTB
                 "Adobe.Acrobat.Reader.64-bit",
                 "AnyDeskSoftwareGmbH.AnyDesk",
                 "CPUID.CPU-Z",
@@ -54,7 +51,7 @@ $CLIENT_PKGS =  "9NKSQGP7F2NH",                   # Whatsapp Desktop
                 "Valve.Steam",
                 "VideoLAN.VLC"
 
-$SERVER_PKGS =  "AnyDeskSoftwareGmbH.AnyDesk",
+$SERVER_PKGS  = "AnyDeskSoftwareGmbH.AnyDesk",
                 "RARLab.WinRAR",
                 "TeamViewer.TeamViewer"
 
@@ -62,44 +59,48 @@ $UserProfile = $env:USERPROFILE
 $ResourcesPath = Join-Path -Path $PSScriptRoot -ChildPath "resources"
 
 $OS_name = ""
-$OS_version= ""
+$OS_version = ""
 
 # GitHub info for .gitconfig file:
 
-$GIT_USER = "reinaldogpn"
-$GIT_EMAIL = "reinaldogpn@outlook.com"
-$GIT_CONFIG_FILE = "$UserProfile\.gitconfig"
+$GitUser = "reinaldogpn"
+$GitEmail = "reinaldogpn@outlook.com"
+$GitConfigFile = Join-Path -Path $UserProfile -ChildPath ".gitconfig"
 
 # ------------ FUNÇÃO DE SAÍDA ------------ #
 
-function exitScript 
-{
+function exitScript {
     param ([int]$err = 0)
 
     switch ($err) {
 
         0 {
-            Write-Host Fim do script!
+            Write-Host "Fim do script!"
+            pause
             exit
         }
 
         1 {
             Write-Error -Message "Este script deve ser executado como Administrador!" -ErrorId $err -Category PermissionDenied
+            pause
             exit
         }
 
         2 {
             Write-Error -Message "O computador precisa estar conectado à internet para executar este script!" -ErrorId $err -Category ConnectionError
+            pause
             exit
         }
 
         3 {
             Write-Error -Message "Versão do windows não suportada!" -ErrorId $err -Category DeviceError
+            pause
             exit
         }
 
         4 {
             Write-Error -Message "Script encerrado pelo usuário!" -ErrorId $err -Category ResourceUnavailable
+            pause
             exit
         }
 
@@ -134,23 +135,19 @@ Write-Host Verificando compatibilidade do sistema...
 
 $OS_name = Get-CimInstance Win32_OperatingSystem | Select-Object -ExpandProperty Caption -ErrorAction SilentlyContinue
 
-if (-not $OS_name) 
-{
+if (-not $OS_name) {
     Write-Warning -Message "Sistema operacional não encontrado."
     exitScript 3
 } 
-else 
-{
-    Write-Host Sistema operacional identificado: $OS_name
+else {
+    Write-Host "Sistema operacional identificado: $OS_name"
     $OS_version = ($OS_name -split ' ')[2]
 
-    if ($OS_version -lt 10) 
-    {
+    if ($OS_version -lt 10) {
         exitScript 3
     } 
-    else 
-    {
-        Write-Host Versão do sistema operacional: $OS_version
+    else {
+        Write-Host "Versão do sistema operacional: $OS_version"
     }
 }
 
@@ -168,13 +165,11 @@ catch {
     Add-AppxPackage -Path $ResourcesPath\winget\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle -ErrorAction SilentlyContinue
 }
 
-if ($wingetVer -cne 'v1.7.10582')
-{
+if ($wingetVer -cne 'v1.7.10582') {
     Write-Host Atualizando o Winget...
     Add-AppxPackage -Path $ResourcesPath\winget\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle -ForceApplicationShutdown -ErrorAction SilentlyContinue
 } 
-else 
-{
+else {
     Write-Host Winget está devidamente instalado e atualizado.
 }
 
@@ -182,42 +177,36 @@ else
 
 # Ponto de restauração 1
 
-function setFirstCheckpoint
-{
+function setFirstCheckpoint {
     Write-Host Criando ponto de restauração do sistema...
     Enable-ComputerRestore -Drive 'C:\' -ErrorAction SilentlyContinue
     REG ADD "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /t REG_DWORD /d 1 /f
     Checkpoint-Computer -Description 'Pré Execução do Script Windows Post Install' -ErrorAction SilentlyContinue
     
-    if (-not $?)
-    {
-        Write-Warning -Message "Falha ao criar ponto de restauração do sistema. Deseja continuar mesmo assim? (s = sim | n = não)" ; $input = Read-Host
-        if ($input -ceq "n") {
+    if (-not $?) {
+        Write-Warning "Falha ao criar ponto de restauração do sistema. Deseja continuar mesmo assim? (s = sim | n = não)" ; $i = Read-Host
+        if ($i -ceq "n") {
             exitScript 4
         }
     }
-    else
-    {
+    else {
         Write-Host Ponto de restauração do sistema criado.
     }
 }
 
 # Configurações e serviços de rede
 
-function setNetworkOptions 
-{
+function setNetworkOptions {
     # FTP service
 
     Write-Host Habilitando serviço de FTP...
     $ftpService = Get-Service -Name "ftpsvc" -ErrorAction SilentlyContinue
 
-    if (-not $ftpService) 
-    {
-        echo O serviço de FTP (ftpsvc) não está habilitado, habilitando agora...
+    if (-not $ftpService) {
+        Write-Host O serviço de FTP (ftpsvc) não está habilitado, habilitando agora...
         Install-WindowsFeature Web-Ftp-Server
     }
-    else
-    {
+    else {
         Write-Host O serviço de FTP (ftpsvc) já está habilitado.
     }
 
@@ -229,14 +218,12 @@ function setNetworkOptions
     Write-Host Habilitando serviço de SSH...
     $sshService = Get-Service -Name "sshd" -ErrorAction SilentlyContinue
 
-    if (-not $sshService) 
-    {
+    if (-not $sshService) {
         Write-Host O serviço SSH (sshd) não está habilitado, habilitando agora...
         Install-Module -Name OpenSSHUtils -Force -Confirm:$false
         Install-SSHModule -Force
     }
-    else
-    {
+    else {
         Write-Host O serviço de SSH (sshd) já está habilitado.
     }
 
@@ -262,25 +249,21 @@ function setNetworkOptions
 
 # Instalação de pacotes (client)
 
-function installClientPKGs
-{
+function installClientPKGs {
     Write-Host Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável "CLIENT_PKGS"
     Write-Host Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal.
 
     $count = 0
 
-    foreach ($pkg in $CLIENT_PKGS) 
-    {
+    foreach ($pkg in $CLIENT_PKGS) {
         winget list $pkg > null
 
-        if (-not $?)
-        {
+        if (-not $?) {
             Write-Host Instalando $pkg ...
             winget install $pkg --accept-package-agreements --accept-source-agreements --disable-interactivity --silent
             if ($?) { $count++ }
         }
-        else
-        {
+        else {
             Write-Host $pkg já está instalado.
         }
     }
@@ -293,25 +276,21 @@ function installClientPKGs
 
 # Instalação de pacotes (server)
 
-function installServerPKGs
-{
+function installServerPKGs {
     Write-Host Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável "SERVER_PKGS"
     Write-Host Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal.
 
     $count = 0
 
-    foreach ($pkg in $SERVER_PKGS) 
-    {
+    foreach ($pkg in $SERVER_PKGS) {
         winget list $pkg > null
 
-        if (-not $?)
-        {
+        if (-not $?) {
             Write-Host Instalando $pkg ...
             winget install $pkg --accept-package-agreements --accept-source-agreements --disable-interactivity --silent
             if ($?) { $count++ }
         }
-        else
-        {
+        else {
             Write-Host $pkg já está instalado.
         }
     }
@@ -324,8 +303,7 @@ function installServerPKGs
 
 # Personalização do sistema
 
-function setCustomOptions
-{
+function setCustomOptions {
     Write-Host Aplicando personalizações do sistema...
 
     REG ADD "HKCU\Software\Microsoft\Windows\CurrentVersion\Feeds" /v "ShellFeedsTaskbarViewMode" /t REG_DWORD /d 2 /f
@@ -334,20 +312,19 @@ function setCustomOptions
     REG ADD "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v "ColorPrevalence" /t REG_DWORD /d 1 /f
     REG ADD "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v "SystemUsesLightTheme" /t REG_DWORD /d 0 /f
     REG ADD "HKCU\Control Panel\Desktop" /v "JPEGImportQuality" /t REG_DWORD /d 100 /f
-    copy $ResourcesPath\wallpaper.png $UserProfile\wallpaper.png
+    Copy-Item $ResourcesPath\wallpaper.png $UserProfile\wallpaper.png
     REG ADD "HKEY_CURRENT_USER\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "$UserProfile\wallpaper.png" /f
-    rundll32.exe user32.dll,UpdatePerUserSystemParameters
+    rundll32.exe user32.dll, UpdatePerUserSystemParameters
 
     Write-Host Personalizações aplicadas. O Windows Explorer será reiniciado.
     pause
 
-    taskkill /F /IM explorer.exe ; start explorer.exe
+    taskkill /F /IM explorer.exe ; Start-Process explorer.exe
 }
 
 # Configurações de energia
 
-function setPowerOptions
-{
+function setPowerOptions {
     Write-Host Alterando configurações de energia do Windows...
 
     powercfg /change standby-timeout-ac 0
@@ -356,25 +333,23 @@ function setPowerOptions
 
 # Outros recursos
 
-function setExtraOptions
-{
+function setExtraOptions {
     Write-Host Ativando o recurso DirectPlay...
-    if ((Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /all /featurename:DirectPlay}
+    if ((Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction SilentlyContinue).State -ne 'Enabled') { dism /online /enable-feature /all /featurename:DirectPlay }
 
     Write-Host Ativando o recurso .NET Framework 3.5...
-    if ((Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State -ne 'Enabled') {dism /online /enable-feature /all /featurename:NetFx3}
+    if ((Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State -ne 'Enabled') { dism /online /enable-feature /all /featurename:NetFx3 }
 
     Write-Host Configurando o git...
 
-    Write-Host [user] >> $GIT_CONFIG_FILE
-    Write-Host     name = $GIT_USER >> $GIT_CONFIG_FILE
-    Write-Host     email = $GIT_EMAIL >> $GIT_CONFIG_FILE
+    Write-Host "[user]" >> $GitConfigFile
+    Write-Host "    name = $GitUser >> $GitConfigFile"
+    Write-Host "    email = $GitEmail >> $GitConfigFile"
 }
 
 # Ponto de restauração 2
 
-function setSecondCheckpoint
-{
+function setSecondCheckpoint {
     Write-Host Criando ponto de restauração do sistema...
     Checkpoint-Computer -Description 'Pós Execução do Script Windows Post Install' -ErrorAction SilentlyContinue
 
@@ -385,8 +360,7 @@ function setSecondCheckpoint
 
 # ------------ EXECUÇÃO ------------ #
 
-if ($option -ceq "-s" -or $option -ceq "--server")
-{
+if ($option -ceq "-s" -or $option -ceq "--server") {
     setFirstCheckpoint
     setNetworkOptions
     setPowerOptions
@@ -394,8 +368,7 @@ if ($option -ceq "-s" -or $option -ceq "--server")
     setSecondCheckpoint
     exitScript
 }
-elseif ($option -ceq "-c" -or $option -ceq "--client")
-{
+elseif ($option -ceq "-c" -or $option -ceq "--client") {
     setFirstCheckpoint
     setCustomOptions
     setExtraOptions
@@ -403,8 +376,7 @@ elseif ($option -ceq "-c" -or $option -ceq "--client")
     setSecondCheckpoint
     exitScript
 }
-elseif ($option -ceq "-f" -or $option -ceq "--full")
-{
+elseif ($option -ceq "-f" -or $option -ceq "--full") {
     setFirstCheckpoint
     setNetworkOptions
     setPowerOptions
@@ -415,12 +387,10 @@ elseif ($option -ceq "-f" -or $option -ceq "--full")
     setSecondCheckpoint
     exitScript
 }
-elseif ($option -ceq "-?" -or $option -ceq "--help")
-{
-    Write-Warning -Message "Parâmetros válidos: `n`n    -c | --client  =  Instala pacotes e configurações para máquinas do tipo CLIENTE `n    -s | --server  =  Instala pacotes e configurações para máquinas do tipo SERVER `n    -f | --full  =  Realiza uma instalação completa e aplica todas as configurações válidas `n    -? | --help  =  Exibe esta mensagem de ajuda"
+elseif ($option -ceq "-?" -or $option -ceq "--help") {
+    Write-Warning "Parâmetros válidos: `n`n    -c | --client  =  Instala pacotes e configurações para máquinas do tipo CLIENTE `n    -s | --server  =  Instala pacotes e configurações para máquinas do tipo SERVER `n    -f | --full  =  Realiza uma instalação completa e aplica todas as configurações válidas `n    -? | --help  =  Exibe esta mensagem de ajuda"
     exitScript
 }
-else
-{
+else {
     exitScript 5
 }
