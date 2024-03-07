@@ -76,7 +76,7 @@ function exitScript
     switch ($err) {
 
         0 {
-            Write-Host "Fim do script!"
+            Write-Host Fim do script!
             pause
             exit
         }
@@ -143,7 +143,7 @@ if (-not $OS_name)
 } 
 else 
 {
-    Write-Host "Sistema operacional identificado: $OS_name"
+    Write-Host Sistema operacional identificado: $OS_name
     $OS_version = ($OS_name -split ' ')[2]
 
     if ($OS_version -lt 10) 
@@ -152,7 +152,7 @@ else
     } 
     else 
     {
-        Write-Host "Versão do sistema operacional: $OS_version"
+        Write-Host Versão do sistema operacional: $OS_version
     }
 }
 
@@ -193,7 +193,7 @@ function setFirstCheckpoint
     
     if (-not $?)
     {
-        Write-Warning "Falha ao criar ponto de restauração do sistema. Deseja continuar mesmo assim? (s = sim | n = não)" ; $input = Read-Host
+        Write-Warning -Message "Falha ao criar ponto de restauração do sistema. Deseja continuar mesmo assim? (s = sim | n = não)" ; $input = Read-Host
         if ($input -ceq "n") {
             exitScript 4
         }
@@ -419,7 +419,7 @@ elseif ($option -ceq "-f" -or $option -ceq "--full")
 }
 elseif ($option -ceq "-?" -or $option -ceq "--help")
 {
-    Write-Warning "Parâmetros válidos: `n`n    -c | --client  =  Instala pacotes e configurações para máquinas do tipo CLIENTE `n    -s | --server  =  Instala pacotes e configurações para máquinas do tipo SERVER `n    -f | --full  =  Realiza uma instalação completa e aplica todas as configurações válidas `n    -? | --help  =  Exibe esta mensagem de ajuda"
+    Write-Warning -Message "Parâmetros válidos: `n`n    -c | --client  =  Instala pacotes e configurações para máquinas do tipo CLIENTE `n    -s | --server  =  Instala pacotes e configurações para máquinas do tipo SERVER `n    -f | --full  =  Realiza uma instalação completa e aplica todas as configurações válidas `n    -? | --help  =  Exibe esta mensagem de ajuda"
     exitScript
 }
 else
