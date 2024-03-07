@@ -128,7 +128,7 @@ function checkRequisites {
     
     Write-Host "Verificando conexão com a internet..."
     
-    Test-NetConnection -ErrorAction SilentlyContinue
+    Test-NetConnection -ErrorAction SilentlyContinue > $null 2>&1
     
     if (-not $?) {
         exitScript 2
@@ -177,6 +177,8 @@ function checkRequisites {
     else {
         Write-Host "Winget está devidamente instalado e atualizado."
     }
+
+    echo Y | winget list > $null 2>&1
 }
 
 # ------------ FUNÇÕES ------------ #
@@ -219,8 +221,15 @@ function setNetworkOptions {
         Write-Host "O serviço de FTP (ftpsvc) já está habilitado."
     }
 
-    Start-Service -Name "ftpsvc"
-    Set-Service -Name "ftpsvc" -StartupType Automatic
+    try {
+        Start-Service -Name "ftpsvc" -ErrorAction SilentlyContinue; Set-Service -Name "ftpsvc" -StartupType Automatic -ErrorAction SilentlyContinue
+    }
+    catch {
+        $action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -Command 'Start-Service -Name ftpsvc ; Set-Service -Name ftpsvc -StartupType Automatic'"
+        $trigger = New-ScheduledTaskTrigger -AtStartup
+        Register-ScheduledTask -Action $action -Trigger $trigger -TaskName 'HabilitarFTP' -RunLevel Highest
+        Write-Host "O serviço de FTP foi instalado e será habilitado após a próxima vez em que o sistema for reiniciado."
+    }
 
     # SSH service
 
@@ -236,8 +245,15 @@ function setNetworkOptions {
         Write-Host "O serviço de SSH (sshd) já está habilitado."
     }
 
-    Start-Service -Name "sshd"
-    Set-Service -Name "sshd" -StartupType Automatic
+    try {
+        Start-Service -Name "sshd" -ErrorAction SilentlyContinue ; Set-Service -Name "sshd" -StartupType Automatic -ErrorAction SilentlyContinue
+    }
+    catch {
+        $action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -Command 'Start-Service -Name "sshd" ; Set-Service -Name "sshd" -StartupType Automatic'"
+        $trigger = New-ScheduledTaskTrigger -AtStartup
+        Register-ScheduledTask -Action $action -Trigger $trigger -TaskName 'HabilitarSSH' -RunLevel Highest
+        Write-Host "O serviço de SSH foi instalado e será habilitado após a próxima vez em que o sistema for reiniciado."
+    }
 
     # Firewall rules
 
@@ -265,7 +281,7 @@ function installClientPKGs {
     $count = 0
 
     foreach ($pkg in $CLIENT_PKGS) {
-        winget list $pkg > null
+        winget list $pkg > $null 2>&1
 
         if (-not $?) {
             Write-Host "Instalando $pkg ..."
@@ -280,7 +296,7 @@ function installClientPKGs {
     Write-Host "$count de $CLIENT_PKGS.Count pacotes foram instalados com sucesso."
 
     Write-Host "Instalando DriverBooster..."
-    .\$ResourcesPath\driver_booster_setup.exe /verysilent /supressmsgboxes
+    Start-Process $ResourcesPath\driver_booster_setup.exe /verysilent /supressmsgboxes > $null 2>&1
 }
 
 # Instalação de pacotes (server)
@@ -292,7 +308,7 @@ function installServerPKGs {
     $count = 0
 
     foreach ($pkg in $SERVER_PKGS) {
-        winget list $pkg > null
+        winget list $pkg > $null 2>&1
 
         if (-not $?) {
             Write-Host "Instalando $pkg ..."
@@ -307,7 +323,7 @@ function installServerPKGs {
     Write-Host "$count de $SERVER_PKGS.Count pacotes foram instalados com sucesso."
 
     Write-Host "Instalando DriverBooster..."
-    .\$ResourcesPath\driver_booster_setup.exe /verysilent /supressmsgboxes
+    Start-Process $ResourcesPath\driver_booster_setup.exe /verysilent /supressmsgboxes > $null 2>&1
 }
 
 # Personalização do sistema
