@@ -168,8 +168,8 @@ function checkRequisites {
     } 
     catch {
         Write-Warning -Message "Winget não está instalado. Tentando instalar agora..."
-        Invoke-WebRequest 'https://download.microsoft.com/download/4/7/c/47c6134b-d61f-4024-83bd-b9c9ea951c25/Microsoft.VCLibs.x64.14.00.Desktop.appx' -OutFile Microsoft_VCLibs.appx -ErrorAction SilentlyContinue ; Add-AppxPackage -Path .\Microsoft_VCLibs.msixbundle -ErrorAction SilentlyContinue
-        Invoke-WebRequest 'https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx' -OutFile Microsoft_UI_Xaml.appx -ErrorAction SilentlyContinue ; Add-AppxPackage -Path .\Microsoft_UI_Xaml.msixbundle -ErrorAction SilentlyContinue
+        Invoke-WebRequest 'https://download.microsoft.com/download/4/7/c/47c6134b-d61f-4024-83bd-b9c9ea951c25/Microsoft.VCLibs.x64.14.00.Desktop.appx' -OutFile Microsoft_VCLibs.appx -ErrorAction SilentlyContinue ; Add-AppxPackage -Path .\Microsoft_VCLibs.appx -ErrorAction SilentlyContinue
+        Invoke-WebRequest 'https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx' -OutFile Microsoft_UI_Xaml.appx -ErrorAction SilentlyContinue ; Add-AppxPackage -Path .\Microsoft_UI_Xaml.appx -ErrorAction SilentlyContinue
         Invoke-WebRequest 'https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' -OutFile Microsoft_Winget.msixbundle -ErrorAction SilentlyContinue ; Add-AppxPackage -Path .\Microsoft_Winget.msixbundle -ErrorAction SilentlyContinue
     }
     
