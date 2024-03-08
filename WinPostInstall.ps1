@@ -398,6 +398,6 @@ switch ($option) {
     }
     
     default {
-        Show-Error "Parâmetro inválido! Para obter a lista de parâmetros use .\win_post_install.ps1 --help"
+        Show-Error "Parâmetro inválido! Para obter a lista de parâmetros use .\WinPostInstall.ps1 --help"
     }
 }
