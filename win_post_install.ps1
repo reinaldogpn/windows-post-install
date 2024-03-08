@@ -12,6 +12,8 @@
     06/03/2024
 #>
 
+# Dica: instalar o windows 11 usando uma conta local (offline) --> oobe\bypassnro
+
 param (
     [string]$option = "--help" # --help = show options | --server = install server tools only | --client = install client tools only | --full = full installation
 )
@@ -58,9 +60,6 @@ $SERVER_PKGS  = "AnyDeskSoftwareGmbH.AnyDesk",
                 "RARLab.WinRAR",
                 "TeamViewer.TeamViewer"
 
-$UserProfile = $env:USERPROFILE
-$ResourcesPath = Join-Path -Path $PSScriptRoot -ChildPath "resources"
-
 $OS_name = ""
 $OS_version = ""
 
@@ -68,15 +67,14 @@ $OS_version = ""
 
 $GitUser = "reinaldogpn"
 $GitEmail = "reinaldogpn@outlook.com"
-$GitConfigFile = Join-Path -Path $UserProfile -ChildPath ".gitconfig"
+$GitConfigFile = Join-Path -Path $env:USERPROFILE -ChildPath ".gitconfig"
 
 # ------------ FUNÇÃO DE SAÍDA ------------ #
 
 function exitScript {
     param ([int]$err = -1)
-
+    
     switch ($err) {
-
         0 {
             Write-Host "Fim do script! `nO computador precisa ser reiniciado para que todas as alterações sejam aplicadas. Deseja reiniciar agora? (s = sim | n = não)" ; $i = Read-Host
             if ($i -ceq "s") {
@@ -120,17 +118,13 @@ function exitScript {
 # ------------ FUNÇÃO DE TESTES ------------- #
 
 function checkRequisites {
-
     # Executando como admin?
-    
     if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
         exitScript 1
     }
     
     # Conectado à internet?
-    
     Write-Host "Verificando conexão com a internet..."
-    
     Test-NetConnection -ErrorAction SilentlyContinue > $null 2>&1
     
     if (-not $?) {
@@ -138,9 +132,7 @@ function checkRequisites {
     }
     
     # O sistema é compatível?
-    
     Write-Host "Verificando compatibilidade do sistema..."
-    
     $OS_name = Get-CimInstance Win32_OperatingSystem | Select-Object -ExpandProperty Caption -ErrorAction SilentlyContinue
     
     if (-not $OS_name) {
@@ -160,7 +152,6 @@ function checkRequisites {
     }
     
     # Winget instalado?
-    
     Write-Host "Verificando instalação do winget..."
     
     try {
@@ -208,9 +199,7 @@ function setFirstCheckpoint {
 # Configurações e serviços de rede
 
 function setNetworkOptions {
-
     # FTP service
-
     Write-Host "Habilitando serviço de FTP..."
     Get-Service -Name "ftpsvc" -ErrorAction SilentlyContinue
 
@@ -235,7 +224,6 @@ function setNetworkOptions {
     }
 
     # SSH service
-
     Write-Host "Habilitando serviço de SSH..."
     Get-Service -Name "sshd" -ErrorAction SilentlyContinue
 
@@ -259,15 +247,12 @@ function setNetworkOptions {
     }
 
     # Firewall rules
-
     Write-Host "Criando regras de firewall para serviços e game servers..."
-
     New-NetFirewallRule -DisplayName "FTP" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 21
     New-NetFirewallRule -DisplayName "SSH" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 22
     New-NetFirewallRule -DisplayName "PZ Dedicated Server" -Direction Inbound -Action Allow -Protocol UDP -LocalPort 16261-16262
     New-NetFirewallRule -DisplayName "Valheim Dedicated Server" -Direction Inbound -Action Allow -Protocol UDP -LocalPort 2456-2458
     New-NetFirewallRule -DisplayName "DST Dedicated Server" -Direction Inbound -Action Allow -Protocol UDP -LocalPort 10889
-
     Write-Host "Configurações de rede aplicadas."
 }
 
@@ -276,7 +261,6 @@ function setNetworkOptions {
 function installClientPKGs {
     Write-Host 'Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável "CLIENT_PKGS"'
     Write-Host 'Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal.'
-
     $count = 0
 
     foreach ($pkg in $CLIENT_PKGS) {
@@ -329,13 +313,13 @@ function setCustomOptions {
     REG ADD "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v "ColorPrevalence" /t REG_DWORD /d 1 /f
     REG ADD "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v "SystemUsesLightTheme" /t REG_DWORD /d 0 /f
     REG ADD "HKCU\Control Panel\Desktop" /v "JPEGImportQuality" /t REG_DWORD /d 100 /f
-    Copy-Item $ResourcesPath\wallpaper.jpg $UserProfile\wallpaper.jpg
-    REG ADD "HKEY_CURRENT_USER\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "$UserProfile\wallpaper.jpg" /f
-    rundll32.exe user32.dll, UpdatePerUserSystemParameters
 
+    Write-Host "Aplicando novo wallpaper..."
+    Invoke-WebRequest 'https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/resources/wallpaper.jpg' -OutFile $env:USERPROFILE'\wallpaper.jpg'
+    REG ADD "HKEY_CURRENT_USER\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "$env:USERPROFILE\wallpaper.jpg" /f
+    Invoke-Expression -Command "rundll32.exe user32.dll, UpdatePerUserSystemParameters"
     Write-Host "Personalizações aplicadas. O Windows Explorer será reiniciado."
-    pause
-
+    Pause
     Stop-Process -Name explorer -Force ; Start-Process explorer
 
     Write-Host "Baixando e instalando o DriverBooster..."
