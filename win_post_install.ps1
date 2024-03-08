@@ -181,7 +181,7 @@ function checkRequisites {
         Write-Host "Winget está devidamente instalado e atualizado."
     }
 
-    echo yes | winget list > $null 2>&1
+    echo y | winget list > $null 2>&1
 }
 
 # ------------ FUNÇÕES ------------ #
@@ -216,9 +216,9 @@ function setNetworkOptions {
 
     if (-not $?) {
         Write-Host "O serviço de FTP (ftpsvc) não está habilitado, habilitando agora..."
-        dism /online /enable-feature /featurename:IIS-WebServerRole /all
-        dism /online /enable-feature /featurename:IIS-WebServer /all
-        dism /online /enable-feature /featurename:IIS-FTPServer /all
+        Enable-WindowsOptionalFeature -Online -FeatureName "Web-Server" -All
+        Enable-WindowsOptionalFeature -Online -FeatureName "IIS-WebServer" -All
+        Enable-WindowsOptionalFeature -Online -FeatureName "IIS-FTPServer" -All
     }
     else {
         Write-Host "O serviço de FTP (ftpsvc) já está habilitado."
@@ -252,7 +252,7 @@ function setNetworkOptions {
         Start-Service -Name "sshd" -ErrorAction SilentlyContinue ; Set-Service -Name "sshd" -StartupType Automatic -ErrorAction SilentlyContinue
     }
     catch {
-        $action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -Command 'Start-Service -Name "sshd" ; Set-Service -Name "sshd" -StartupType Automatic'"
+        $action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -Command 'Start-Service -Name sshd ; Set-Service -Name sshd -StartupType Automatic'"
         $trigger = New-ScheduledTaskTrigger -AtStartup
         Register-ScheduledTask -Action $action -Trigger $trigger -TaskName 'HabilitarSSH' -RunLevel Highest
         Write-Host "O serviço de SSH foi instalado e será habilitado após a próxima vez em que o sistema for reiniciado."
@@ -262,15 +262,11 @@ function setNetworkOptions {
 
     Write-Host "Criando regras de firewall para serviços e game servers..."
 
-    netsh advfirewall firewall add rule name="FTP" dir=in action=allow protocol=TCP localport=21
-    netsh advfirewall firewall add rule name="SSH" dir=in action=allow protocol=TCP localport=22
-    netsh advfirewall firewall add rule name="PZ Dedicated Server" dir=in action=allow protocol=UDP localport=16261-16262
-    netsh advfirewall firewall add rule name="PZ Dedicated Server" dir=out action=allow protocol=UDP localport=16261-16262
-    netsh advfirewall firewall add rule name="Valheim Dedicated Server" dir=in action=allow protocol=UDP localport=2456-2458
-    netsh advfirewall firewall add rule name="Valheim Dedicated Server" dir=out action=allow protocol=UDP localport=2456-2458
-    netsh advfirewall firewall add rule name="DST Dedicated Server" dir=in action=allow protocol=UDP localport=10889
-    netsh advfirewall firewall add rule name="DST Dedicated Server" dir=out action=allow protocol=UDP localport=10889
-    ipconfig /all
+    New-NetFirewallRule -DisplayName "FTP" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 21
+    New-NetFirewallRule -DisplayName "SSH" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 22
+    New-NetFirewallRule -DisplayName "PZ Dedicated Server" -Direction Inbound -Action Allow -Protocol UDP -LocalPort 16261-16262
+    New-NetFirewallRule -DisplayName "Valheim Dedicated Server" -Direction Inbound -Action Allow -Protocol UDP -LocalPort 2456-2458
+    New-NetFirewallRule -DisplayName "DST Dedicated Server" -Direction Inbound -Action Allow -Protocol UDP -LocalPort 10889
 
     Write-Host "Configurações de rede aplicadas."
 }
@@ -350,23 +346,27 @@ function setCustomOptions {
 
 function setPowerOptions {
     Write-Host "Alterando configurações de energia do Windows..."
-    powercfg /change standby-timeout-ac 0
-    powercfg /change standby-timeout-dc 0
+    Invoke-Expression -Command "powercfg /change standby-timeout-ac 0"
+    Invoke-Expression -Command "powercfg /change standby-timeout-dc 0"
 }
 
 # Outros recursos
 
 function setExtraOptions {
     Write-Host "Ativando o recurso DirectPlay..."
-    if ((Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction SilentlyContinue).State -ne 'Enabled') { dism /online /enable-feature /all /featurename:DirectPlay }
+    if ((Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction SilentlyContinue).State -ne 'Enabled') { 
+        Enable-WindowsOptionalFeature -Online -FeatureName DirectPlay -All 
+    }
+    
     Write-Host "Ativando o recurso .NET Framework 3.5..."
-    if ((Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State -ne 'Enabled') { dism /online /enable-feature /all /featurename:NetFx3 }
+    if ((Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State -ne 'Enabled') { 
+        Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All 
+    }
 
     Write-Host "Configurando o git..."
-
-    echo "[user]" >> $GitConfigFile
-    echo "    name = $GitUser" >> $GitConfigFile
-    echo "    email = $GitEmail" >> $GitConfigFile
+    "[user]" | Out-File -FilePath $GitConfigFile
+    "    name = $GitUser" | Out-File -FilePath $GitConfigFile -Append
+    "    email = $GitEmail" | Out-File -FilePath $GitConfigFile -Append
 }
 
 # Ponto de restauração 2
