@@ -15,9 +15,9 @@ For further information and troubleshooting, please visit [winget's Github repos
     Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/win_post_install.ps1' -OutFile 'win_post_install.ps1' -UseBasicParsing
     ```
 
-2. If needed, set PowerShell execution policy to "Unrestricted", so you can run .ps1 scripts:
+2. By default PowerShell scripts execution policy is "Undefined". If needed, set execution policy to "Unrestricted", so you can run .ps1 scripts:
     ```
-    Set-ExecutionPolicy Unrestricted -Scope CurrentUser
+    Set-ExecutionPolicy Unrestricted -Scope CurrentUser -Force
     ```
 
 3. To run the script, you have 3 installation options **(choose only one)**:
@@ -36,9 +36,9 @@ For further information and troubleshooting, please visit [winget's Github repos
         .\win_post_install.ps1 --full
         ```
 
-4. For security reasons, when the installation is done, change PowerShell execution policy back to "Restricted":
+4. For security reasons, when the installation is done, change PowerShell execution policy back to default:
     ```
-    Set-ExecutionPolicy Restricted -Scope CurrentUser
+    Set-ExecutionPolicy Default -Scope CurrentUser -Force
     ```
 
 #
