@@ -19,7 +19,7 @@ param (
 )
 
 # Define a codificação do PowerShell para UTF-8 temporariamente (pode ser necessário em alguns sistemas)
-[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+$OutputEncoding = [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 # ------------ VARIÁVEIS ------------ #
 
@@ -72,14 +72,14 @@ $GitConfigFile = Join-Path -Path $env:USERPROFILE -ChildPath ".gitconfig"
 
 # ------------ FUNÇÕES DE SAÍDA ------------ #
 
-function Handle-Error {
+function Show-Error {
     param ([string]$ErrorMessage)
 
     Write-Error -Message $ErrorMessage
     exit 1
 }
 
-function End-Script {
+function Exit-Script {
     Write-Host "Fazendo a limpeza do sistema... `nEventuais erros podem ser visualizados posteriormente em: '$ErrorLog'."
     if (Test-Path $TempDir) {
         Remove-Item -Path $TempDir -Recurse -Force | Out-Null 
@@ -98,7 +98,7 @@ function End-Script {
 
 # ------------ FUNÇÃO DE TESTES ------------- #
 
-function Check-Requisites {
+function Confirm-Resources {
     # Diretório temporário para download de arquivos:
     if (-not (Test-Path $TempDir)) {
         New-Item -ItemType Directory -Path $TempDir | Out-Null 
@@ -106,7 +106,7 @@ function Check-Requisites {
 
     # Executando como admin?
     if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-        Handle-Error "Este script deve ser executado como Administrador!"
+        Show-Error "Este script deve ser executado como Administrador!"
     }
     
     # Conectado à internet?
@@ -114,7 +114,7 @@ function Check-Requisites {
     Test-NetConnection -ErrorAction SilentlyContinue | Out-Null
     
     if (-not $?) {
-        Handle-Error "O computador precisa estar conectado à internet para executar este script!"
+        Show-Error "O computador precisa estar conectado à internet para executar este script!"
     }
     
     # O sistema é compatível?
@@ -123,14 +123,14 @@ function Check-Requisites {
     
     if (-not $OS_name) {
         Write-Warning -Message "Sistema operacional não encontrado."
-        Handle-Error "Versão do windows desconhecida ou não suportada!"
+        Show-Error "Versão do windows desconhecida ou não suportada!"
     } 
     else {
         Write-Host "Sistema operacional identificado: $OS_name"
         $OS_version = ($OS_name -split ' ')[2]
     
         if ($OS_version -lt 10) {
-            Handle-Error "Versão do windows desconhecida ou não suportada!"
+            Show-Error "Versão do windows desconhecida ou não suportada!"
         } 
         else {
             Write-Host "Versão do sistema operacional: $OS_version"
@@ -177,7 +177,7 @@ function Set-Checkpoint {
             if (-not $?) {
                 Write-Warning "Falha ao criar ponto de restauração do sistema. Deseja continuar mesmo assim? (s = sim | n = não)" ; $i = Read-Host
                 if ($i -ceq 'n') {
-                    Handle-Error "Script encerrado pelo usuário!"
+                    Show-Error "Script encerrado pelo usuário!"
                 }
             }
             else {
@@ -193,7 +193,7 @@ function Set-Checkpoint {
         }
 
         default {
-            Handle-Error "Parâmetro inválido para criação de ponto de restauração!"
+            Show-Error "Parâmetro inválido para criação de ponto de restauração!"
         }
     }
 }
@@ -359,28 +359,28 @@ function Add-ServerPackages {
 
 switch ($option) {
     "--server" {
-        Check-Requisites
+        Confirm-Resources
         Set-Checkpoint 1
         Set-CustomOptions
         Set-NetworkOptions
         Set-PowerOptions
         Add-ServerPackages
         Set-Checkpoint 2
-        End-Script
+        Exit-Script
     }
     
     "--client" {
-        Check-Requisites
+        Confirm-Resources
         Set-Checkpoint 1
         Set-CustomOptions
         Set-ExtraOptions
         Add-ClientPackages
         Set-Checkpoint 2
-        End-Script
+        Exit-Script
     }
     
     "--full" {
-        Check-Requisites
+        Confirm-Resources
         Set-Checkpoint 1
         Set-CustomOptions
         Set-NetworkOptions
@@ -389,7 +389,7 @@ switch ($option) {
         Add-ClientPackages
         Add-ServerPackages
         Set-Checkpoint 2
-        End-Script
+        Exit-Script
     }
     
     "--help" {
@@ -398,6 +398,6 @@ switch ($option) {
     }
     
     default {
-        Handle-Error "Parâmetro inválido! Para obter a lista de parâmetros use .\win_post_install.ps1 --help"
+        Show-Error "Parâmetro inválido! Para obter a lista de parâmetros use .\win_post_install.ps1 --help"
     }
 }
