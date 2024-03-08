@@ -333,8 +333,8 @@ function setCustomOptions {
     REG ADD "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v "ColorPrevalence" /t REG_DWORD /d 1 /f
     REG ADD "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v "SystemUsesLightTheme" /t REG_DWORD /d 0 /f
     REG ADD "HKCU\Control Panel\Desktop" /v "JPEGImportQuality" /t REG_DWORD /d 100 /f
-    Copy-Item $ResourcesPath\wallpaper.png $UserProfile\wallpaper.png
-    REG ADD "HKEY_CURRENT_USER\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "$UserProfile\wallpaper.png" /f
+    Copy-Item $ResourcesPath\wallpaper.jpg $UserProfile\wallpaper.jpg
+    REG ADD "HKEY_CURRENT_USER\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "$UserProfile\wallpaper.jpg" /f
     rundll32.exe user32.dll, UpdatePerUserSystemParameters
 
     Write-Host "Personalizações aplicadas. O Windows Explorer será reiniciado."
