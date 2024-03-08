@@ -62,6 +62,7 @@ $ServerPackages = "AnyDeskSoftwareGmbH.AnyDesk",
 
 $OS_name = ""
 $OS_version = ""
+$TempDir = Join-Path -Path $env:TEMP -ChildPath "WinPostInstall"
 $ErrorLog = "win_post_install_errors.log"
 
 # GitHub info for .gitconfig file:
@@ -79,11 +80,14 @@ function Handle-Error {
 }
 
 function End-Script {
-    Write-Host "Eventuais erros podem ser visualizados posteriormente em: '$ErrorLog'."
+    Write-Host "Fazendo a limpeza do sistema... `nEventuais erros podem ser visualizados posteriormente em: '$ErrorLog'."
+    if (Test-Path $TempDir) {
+        Remove-Item -Path $TempDir -Recurse -Force | Out-Null 
+    }
+    
     $error | Out-File -FilePath $ErrorLog
     
     Write-Host "Fim do script! `nO computador precisa ser reiniciado para que todas as alterações sejam aplicadas. Deseja reiniciar agora? (s = sim | n = não)" ; $i = Read-Host
-    
     if ($i -ceq 's') {
         Write-Host "Reiniciando agora..."
         Restart-Computer
@@ -95,8 +99,13 @@ function End-Script {
 # ------------ FUNÇÃO DE TESTES ------------- #
 
 function Check-Requisites {
+    # Diretório temporário para download de arquivos:
+    if (-not (Test-Path $TempDir)) {
+        New-Item -ItemType Directory -Path $TempDir | Out-Null 
+    }
+
     # Executando como admin?
-    if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
+    if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
         Handle-Error "Este script deve ser executado como Administrador!"
     }
     
@@ -136,14 +145,14 @@ function Check-Requisites {
     } 
     catch {
         Write-Warning -Message "Winget não está instalado. Tentando instalar agora..."
-        Invoke-WebRequest "https://download.microsoft.com/download/4/7/c/47c6134b-d61f-4024-83bd-b9c9ea951c25/Microsoft.VCLibs.x64.14.00.Desktop.appx" -OutFile $env:TEMP"\Microsoft_VCLibs.appx" -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $env:TEMP"\Microsoft_VCLibs.appx" -ErrorAction SilentlyContinue | Out-Null
-        Invoke-WebRequest "https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx" -OutFile $env:TEMP"\Microsoft_UI_Xaml.appx" -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $env:TEMP"\Microsoft_UI_Xaml.appx" -ErrorAction SilentlyContinue | Out-Null
-        Invoke-WebRequest "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -OutFile $env:TEMP"\Microsoft_Winget.msixbundle" -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $env:TEMP"\Microsoft_Winget.msixbundle" -ErrorAction SilentlyContinue | Out-Null
+        Invoke-WebRequest "https://download.microsoft.com/download/4/7/c/47c6134b-d61f-4024-83bd-b9c9ea951c25/Microsoft.VCLibs.x64.14.00.Desktop.appx" -OutFile $TempDir"\Microsoft_VCLibs.appx" -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $TempDir"\Microsoft_VCLibs.appx" -ErrorAction SilentlyContinue | Out-Null
+        Invoke-WebRequest "https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx" -OutFile $TempDir"\Microsoft_UI_Xaml.appx" -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $TempDir"\Microsoft_UI_Xaml.appx" -ErrorAction SilentlyContinue | Out-Null
+        Invoke-WebRequest "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -OutFile $TempDir"\Microsoft_Winget.msixbundle" -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $TempDir"\Microsoft_Winget.msixbundle" -ErrorAction SilentlyContinue | Out-Null
     }
     
     if ($wingetVer -cne "v1.7.10582") {
         Write-Host "Atualizando o Winget..."
-        Invoke-WebRequest "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -OutFile $env:TEMP"\Microsoft_Winget.msixbundle" -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $env:TEMP"\Microsoft_Winget.msixbundle" -ForceApplicationShutdown -ErrorAction SilentlyContinue | Out-Null
+        Invoke-WebRequest "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -OutFile $TempDir"\Microsoft_Winget.msixbundle" -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $TempDir"\Microsoft_Winget.msixbundle" -ForceApplicationShutdown -ErrorAction SilentlyContinue | Out-Null
     } 
     else {
         Write-Host "Winget está devidamente instalado e atualizado."
@@ -209,7 +218,7 @@ function Set-CustomOptions {
     Stop-Process -Name explorer -Force ; Start-Process explorer
 
     Write-Host "Baixando e instalando o DriverBooster..."
-    Invoke-WebRequest "https://cdn.iobit.com/dl/driver_booster_setup.exe" -OutFile $env:TEMP"\driver_booster_setup.exe" -ErrorAction SilentlyContinue | Out-Null ; Start-Process $env:TEMP"\driver_booster_setup.exe" /verysilent | Out-Null
+    Invoke-WebRequest "https://cdn.iobit.com/dl/driver_booster_setup.exe" -OutFile $TempDir"\driver_booster_setup.exe" -ErrorAction SilentlyContinue | Out-Null ; Start-Process $TempDir"\driver_booster_setup.exe" /verysilent | Out-Null
 }
 
 # Configurações e serviços de rede
@@ -392,44 +401,3 @@ switch ($option) {
         Handle-Error "Parâmetro inválido! Para obter a lista de parâmetros use .\win_post_install.ps1 --help"
     }
 }
-
-<#
-if ($option -ceq "--server") {
-    Check-Requisites
-    Set-Checkpoint 1
-    Set-CustomOptions
-    Set-NetworkOptions
-    Set-PowerOptions
-    Add-ServerPackages
-    Set-Checkpoint 2
-    End-Script
-}
-elseif ($option -ceq "--client") {
-    Check-Requisites
-    Set-Checkpoint 1
-    Set-CustomOptions
-    Set-ExtraOptions
-    Add-ClientPackages
-    Set-Checkpoint 2
-    End-Script
-}
-elseif ($option -ceq "--full") {
-    Check-Requisites
-    Set-Checkpoint 1
-    Set-CustomOptions
-    Set-NetworkOptions
-    Set-PowerOptions
-    Set-ExtraOptions
-    Add-ClientPackages
-    Add-ServerPackages
-    Set-Checkpoint 2
-    End-Script
-}
-elseif ($option -ceq "--help") {
-    Write-Warning -Message "Parâmetros válidos: `n`n    --client  =  Instala pacotes e configurações para máquinas do tipo CLIENTE `n    --server  =  Instala pacotes e configurações para máquinas do tipo SERVER `n    --full  =  Realiza uma instalação completa e aplica todas as configurações válidas `n    --help  =  Exibe esta mensagem de ajuda"
-    exit 0
-}
-else {
-    Handle-Error "Parâmetro inválido! Para obter a lista de parâmetros use .\win_post_install.ps1 --help"
-}
-#>
