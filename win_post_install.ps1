@@ -79,7 +79,7 @@ function exitScript {
             Write-Host "Eventuais erros podem ser visualizados posteriormente em: '$ErrorLog'."
             $error | Out-File -FilePath $ErrorLog
             Write-Host "Fim do script! `nO computador precisa ser reiniciado para que todas as alterações sejam aplicadas. Deseja reiniciar agora? (s = sim | n = não)" ; $i = Read-Host
-            if ($i -ceq "s") {
+            if ($i -ceq 's') {
                 Write-Host "Reiniciando agora..."
                 Restart-Computer
             }
@@ -189,7 +189,7 @@ function setFirstCheckpoint {
     
     if (-not $?) {
         Write-Warning "Falha ao criar ponto de restauração do sistema. Deseja continuar mesmo assim? (s = sim | n = não)" ; $i = Read-Host
-        if ($i -ceq "n") {
+        if ($i -ceq 'n') {
             exitScript 4
         }
     }
