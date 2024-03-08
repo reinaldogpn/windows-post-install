@@ -19,46 +19,46 @@ param (
 )
 
 # Define a codificação do PowerShell para UTF-8 temporariamente (pode ser necessário em alguns sistemas)
-$OutputEncoding = [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+[Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 # ------------ VARIÁVEIS ------------ #
 
-$CLIENT_PKGS  = "9NKSQGP7F2NH", # Whatsapp Desktop
-                "9NCBCSZSJRSB", # Spotify Client
-                "9PF4KZ2VN4W9", # TranslucentTB
-                "Adobe.Acrobat.Reader.64-bit",
-                "AnyDeskSoftwareGmbH.AnyDesk",
-                "CPUID.CPU-Z",
-                "Discord.Discord",
-                "EpicGames.EpicGamesLauncher",
-                "Git.Git",
-                "Google.Chrome",
-                "HyperX NGENUITY",
-                "Microsoft.DotNet.DesktopRuntime.3_1",
-                "Microsoft.VCRedist.2010.x86",
-                "Microsoft.VCRedist.2010.x64",
-                "Microsoft.VCRedist.2012.x86",
-                "Microsoft.VCRedist.2012.x64",
-                "Microsoft.VCRedist.2013.x86",
-                "Microsoft.VCRedist.2013.x64",
-                "Microsoft.VCRedist.2015+.x86",
-                "Microsoft.VCRedist.2015+.x64",
-                "Microsoft.XNARedist",
-                "Microsoft.VisualStudioCode",
-                "Notepad++.Notepad++",
-                "OpenJS.NodeJS.LTS",
-                "Oracle.JavaRuntimeEnvironment",
-                "Oracle.JDK.18",
-                "Python.Python.3.11",
-                "qBittorrent.qBittorrent",
-                "RARLab.WinRAR",
-                "TeamViewer.TeamViewer",
-                "Valve.Steam",
-                "VideoLAN.VLC"
+$ClientPackages = "9NKSQGP7F2NH", # Whatsapp Desktop
+                  "9NCBCSZSJRSB", # Spotify Client
+                  "9PF4KZ2VN4W9", # TranslucentTB
+                  "Adobe.Acrobat.Reader.64-bit",
+                  "AnyDeskSoftwareGmbH.AnyDesk",
+                  "CPUID.CPU-Z",
+                  "Discord.Discord",
+                  "EpicGames.EpicGamesLauncher",
+                  "Git.Git",
+                  "Google.Chrome",
+                  "HyperX NGENUITY",
+                  "Microsoft.DotNet.DesktopRuntime.3_1",
+                  "Microsoft.VCRedist.2010.x86",
+                  "Microsoft.VCRedist.2010.x64",
+                  "Microsoft.VCRedist.2012.x86",
+                  "Microsoft.VCRedist.2012.x64",
+                  "Microsoft.VCRedist.2013.x86",
+                  "Microsoft.VCRedist.2013.x64",
+                  "Microsoft.VCRedist.2015+.x86",
+                  "Microsoft.VCRedist.2015+.x64",
+                  "Microsoft.XNARedist",
+                  "Microsoft.VisualStudioCode",
+                  "Notepad++.Notepad++",
+                  "OpenJS.NodeJS.LTS",
+                  "Oracle.JavaRuntimeEnvironment",
+                  "Oracle.JDK.18",
+                  "Python.Python.3.11",
+                  "qBittorrent.qBittorrent",
+                  "RARLab.WinRAR",
+                  "TeamViewer.TeamViewer",
+                  "Valve.Steam",
+                  "VideoLAN.VLC"
 
-$SERVER_PKGS  = "AnyDeskSoftwareGmbH.AnyDesk",
-                "RARLab.WinRAR",
-                "TeamViewer.TeamViewer"
+$ServerPackages = "AnyDeskSoftwareGmbH.AnyDesk",
+                  "RARLab.WinRAR",
+                  "TeamViewer.TeamViewer"
 
 $OS_name = ""
 $OS_version = ""
@@ -69,60 +69,35 @@ $GitUser = "reinaldogpn"
 $GitEmail = "reinaldogpn@outlook.com"
 $GitConfigFile = Join-Path -Path $env:USERPROFILE -ChildPath ".gitconfig"
 
-# ------------ FUNÇÃO DE SAÍDA ------------ #
+# ------------ FUNÇÕES DE SAÍDA ------------ #
 
-function exitScript {
-    param ([int]$err = -1)
+function Handle-Error {
+    param ([string]$ErrorMessage)
+
+    Write-Error -Message $ErrorMessage
+    exit 1
+}
+
+function End-Script {
+    Write-Host "Eventuais erros podem ser visualizados posteriormente em: '$ErrorLog'."
+    $error | Out-File -FilePath $ErrorLog
     
-    switch ($err) {
-        0 {
-            Write-Host "Eventuais erros podem ser visualizados posteriormente em: '$ErrorLog'."
-            $error | Out-File -FilePath $ErrorLog
-            Write-Host "Fim do script! `nO computador precisa ser reiniciado para que todas as alterações sejam aplicadas. Deseja reiniciar agora? (s = sim | n = não)" ; $i = Read-Host
-            if ($i -ceq 's') {
-                Write-Host "Reiniciando agora..."
-                Restart-Computer
-            }
-            exit
-        }
-
-        1 {
-            Write-Error -Message "Este script deve ser executado como Administrador!" -ErrorId $err -Category PermissionDenied
-            exit
-        }
-
-        2 {
-            Write-Error -Message "O computador precisa estar conectado à internet para executar este script!" -ErrorId $err -Category ConnectionError
-            exit
-        }
-
-        3 {
-            Write-Error -Message "Versão do windows desconhecida ou não suportada!" -ErrorId $err -Category DeviceError
-            exit
-        }
-
-        4 {
-            Write-Error -Message "Script encerrado pelo usuário!" -ErrorId $err -Category ResourceUnavailable
-            exit
-        }
-
-        5 {
-            Write-Error -Message "Parâmetro inválido! Para obter a lista de parâmetros use .\win_post_install.ps1 --help" -ErrorId $err -Category InvalidArgument
-            exit
-        }
-
-        default {
-            exit
-        }
+    Write-Host "Fim do script! `nO computador precisa ser reiniciado para que todas as alterações sejam aplicadas. Deseja reiniciar agora? (s = sim | n = não)" ; $i = Read-Host
+    
+    if ($i -ceq 's') {
+        Write-Host "Reiniciando agora..."
+        Restart-Computer
     }
+    
+    exit 0
 }
 
 # ------------ FUNÇÃO DE TESTES ------------- #
 
-function checkRequisites {
+function Check-Requisites {
     # Executando como admin?
     if (-NOT ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-        exitScript 1
+        Handle-Error "Este script deve ser executado como Administrador!"
     }
     
     # Conectado à internet?
@@ -130,7 +105,7 @@ function checkRequisites {
     Test-NetConnection -ErrorAction SilentlyContinue | Out-Null
     
     if (-not $?) {
-        exitScript 2
+        Handle-Error "O computador precisa estar conectado à internet para executar este script!"
     }
     
     # O sistema é compatível?
@@ -139,14 +114,14 @@ function checkRequisites {
     
     if (-not $OS_name) {
         Write-Warning -Message "Sistema operacional não encontrado."
-        exitScript 3
+        Handle-Error "Versão do windows desconhecida ou não suportada!"
     } 
     else {
         Write-Host "Sistema operacional identificado: $OS_name"
         $OS_version = ($OS_name -split ' ')[2]
     
         if ($OS_version -lt 10) {
-            exitScript 3
+            Handle-Error "Versão do windows desconhecida ou não suportada!"
         } 
         else {
             Write-Host "Versão do sistema operacional: $OS_version"
@@ -181,26 +156,42 @@ function checkRequisites {
 
 # Ponto de restauração 1
 
-function setFirstCheckpoint {
-    Write-Host "Criando ponto de restauração do sistema..."
-    Enable-ComputerRestore -Drive "C:\" -ErrorAction SilentlyContinue
-    REG ADD "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /t REG_DWORD /d 1 /f
-    Checkpoint-Computer -Description "Pré Execução do Script Windows Post Install" -ErrorAction SilentlyContinue | Out-Null
+function Set-Checkpoint {
+    param ([int]$Code)
     
-    if (-not $?) {
-        Write-Warning "Falha ao criar ponto de restauração do sistema. Deseja continuar mesmo assim? (s = sim | n = não)" ; $i = Read-Host
-        if ($i -ceq 'n') {
-            exitScript 4
+    switch ($Code) {
+        1 {
+            Write-Host "Criando primeiro ponto de restauração do sistema..."
+            Enable-ComputerRestore -Drive "C:\" -ErrorAction SilentlyContinue
+            REG ADD "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /t REG_DWORD /d 1 /f
+            Checkpoint-Computer -Description "Pré Execução do Script Windows Post Install" -ErrorAction SilentlyContinue | Out-Null
+            if (-not $?) {
+                Write-Warning "Falha ao criar ponto de restauração do sistema. Deseja continuar mesmo assim? (s = sim | n = não)" ; $i = Read-Host
+                if ($i -ceq 'n') {
+                    Handle-Error "Script encerrado pelo usuário!"
+                }
+            }
+            else {
+                Write-Host "Ponto de restauração do sistema criado."
+            }
         }
-    }
-    else {
-        Write-Host "Ponto de restauração do sistema criado."
+
+        2 {
+            Write-Host "Criando segundo ponto de restauração do sistema..."
+            Checkpoint-Computer -Description "Pós Execução do Script Windows Post Install" -ErrorAction SilentlyContinue | Out-Null
+            if (-not $?) { Write-Host "Falha ao criar ponto de restauração do sistema." } else { Write-Host "Ponto de restauração do sistema criado." }
+            REG DELETE "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /f
+        }
+
+        default {
+            Handle-Error "Parâmetro inválido para criação de ponto de restauração!"
+        }
     }
 }
 
 # Personalização do sistema
 
-function setCustomOptions {
+function Set-CustomOptions {
     Write-Host "Aplicando personalizações do sistema..."
     REG ADD "HKCU\Software\Microsoft\Windows\CurrentVersion\Feeds" /v "ShellFeedsTaskbarViewMode" /t REG_DWORD /d 2 /f
     REG ADD "HKCU\Software\Microsoft\Windows\CurrentVersion\Search" /v "SearchBoxTaskbarMode" /t REG_DWORD /d 1 /f
@@ -223,7 +214,7 @@ function setCustomOptions {
 
 # Configurações e serviços de rede
 
-function setNetworkOptions {
+function Set-NetworkOptions {
     # FTP service
     Write-Host "Habilitando serviço de FTP..."
     Get-Service -Name "ftpsvc" -ErrorAction SilentlyContinue | Out-Null
@@ -283,7 +274,7 @@ function setNetworkOptions {
 
 # Configurações de energia
 
-function setPowerOptions {
+function Set-PowerOptions {
     Write-Host "Alterando configurações de energia do Windows..."
     Invoke-Expression -Command "powercfg /change standby-timeout-ac 0"
     Invoke-Expression -Command "powercfg /change standby-timeout-dc 0"
@@ -291,7 +282,7 @@ function setPowerOptions {
 
 # Outros recursos
 
-function setExtraOptions {
+function Set-ExtraOptions {
     Write-Host "Ativando o recurso DirectPlay..."
     if ((Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction SilentlyContinue).State -ne "Enabled") { 
         Enable-WindowsOptionalFeature -Online -FeatureName DirectPlay -All -ErrorAction SilentlyContinue | Out-Null
@@ -310,12 +301,12 @@ function setExtraOptions {
 
 # Instalação de pacotes (client)
 
-function installClientPKGs {
-    Write-Host "Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável 'CLIENT_PKGS'."
+function Add-ClientPackages {
+    Write-Host "Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável 'ClientPackages'."
     Write-Host "Para descobrir o ID da aplicação desejada, use 'winget search <nomedoapp>' no terminal."
     $count = 0
 
-    foreach ($pkg in $CLIENT_PKGS) {
+    foreach ($pkg in $ClientPackages) {
         Invoke-Expression -Command "winget list $pkg" -ErrorAction SilentlyContinue | Out-Null
 
         if (-not $?) {
@@ -328,18 +319,18 @@ function installClientPKGs {
         }
     }
 
-    Write-Host "$count de $CLIENT_PKGS.Count pacotes foram instalados com sucesso."
+    Write-Host "$count de $ClientPackages.Count pacotes foram instalados com sucesso."
 }
 
 # Instalação de pacotes (server)
 
-function installServerPKGs {
-    Write-Host "Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável 'SERVER_PKGS'."
+function Add-ServerPackages {
+    Write-Host "Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável 'ServerPackages'."
     Write-Host "Para descobrir o ID da aplicação desejada, use 'winget search <nomedoapp>' no terminal."
 
     $count = 0
 
-    foreach ($pkg in $SERVER_PKGS) {
+    foreach ($pkg in $ServerPackages) {
         Invoke-Expression -Command "winget list $pkg" -ErrorAction SilentlyContinue | Out-Null
 
         if (-not $?) {
@@ -352,55 +343,93 @@ function installServerPKGs {
         }
     }
 
-    Write-Host "$count de $SERVER_PKGS.Count pacotes foram instalados com sucesso."
-}
-
-# Ponto de restauração 2
-
-function setSecondCheckpoint {
-    Write-Host "Criando ponto de restauração do sistema..."
-    Checkpoint-Computer -Description "Pós Execução do Script Windows Post Install" -ErrorAction SilentlyContinue | Out-Null
-    if (-not $?) { Write-Host "Falha ao criar ponto de restauração do sistema." } else { Write-Host "Ponto de restauração do sistema criado." }
-    REG DELETE "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /f
+    Write-Host "$count de $ServerPackages.Count pacotes foram instalados com sucesso."
 }
 
 # ------------ EXECUÇÃO ------------ #
 
+switch ($option) {
+    "--server" {
+        Check-Requisites
+        Set-Checkpoint 1
+        Set-CustomOptions
+        Set-NetworkOptions
+        Set-PowerOptions
+        Add-ServerPackages
+        Set-Checkpoint 2
+        End-Script
+    }
+    
+    "--client" {
+        Check-Requisites
+        Set-Checkpoint 1
+        Set-CustomOptions
+        Set-ExtraOptions
+        Add-ClientPackages
+        Set-Checkpoint 2
+        End-Script
+    }
+    
+    "--full" {
+        Check-Requisites
+        Set-Checkpoint 1
+        Set-CustomOptions
+        Set-NetworkOptions
+        Set-PowerOptions
+        Set-ExtraOptions
+        Add-ClientPackages
+        Add-ServerPackages
+        Set-Checkpoint 2
+        End-Script
+    }
+    
+    "--help" {
+        Write-Warning -Message "Parâmetros válidos: `n`n    --client  =  Instala pacotes e configurações para máquinas do tipo CLIENTE `n    --server  =  Instala pacotes e configurações para máquinas do tipo SERVER `n    --full  =  Realiza uma instalação completa e aplica todas as configurações válidas `n    --help  =  Exibe esta mensagem de ajuda"
+        exit 0
+    }
+    
+    default {
+        Handle-Error "Parâmetro inválido! Para obter a lista de parâmetros use .\win_post_install.ps1 --help"
+    }
+}
+
+<#
 if ($option -ceq "--server") {
-    checkRequisites
-    setFirstCheckpoint
-    setCustomOptions
-    setNetworkOptions
-    setPowerOptions
-    installServerPKGs
-    setSecondCheckpoint
-    exitScript 0
+    Check-Requisites
+    Set-Checkpoint 1
+    Set-CustomOptions
+    Set-NetworkOptions
+    Set-PowerOptions
+    Add-ServerPackages
+    Set-Checkpoint 2
+    End-Script
 }
 elseif ($option -ceq "--client") {
-    checkRequisites
-    setFirstCheckpoint
-    setCustomOptions
-    setExtraOptions
-    installClientPKGs
-    setSecondCheckpoint
-    exitScript 0
+    Check-Requisites
+    Set-Checkpoint 1
+    Set-CustomOptions
+    Set-ExtraOptions
+    Add-ClientPackages
+    Set-Checkpoint 2
+    End-Script
 }
 elseif ($option -ceq "--full") {
-    checkRequisites
-    setFirstCheckpoint
-    setNetworkOptions
-    setPowerOptions
-    setCustomOptions
-    setExtraOptions
-    installClientPKGs
-    installServerPKGs
-    setSecondCheckpoint
-    exitScript 0
+    Check-Requisites
+    Set-Checkpoint 1
+    Set-CustomOptions
+    Set-NetworkOptions
+    Set-PowerOptions
+    Set-ExtraOptions
+    Add-ClientPackages
+    Add-ServerPackages
+    Set-Checkpoint 2
+    End-Script
 }
 elseif ($option -ceq "--help") {
     Write-Warning -Message "Parâmetros válidos: `n`n    --client  =  Instala pacotes e configurações para máquinas do tipo CLIENTE `n    --server  =  Instala pacotes e configurações para máquinas do tipo SERVER `n    --full  =  Realiza uma instalação completa e aplica todas as configurações válidas `n    --help  =  Exibe esta mensagem de ajuda"
-    exitScript
+    exit 0
 }
 else {
-    exitScript 5
+    Handle-Error "Parâmetro inválido! Para obter a lista de parâmetros use .\win_post_install.ps1 --help"
 }
+#>
