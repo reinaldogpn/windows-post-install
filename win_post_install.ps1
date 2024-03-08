@@ -97,7 +97,7 @@ function exitScript {
         }
 
         3 {
-            Write-Error -Message "Versão do windows não suportada!" -ErrorId $err -Category DeviceError
+            Write-Error -Message "Versão do windows desconhecida ou não suportada!" -ErrorId $err -Category DeviceError
             exit
         }
 
@@ -168,22 +168,20 @@ function checkRequisites {
     } 
     catch {
         Write-Warning -Message "Winget não está instalado. Tentando instalar agora..."
-        Add-AppxPackage -Path $ResourcesPath\winget\Microsoft.UI.Xaml_8.2310.30001.0_X64_msix_en-US.msix -ErrorAction SilentlyContinue
-        Add-AppxPackage -Path $ResourcesPath\winget\Microsoft.VC.2015.UWP.DRP_14.0.30704.0_X64_msix_en-US.msix -ErrorAction SilentlyContinue
-        #Add-AppxPackage -Path $ResourcesPath\winget\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle -ErrorAction SilentlyContinue
-        Invoke-WebRequest 'https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' -OutFile winget.msixbundle -ErrorAction SilentlyContinue ; Add-AppxPackage -Path .\winget.msixbundle -ErrorAction SilentlyContinue
+        Invoke-WebRequest 'https://download.microsoft.com/download/4/7/c/47c6134b-d61f-4024-83bd-b9c9ea951c25/Microsoft.VCLibs.x64.14.00.Desktop.appx' -OutFile Microsoft_VCLibs.msixbundle -ErrorAction SilentlyContinue ; Add-AppxPackage -Path .\Microsoft_VCLibs.msixbundle -ErrorAction SilentlyContinue
+        Invoke-WebRequest 'https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx' -OutFile Microsoft_UI_Xaml.msixbundle -ErrorAction SilentlyContinue ; Add-AppxPackage -Path .\Microsoft_UI_Xaml.msixbundle -ErrorAction SilentlyContinue
+        Invoke-WebRequest 'https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' -OutFile Microsoft_Winget.msixbundle -ErrorAction SilentlyContinue ; Add-AppxPackage -Path .\Microsoft_Winget.msixbundle -ErrorAction SilentlyContinue
     }
     
     if ($wingetVer -cne 'v1.7.10582') {
         Write-Host "Atualizando o Winget..."
-        #Add-AppxPackage -Path $ResourcesPath\winget\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle -ForceApplicationShutdown -ErrorAction SilentlyContinue
-        Invoke-WebRequest 'https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' -OutFile winget.msixbundle -ErrorAction SilentlyContinue ; Add-AppxPackage -Path .\winget.msixbundle -ForceApplicationShutdown -ErrorAction SilentlyContinue
+        Invoke-WebRequest 'https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' -OutFile Microsoft_Winget.msixbundle -ErrorAction SilentlyContinue ; Add-AppxPackage -Path .\Microsoft_Winget.msixbundle -ForceApplicationShutdown -ErrorAction SilentlyContinue
     } 
     else {
         Write-Host "Winget está devidamente instalado e atualizado."
     }
 
-    echo Y | winget list > $null 2>&1
+    echo yes | winget list > $null 2>&1
 }
 
 # ------------ FUNÇÕES ------------ #
@@ -300,8 +298,8 @@ function installClientPKGs {
 
     Write-Host "$count de $CLIENT_PKGS.Count pacotes foram instalados com sucesso."
 
-    Write-Host "Instalando DriverBooster..."
-    Start-Process $ResourcesPath\driver_booster_setup.exe /verysilent /supressmsgboxes > $null 2>&1
+    Write-Host "Baixando e instalando o DriverBooster..."
+    Invoke-WebRequest 'https://cdn.iobit.com/dl/driver_booster_setup.exe' -OutFile driver_booster_setup.exe -ErrorAction SilentlyContinue ; Start-Process driver_booster_setup.exe /verysilent /supressmsgboxes > $null 2>&1
 }
 
 # Instalação de pacotes (server)
@@ -327,15 +325,14 @@ function installServerPKGs {
 
     Write-Host "$count de $SERVER_PKGS.Count pacotes foram instalados com sucesso."
 
-    Write-Host "Instalando DriverBooster..."
-    Start-Process $ResourcesPath\driver_booster_setup.exe /verysilent /supressmsgboxes > $null 2>&1
+    Write-Host "Baixando e instalando o DriverBooster..."
+    Invoke-WebRequest 'https://cdn.iobit.com/dl/driver_booster_setup.exe' -OutFile driver_booster_setup.exe -ErrorAction SilentlyContinue ; Start-Process driver_booster_setup.exe /verysilent /supressmsgboxes > $null 2>&1
 }
 
 # Personalização do sistema
 
 function setCustomOptions {
     Write-Host "Aplicando personalizações do sistema..."
-
     REG ADD "HKCU\Software\Microsoft\Windows\CurrentVersion\Feeds" /v "ShellFeedsTaskbarViewMode" /t REG_DWORD /d 2 /f
     REG ADD "HKCU\Software\Microsoft\Windows\CurrentVersion\Search" /v "SearchBoxTaskbarMode" /t REG_DWORD /d 1 /f
     REG ADD "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v "AppsUseLightTheme" /t REG_DWORD /d 0 /f
@@ -356,7 +353,6 @@ function setCustomOptions {
 
 function setPowerOptions {
     Write-Host "Alterando configurações de energia do Windows..."
-
     powercfg /change standby-timeout-ac 0
     powercfg /change standby-timeout-dc 0
 }
@@ -366,15 +362,14 @@ function setPowerOptions {
 function setExtraOptions {
     Write-Host "Ativando o recurso DirectPlay..."
     if ((Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction SilentlyContinue).State -ne 'Enabled') { dism /online /enable-feature /all /featurename:DirectPlay }
-
     Write-Host "Ativando o recurso .NET Framework 3.5..."
     if ((Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State -ne 'Enabled') { dism /online /enable-feature /all /featurename:NetFx3 }
 
     Write-Host "Configurando o git..."
 
     echo "[user]" >> $GitConfigFile
-    echo "    name = $GitUser >> $GitConfigFile"
-    echo "    email = $GitEmail >> $GitConfigFile"
+    echo "    name = $GitUser" >> $GitConfigFile
+    echo "    email = $GitEmail" >> $GitConfigFile
 }
 
 # Ponto de restauração 2
@@ -382,9 +377,7 @@ function setExtraOptions {
 function setSecondCheckpoint {
     Write-Host "Criando ponto de restauração do sistema..."
     Checkpoint-Computer -Description 'Pós Execução do Script Windows Post Install' -ErrorAction SilentlyContinue
-
     if (-not $?) { Write-Host "Falha ao criar ponto de restauração do sistema." } else { Write-Host "Ponto de restauração do sistema criado." }
-
     REG DELETE "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /f
 }
 
@@ -421,7 +414,7 @@ elseif ($option -ceq "--full") {
     exitScript 0
 }
 elseif ($option -ceq "--help") {
-    Write-Warning "Parâmetros válidos: `n`n    --client  =  Instala pacotes e configurações para máquinas do tipo CLIENTE `n    --server  =  Instala pacotes e configurações para máquinas do tipo SERVER `n    --full  =  Realiza uma instalação completa e aplica todas as configurações válidas `n    --help  =  Exibe esta mensagem de ajuda"
+    Write-Warning -Message "Parâmetros válidos: `n`n    --client  =  Instala pacotes e configurações para máquinas do tipo CLIENTE `n    --server  =  Instala pacotes e configurações para máquinas do tipo SERVER `n    --full  =  Realiza uma instalação completa e aplica todas as configurações válidas `n    --help  =  Exibe esta mensagem de ajuda"
     exitScript
 }
 else {
