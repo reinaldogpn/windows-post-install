@@ -312,7 +312,7 @@ function setExtraOptions {
 
 function installClientPKGs {
     Write-Host "Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável 'CLIENT_PKGS'."
-    Write-Host "Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal."
+    Write-Host "Para descobrir o ID da aplicação desejada, use 'winget search <nomedoapp>' no terminal."
     $count = 0
 
     foreach ($pkg in $CLIENT_PKGS) {
@@ -335,7 +335,7 @@ function installClientPKGs {
 
 function installServerPKGs {
     Write-Host "Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável 'SERVER_PKGS'."
-    Write-Host "Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal."
+    Write-Host "Para descobrir o ID da aplicação desejada, use 'winget search <nomedoapp>' no terminal."
 
     $count = 0
 
