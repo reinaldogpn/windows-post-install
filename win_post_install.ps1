@@ -62,9 +62,9 @@ $SERVER_PKGS  = "AnyDeskSoftwareGmbH.AnyDesk",
 
 $OS_name = ""
 $OS_version = ""
+$ErrorLog = "win_post_install_errors.log"
 
 # GitHub info for .gitconfig file:
-
 $GitUser = "reinaldogpn"
 $GitEmail = "reinaldogpn@outlook.com"
 $GitConfigFile = Join-Path -Path $env:USERPROFILE -ChildPath ".gitconfig"
@@ -76,6 +76,8 @@ function exitScript {
     
     switch ($err) {
         0 {
+            Write-Host "Eventuais erros podem ser visualizados posteriormente em: '$ErrorLog'."
+            $error | Out-File -FilePath $ErrorLog
             Write-Host "Fim do script! `nO computador precisa ser reiniciado para que todas as alterações sejam aplicadas. Deseja reiniciar agora? (s = sim | n = não)" ; $i = Read-Host
             if ($i -ceq "s") {
                 Write-Host "Reiniciando agora..."
@@ -125,7 +127,7 @@ function checkRequisites {
     
     # Conectado à internet?
     Write-Host "Verificando conexão com a internet..."
-    Test-NetConnection -ErrorAction SilentlyContinue > $null 2>&1
+    Test-NetConnection -ErrorAction SilentlyContinue | Out-Null
     
     if (-not $?) {
         exitScript 2
@@ -159,20 +161,20 @@ function checkRequisites {
     } 
     catch {
         Write-Warning -Message "Winget não está instalado. Tentando instalar agora..."
-        Invoke-WebRequest 'https://download.microsoft.com/download/4/7/c/47c6134b-d61f-4024-83bd-b9c9ea951c25/Microsoft.VCLibs.x64.14.00.Desktop.appx' -OutFile Microsoft_VCLibs.appx -ErrorAction SilentlyContinue ; Add-AppxPackage -Path .\Microsoft_VCLibs.appx -ErrorAction SilentlyContinue
-        Invoke-WebRequest 'https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx' -OutFile Microsoft_UI_Xaml.appx -ErrorAction SilentlyContinue ; Add-AppxPackage -Path .\Microsoft_UI_Xaml.appx -ErrorAction SilentlyContinue
-        Invoke-WebRequest 'https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' -OutFile Microsoft_Winget.msixbundle -ErrorAction SilentlyContinue ; Add-AppxPackage -Path .\Microsoft_Winget.msixbundle -ErrorAction SilentlyContinue
+        Invoke-WebRequest 'https://download.microsoft.com/download/4/7/c/47c6134b-d61f-4024-83bd-b9c9ea951c25/Microsoft.VCLibs.x64.14.00.Desktop.appx' -OutFile $env:TEMP'\Microsoft_VCLibs.appx' -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $env:TEMP'\Microsoft_VCLibs.appx' -ErrorAction SilentlyContinue | Out-Null
+        Invoke-WebRequest 'https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx' -OutFile $env:TEMP'\Microsoft_UI_Xaml.appx' -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $env:TEMP'\Microsoft_UI_Xaml.appx' -ErrorAction SilentlyContinue | Out-Null
+        Invoke-WebRequest 'https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' -OutFile $env:TEMP'\Microsoft_Winget.msixbundle' -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $env:TEMP'\Microsoft_Winget.msixbundle' -ErrorAction SilentlyContinue | Out-Null
     }
     
     if ($wingetVer -cne 'v1.7.10582') {
         Write-Host "Atualizando o Winget..."
-        Invoke-WebRequest 'https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' -OutFile Microsoft_Winget.msixbundle -ErrorAction SilentlyContinue ; Add-AppxPackage -Path .\Microsoft_Winget.msixbundle -ForceApplicationShutdown -ErrorAction SilentlyContinue
+        Invoke-WebRequest 'https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' -OutFile $env:TEMP'\Microsoft_Winget.msixbundle' -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $env:TEMP'\Microsoft_Winget.msixbundle' -ForceApplicationShutdown -ErrorAction SilentlyContinue | Out-Null
     } 
     else {
         Write-Host "Winget está devidamente instalado e atualizado."
     }
 
-    echo y | winget list > $null 2>&1
+    Invoke-Expression -Command 'winget list --accept-source-agreements' -ErrorAction SilentlyContinue | Out-Null
 }
 
 # ------------ FUNÇÕES ------------ #
@@ -183,7 +185,7 @@ function setFirstCheckpoint {
     Write-Host "Criando ponto de restauração do sistema..."
     Enable-ComputerRestore -Drive 'C:\' -ErrorAction SilentlyContinue
     REG ADD "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /t REG_DWORD /d 1 /f
-    Checkpoint-Computer -Description 'Pré Execução do Script Windows Post Install' -ErrorAction SilentlyContinue
+    Checkpoint-Computer -Description 'Pré Execução do Script Windows Post Install' -ErrorAction SilentlyContinue | Out-Null
     
     if (-not $?) {
         Write-Warning "Falha ao criar ponto de restauração do sistema. Deseja continuar mesmo assim? (s = sim | n = não)" ; $i = Read-Host
@@ -194,113 +196,6 @@ function setFirstCheckpoint {
     else {
         Write-Host "Ponto de restauração do sistema criado."
     }
-}
-
-# Configurações e serviços de rede
-
-function setNetworkOptions {
-    # FTP service
-    Write-Host "Habilitando serviço de FTP..."
-    Get-Service -Name "ftpsvc" -ErrorAction SilentlyContinue
-
-    if (-not $?) {
-        Write-Host "O serviço de FTP (ftpsvc) não está habilitado, habilitando agora..."
-        Enable-WindowsOptionalFeature -Online -FeatureName "IIS-WebServerRole" -All
-        Enable-WindowsOptionalFeature -Online -FeatureName "IIS-WebServer" -All
-        Enable-WindowsOptionalFeature -Online -FeatureName "IIS-FTPServer" -All
-    }
-    else {
-        Write-Host "O serviço de FTP (ftpsvc) já está habilitado."
-    }
-
-    try {
-        Start-Service -Name "ftpsvc" -ErrorAction SilentlyContinue; Set-Service -Name "ftpsvc" -StartupType Automatic -ErrorAction SilentlyContinue
-    }
-    catch {
-        $action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -Command 'Start-Service -Name ftpsvc ; Set-Service -Name ftpsvc -StartupType Automatic'"
-        $trigger = New-ScheduledTaskTrigger -AtStartup
-        Register-ScheduledTask -Action $action -Trigger $trigger -TaskName 'HabilitarFTP' -RunLevel Highest
-        Write-Host "O serviço de FTP foi instalado e será habilitado após a próxima vez em que o sistema for reiniciado."
-    }
-
-    # SSH service
-    Write-Host "Habilitando serviço de SSH..."
-    Get-Service -Name "sshd" -ErrorAction SilentlyContinue
-
-    if (-not $?) {
-        Write-Host "O serviço SSH (sshd) não está habilitado, habilitando agora..."
-        Add-WindowsCapability -Online -Name OpenSSH.Client
-        Add-WindowsCapability -Online -Name OpenSSH.Server
-    }
-    else {
-        Write-Host "O serviço de SSH (sshd) já está habilitado."
-    }
-
-    try {
-        Start-Service -Name "sshd" -ErrorAction SilentlyContinue ; Set-Service -Name "sshd" -StartupType Automatic -ErrorAction SilentlyContinue
-    }
-    catch {
-        $action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -Command 'Start-Service -Name sshd ; Set-Service -Name sshd -StartupType Automatic'"
-        $trigger = New-ScheduledTaskTrigger -AtStartup
-        Register-ScheduledTask -Action $action -Trigger $trigger -TaskName 'HabilitarSSH' -RunLevel Highest
-        Write-Host "O serviço de SSH foi instalado e será habilitado após a próxima vez em que o sistema for reiniciado."
-    }
-
-    # Firewall rules
-    Write-Host "Criando regras de firewall para serviços e game servers..."
-    New-NetFirewallRule -DisplayName "FTP" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 21
-    New-NetFirewallRule -DisplayName "SSH" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 22
-    New-NetFirewallRule -DisplayName "PZ Dedicated Server" -Direction Inbound -Action Allow -Protocol UDP -LocalPort 16261-16262
-    New-NetFirewallRule -DisplayName "Valheim Dedicated Server" -Direction Inbound -Action Allow -Protocol UDP -LocalPort 2456-2458
-    New-NetFirewallRule -DisplayName "DST Dedicated Server" -Direction Inbound -Action Allow -Protocol UDP -LocalPort 10889
-    Write-Host "Configurações de rede aplicadas."
-}
-
-# Instalação de pacotes (client)
-
-function installClientPKGs {
-    Write-Host 'Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável "CLIENT_PKGS"'
-    Write-Host 'Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal.'
-    $count = 0
-
-    foreach ($pkg in $CLIENT_PKGS) {
-        winget list $pkg > $null 2>&1
-
-        if (-not $?) {
-            Write-Host "Instalando $pkg ..."
-            winget install $pkg --accept-package-agreements --accept-source-agreements --disable-interactivity --silent
-            if ($?) { $count++ }
-        }
-        else {
-            Write-Host "$pkg já está instalado."
-        }
-    }
-
-    Write-Host "$count de $CLIENT_PKGS.Count pacotes foram instalados com sucesso."
-}
-
-# Instalação de pacotes (server)
-
-function installServerPKGs {
-    Write-Host 'Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável "SERVER_PKGS"'
-    Write-Host 'Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal.'
-
-    $count = 0
-
-    foreach ($pkg in $SERVER_PKGS) {
-        winget list $pkg > $null 2>&1
-
-        if (-not $?) {
-            Write-Host "Instalando $pkg ..."
-            winget install $pkg --accept-package-agreements --accept-source-agreements --disable-interactivity --silent
-            if ($?) { $count++ }
-        }
-        else {
-            Write-Host "$pkg já está instalado."
-        }
-    }
-
-    Write-Host "$count de $SERVER_PKGS.Count pacotes foram instalados com sucesso."
 }
 
 # Personalização do sistema
@@ -315,15 +210,75 @@ function setCustomOptions {
     REG ADD "HKCU\Control Panel\Desktop" /v "JPEGImportQuality" /t REG_DWORD /d 100 /f
 
     Write-Host "Aplicando novo wallpaper..."
-    Invoke-WebRequest 'https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/resources/wallpaper.jpg' -OutFile $env:USERPROFILE'\wallpaper.jpg'
+    Invoke-WebRequest 'https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/resources/wallpaper.jpg' -OutFile $env:USERPROFILE'\wallpaper.jpg' -ErrorAction SilentlyContinue | Out-Null
     REG ADD "HKEY_CURRENT_USER\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "$env:USERPROFILE\wallpaper.jpg" /f
-    Invoke-Expression -Command "rundll32.exe user32.dll, UpdatePerUserSystemParameters"
+    Invoke-Expression -Command "rundll32.exe user32.dll, UpdatePerUserSystemParameters" -ErrorAction SilentlyContinue
     Write-Host "Personalizações aplicadas. O Windows Explorer será reiniciado."
     Pause
     Stop-Process -Name explorer -Force ; Start-Process explorer
 
     Write-Host "Baixando e instalando o DriverBooster..."
-    Invoke-WebRequest 'https://cdn.iobit.com/dl/driver_booster_setup.exe' -OutFile driver_booster_setup.exe -ErrorAction SilentlyContinue ; Start-Process driver_booster_setup.exe /verysilent > $null 2>&1
+    Invoke-WebRequest 'https://cdn.iobit.com/dl/driver_booster_setup.exe' -OutFile $env:TEMP'\driver_booster_setup.exe' -ErrorAction SilentlyContinue | Out-Null ; Start-Process $env:TEMP'\driver_booster_setup.exe' /verysilent | Out-Null
+}
+
+# Configurações e serviços de rede
+
+function setNetworkOptions {
+    # FTP service
+    Write-Host "Habilitando serviço de FTP..."
+    Get-Service -Name "ftpsvc" -ErrorAction SilentlyContinue | Out-Null
+
+    if (-not $?) {
+        Write-Host "O serviço de FTP (ftpsvc) não está habilitado, habilitando agora..."
+        Enable-WindowsOptionalFeature -Online -FeatureName "IIS-WebServerRole" -All | Out-Null
+        Enable-WindowsOptionalFeature -Online -FeatureName "IIS-WebServer" -All | Out-Null
+        Enable-WindowsOptionalFeature -Online -FeatureName "IIS-FTPServer" -All | Out-Null
+    }
+    else {
+        Write-Host "O serviço de FTP (ftpsvc) já está habilitado."
+    }
+
+    try {
+        Start-Service -Name "ftpsvc" -ErrorAction SilentlyContinue | Out-Null ; Set-Service -Name "ftpsvc" -StartupType Automatic -ErrorAction SilentlyContinue | Out-Null
+    }
+    catch {
+        $action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -Command 'Start-Service -Name ftpsvc ; Set-Service -Name ftpsvc -StartupType Automatic'"
+        $trigger = New-ScheduledTaskTrigger -AtStartup
+        Register-ScheduledTask -Action $action -Trigger $trigger -TaskName 'HabilitarFTP' -RunLevel Highest
+        Write-Host "O serviço de FTP foi instalado e será habilitado após a próxima vez em que o sistema for reiniciado."
+    }
+
+    # SSH service
+    Write-Host "Habilitando serviço de SSH..."
+    Get-Service -Name "sshd" -ErrorAction SilentlyContinue | Out-Null
+
+    if (-not $?) {
+        Write-Host "O serviço SSH (sshd) não está habilitado, habilitando agora..."
+        Add-WindowsCapability -Online -Name OpenSSH.Client | Out-Null
+        Add-WindowsCapability -Online -Name OpenSSH.Server | Out-Null
+    }
+    else {
+        Write-Host "O serviço de SSH (sshd) já está habilitado."
+    }
+
+    try {
+        Start-Service -Name "sshd" -ErrorAction SilentlyContinue | Out-Null ; Set-Service -Name "sshd" -StartupType Automatic -ErrorAction SilentlyContinue | Out-Null
+    }
+    catch {
+        $action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -Command 'Start-Service -Name sshd ; Set-Service -Name sshd -StartupType Automatic'"
+        $trigger = New-ScheduledTaskTrigger -AtStartup
+        Register-ScheduledTask -Action $action -Trigger $trigger -TaskName 'HabilitarSSH' -RunLevel Highest
+        Write-Host "O serviço de SSH foi instalado e será habilitado após a próxima vez em que o sistema for reiniciado."
+    }
+
+    # Firewall rules
+    Write-Host "Criando regras de firewall para serviços e game servers..."
+    New-NetFirewallRule -DisplayName "FTP" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 21 | Out-Null
+    New-NetFirewallRule -DisplayName "SSH" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 22 | Out-Null
+    New-NetFirewallRule -DisplayName "PZ Dedicated Server" -Direction Inbound -Action Allow -Protocol UDP -LocalPort 16261-16262 | Out-Null
+    New-NetFirewallRule -DisplayName "Valheim Dedicated Server" -Direction Inbound -Action Allow -Protocol UDP -LocalPort 2456-2458 | Out-Null
+    New-NetFirewallRule -DisplayName "DST Dedicated Server" -Direction Inbound -Action Allow -Protocol UDP -LocalPort 10889 | Out-Null
+    Write-Host "Configurações de rede aplicadas."
 }
 
 # Configurações de energia
@@ -339,12 +294,12 @@ function setPowerOptions {
 function setExtraOptions {
     Write-Host "Ativando o recurso DirectPlay..."
     if ((Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction SilentlyContinue).State -ne 'Enabled') { 
-        Enable-WindowsOptionalFeature -Online -FeatureName DirectPlay -All 
+        Enable-WindowsOptionalFeature -Online -FeatureName DirectPlay -All -ErrorAction SilentlyContinue | Out-Null
     }
     
     Write-Host "Ativando o recurso .NET Framework 3.5..."
     if ((Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State -ne 'Enabled') { 
-        Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All 
+        Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All -ErrorAction SilentlyContinue | Out-Null
     }
 
     Write-Host "Configurando o git..."
@@ -353,11 +308,58 @@ function setExtraOptions {
     "    email = $GitEmail" | Out-File -FilePath $GitConfigFile -Append
 }
 
+# Instalação de pacotes (client)
+
+function installClientPKGs {
+    Write-Host 'Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável "CLIENT_PKGS".'
+    Write-Host 'Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal.'
+    $count = 0
+
+    foreach ($pkg in $CLIENT_PKGS) {
+        Invoke-Expression -Command 'winget list $pkg' -ErrorAction SilentlyContinue | Out-Null
+
+        if (-not $?) {
+            Write-Host "Instalando $pkg ..."
+            Invoke-Expression -Command 'winget install $pkg --accept-package-agreements --accept-source-agreements --disable-interactivity --silent' -ErrorAction SilentlyContinue | Out-Null
+            if ($?) { $count++ }
+        }
+        else {
+            Write-Host "$pkg já está instalado."
+        }
+    }
+
+    Write-Host "$count de $CLIENT_PKGS.Count pacotes foram instalados com sucesso."
+}
+
+# Instalação de pacotes (server)
+
+function installServerPKGs {
+    Write-Host 'Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável "SERVER_PKGS".'
+    Write-Host 'Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal.'
+
+    $count = 0
+
+    foreach ($pkg in $SERVER_PKGS) {
+        Invoke-Expression -Command 'winget list $pkg' -ErrorAction SilentlyContinue | Out-Null
+
+        if (-not $?) {
+            Write-Host "Instalando $pkg ..."
+            Invoke-Expression -Command 'winget install $pkg --accept-package-agreements --accept-source-agreements --disable-interactivity --silent' -ErrorAction SilentlyContinue | Out-Null
+            if ($?) { $count++ }
+        }
+        else {
+            Write-Host "$pkg já está instalado."
+        }
+    }
+
+    Write-Host "$count de $SERVER_PKGS.Count pacotes foram instalados com sucesso."
+}
+
 # Ponto de restauração 2
 
 function setSecondCheckpoint {
     Write-Host "Criando ponto de restauração do sistema..."
-    Checkpoint-Computer -Description 'Pós Execução do Script Windows Post Install' -ErrorAction SilentlyContinue
+    Checkpoint-Computer -Description 'Pós Execução do Script Windows Post Install' -ErrorAction SilentlyContinue | Out-Null
     if (-not $?) { Write-Host "Falha ao criar ponto de restauração do sistema." } else { Write-Host "Ponto de restauração do sistema criado." }
     REG DELETE "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /f
 }
