@@ -1,6 +1,6 @@
-# win_post_install.bat
+# win_post_install.ps1
 
-This batch script automatically installs the programs I use in my PC, runs updates and apply some personal preferences. Tested on **Windows 10**.
+This PowerShell script automatically installs the programs I use in my PC, runs updates and apply some personal preferences. Tested on **Windows 10 and Windows 11**.
 
 ### Winget
 
@@ -9,11 +9,39 @@ Winget is the Windows Package Manager (as good as '*apt install*' on Linux, no j
 For further information and troubleshooting, please visit [winget's Github repository](https://github.com/microsoft/winget-cli).
 
 #
-### Usage
-1. Define the programs to be installed in file `apps.txt` by it's "winget ID". 
-    - **Note:** In case you don't know the ID of an app, use `winget search <appname>` on terminal.
+### Installation
+1. Clone this repository or download and extract the [.zip file](https://github.com/reinaldogpn/script-windows-post-install/archive/refs/heads/main.zip)
 
-2. Run .bat as admin.
+2. Open `powershell.exe` **as Administrator** and browse to the script's directory. If you downloaded the .zip file and extracted to "Downloads", you can use this command:
+    ```
+    cd "$env:UserProfile\Downloads\script-windows-post-install-main\script-windows-post-install-main"
+    ```
+
+3. If needed, set PowerShell execution policy to "Unrestricted", so you can run the .ps1 script:
+    ```
+    Set-ExecutionPolicy Unrestricted -Scope CurrentUser
+    ```
+
+4. To run the script, you have 3 installation options **(choose only one)**:
+    - `--server`: install services as FTP and SSH servers, open specific ports in firewall (game servers ports), change power options and install useful applications for server management:
+        ```
+        .\win_post_install.ps1 --server
+        ```
+        
+    - `--client`: install client-like applications, tools and frameworks, it also make customizations to Windows:
+        ```
+        .\win_post_install.ps1 --client
+        ```
+        
+    - `--full`: full installation, install both server and client options:
+        ```
+        .\win_post_install.ps1 --full
+        ```
+
+5. For security reasons, when the installation is done, change PowerShell execution policy back to "Restricted":
+    ```
+    Set-ExecutionPolicy Restricted -Scope CurrentUser
+    ```
 
 #
 ### Customization Tools
