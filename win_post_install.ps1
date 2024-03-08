@@ -297,9 +297,6 @@ function installClientPKGs {
     }
 
     Write-Host "$count de $CLIENT_PKGS.Count pacotes foram instalados com sucesso."
-
-    Write-Host "Baixando e instalando o DriverBooster..."
-    Invoke-WebRequest 'https://cdn.iobit.com/dl/driver_booster_setup.exe' -OutFile driver_booster_setup.exe -ErrorAction SilentlyContinue ; Start-Process driver_booster_setup.exe /verysilent /supressmsgboxes > $null 2>&1
 }
 
 # Instalação de pacotes (server)
@@ -324,9 +321,6 @@ function installServerPKGs {
     }
 
     Write-Host "$count de $SERVER_PKGS.Count pacotes foram instalados com sucesso."
-
-    Write-Host "Baixando e instalando o DriverBooster..."
-    Invoke-WebRequest 'https://cdn.iobit.com/dl/driver_booster_setup.exe' -OutFile driver_booster_setup.exe -ErrorAction SilentlyContinue ; Start-Process driver_booster_setup.exe /verysilent /supressmsgboxes > $null 2>&1
 }
 
 # Personalização do sistema
@@ -347,6 +341,9 @@ function setCustomOptions {
     pause
 
     Stop-Process -Name explorer -Force ; Start-Process explorer
+
+    Write-Host "Baixando e instalando o DriverBooster..."
+    Invoke-WebRequest 'https://cdn.iobit.com/dl/driver_booster_setup.exe' -OutFile driver_booster_setup.exe -ErrorAction SilentlyContinue ; Start-Process driver_booster_setup.exe /verysilent > $null 2>&1
 }
 
 # Configurações de energia
@@ -386,6 +383,7 @@ function setSecondCheckpoint {
 if ($option -ceq "--server") {
     checkRequisites
     setFirstCheckpoint
+    setCustomOptions
     setNetworkOptions
     setPowerOptions
     installServerPKGs
