@@ -205,7 +205,7 @@ function setNetworkOptions {
 
     if (-not $?) {
         Write-Host "O serviço de FTP (ftpsvc) não está habilitado, habilitando agora..."
-        Enable-WindowsOptionalFeature -Online -FeatureName "Web-Server" -All
+        Enable-WindowsOptionalFeature -Online -FeatureName "IIS-WebServerRole" -All
         Enable-WindowsOptionalFeature -Online -FeatureName "IIS-WebServer" -All
         Enable-WindowsOptionalFeature -Online -FeatureName "IIS-FTPServer" -All
     }
