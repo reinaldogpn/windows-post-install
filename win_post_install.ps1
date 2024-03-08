@@ -168,7 +168,7 @@ function checkRequisites {
     } 
     catch {
         Write-Warning -Message "Winget não está instalado. Tentando instalar agora..."
-        Add-AppxPackage -Path $ResourcesPath\winget\Microsoft.UI.Xaml_7.2208.15002.0_X64_msix_en-US.msix -ErrorAction SilentlyContinue
+        Add-AppxPackage -Path $ResourcesPath\winget\Microsoft.UI.Xaml_8.2310.30001.0_X64_msix_en-US.msix -ErrorAction SilentlyContinue
         Add-AppxPackage -Path $ResourcesPath\winget\Microsoft.VC.2015.UWP.DRP_14.0.30704.0_X64_msix_en-US.msix -ErrorAction SilentlyContinue
         #Add-AppxPackage -Path $ResourcesPath\winget\Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle -ErrorAction SilentlyContinue
         Invoke-WebRequest 'https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' -OutFile winget.msixbundle -ErrorAction SilentlyContinue ; Add-AppxPackage -Path .\winget.msixbundle -ErrorAction SilentlyContinue
