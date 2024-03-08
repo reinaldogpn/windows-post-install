@@ -161,20 +161,20 @@ function checkRequisites {
     } 
     catch {
         Write-Warning -Message "Winget não está instalado. Tentando instalar agora..."
-        Invoke-WebRequest 'https://download.microsoft.com/download/4/7/c/47c6134b-d61f-4024-83bd-b9c9ea951c25/Microsoft.VCLibs.x64.14.00.Desktop.appx' -OutFile $env:TEMP'\Microsoft_VCLibs.appx' -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $env:TEMP'\Microsoft_VCLibs.appx' -ErrorAction SilentlyContinue | Out-Null
-        Invoke-WebRequest 'https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx' -OutFile $env:TEMP'\Microsoft_UI_Xaml.appx' -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $env:TEMP'\Microsoft_UI_Xaml.appx' -ErrorAction SilentlyContinue | Out-Null
-        Invoke-WebRequest 'https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' -OutFile $env:TEMP'\Microsoft_Winget.msixbundle' -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $env:TEMP'\Microsoft_Winget.msixbundle' -ErrorAction SilentlyContinue | Out-Null
+        Invoke-WebRequest "https://download.microsoft.com/download/4/7/c/47c6134b-d61f-4024-83bd-b9c9ea951c25/Microsoft.VCLibs.x64.14.00.Desktop.appx" -OutFile $env:TEMP"\Microsoft_VCLibs.appx" -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $env:TEMP"\Microsoft_VCLibs.appx" -ErrorAction SilentlyContinue | Out-Null
+        Invoke-WebRequest "https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx" -OutFile $env:TEMP"\Microsoft_UI_Xaml.appx" -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $env:TEMP"\Microsoft_UI_Xaml.appx" -ErrorAction SilentlyContinue | Out-Null
+        Invoke-WebRequest "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -OutFile $env:TEMP"\Microsoft_Winget.msixbundle" -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $env:TEMP"\Microsoft_Winget.msixbundle" -ErrorAction SilentlyContinue | Out-Null
     }
     
-    if ($wingetVer -cne 'v1.7.10582') {
+    if ($wingetVer -cne "v1.7.10582") {
         Write-Host "Atualizando o Winget..."
-        Invoke-WebRequest 'https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle' -OutFile $env:TEMP'\Microsoft_Winget.msixbundle' -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $env:TEMP'\Microsoft_Winget.msixbundle' -ForceApplicationShutdown -ErrorAction SilentlyContinue | Out-Null
+        Invoke-WebRequest "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -OutFile $env:TEMP"\Microsoft_Winget.msixbundle" -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $env:TEMP"\Microsoft_Winget.msixbundle" -ForceApplicationShutdown -ErrorAction SilentlyContinue | Out-Null
     } 
     else {
         Write-Host "Winget está devidamente instalado e atualizado."
     }
 
-    Invoke-Expression -Command 'winget list --accept-source-agreements' -ErrorAction SilentlyContinue | Out-Null
+    Invoke-Expression -Command "winget list --accept-source-agreements" -ErrorAction SilentlyContinue | Out-Null
 }
 
 # ------------ FUNÇÕES ------------ #
@@ -183,9 +183,9 @@ function checkRequisites {
 
 function setFirstCheckpoint {
     Write-Host "Criando ponto de restauração do sistema..."
-    Enable-ComputerRestore -Drive 'C:\' -ErrorAction SilentlyContinue
+    Enable-ComputerRestore -Drive "C:\" -ErrorAction SilentlyContinue
     REG ADD "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /t REG_DWORD /d 1 /f
-    Checkpoint-Computer -Description 'Pré Execução do Script Windows Post Install' -ErrorAction SilentlyContinue | Out-Null
+    Checkpoint-Computer -Description "Pré Execução do Script Windows Post Install" -ErrorAction SilentlyContinue | Out-Null
     
     if (-not $?) {
         Write-Warning "Falha ao criar ponto de restauração do sistema. Deseja continuar mesmo assim? (s = sim | n = não)" ; $i = Read-Host
@@ -210,7 +210,7 @@ function setCustomOptions {
     REG ADD "HKCU\Control Panel\Desktop" /v "JPEGImportQuality" /t REG_DWORD /d 100 /f
 
     Write-Host "Aplicando novo wallpaper..."
-    Invoke-WebRequest 'https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/resources/wallpaper.jpg' -OutFile $env:USERPROFILE'\wallpaper.jpg' -ErrorAction SilentlyContinue | Out-Null
+    Invoke-WebRequest "https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/resources/wallpaper.jpg" -OutFile $env:USERPROFILE"\wallpaper.jpg" -ErrorAction SilentlyContinue | Out-Null
     REG ADD "HKEY_CURRENT_USER\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "$env:USERPROFILE\wallpaper.jpg" /f
     Invoke-Expression -Command "rundll32.exe user32.dll, UpdatePerUserSystemParameters" -ErrorAction SilentlyContinue
     Write-Host "Personalizações aplicadas. O Windows Explorer será reiniciado."
@@ -218,7 +218,7 @@ function setCustomOptions {
     Stop-Process -Name explorer -Force ; Start-Process explorer
 
     Write-Host "Baixando e instalando o DriverBooster..."
-    Invoke-WebRequest 'https://cdn.iobit.com/dl/driver_booster_setup.exe' -OutFile $env:TEMP'\driver_booster_setup.exe' -ErrorAction SilentlyContinue | Out-Null ; Start-Process $env:TEMP'\driver_booster_setup.exe' /verysilent | Out-Null
+    Invoke-WebRequest "https://cdn.iobit.com/dl/driver_booster_setup.exe" -OutFile $env:TEMP"\driver_booster_setup.exe" -ErrorAction SilentlyContinue | Out-Null ; Start-Process $env:TEMP"\driver_booster_setup.exe" /verysilent | Out-Null
 }
 
 # Configurações e serviços de rede
@@ -244,7 +244,7 @@ function setNetworkOptions {
     catch {
         $action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -Command 'Start-Service -Name ftpsvc ; Set-Service -Name ftpsvc -StartupType Automatic'"
         $trigger = New-ScheduledTaskTrigger -AtStartup
-        Register-ScheduledTask -Action $action -Trigger $trigger -TaskName 'HabilitarFTP' -RunLevel Highest
+        Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "HabilitarFTP" -RunLevel Highest
         Write-Host "O serviço de FTP foi instalado e será habilitado após a próxima vez em que o sistema for reiniciado."
     }
 
@@ -267,7 +267,7 @@ function setNetworkOptions {
     catch {
         $action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -Command 'Start-Service -Name sshd ; Set-Service -Name sshd -StartupType Automatic'"
         $trigger = New-ScheduledTaskTrigger -AtStartup
-        Register-ScheduledTask -Action $action -Trigger $trigger -TaskName 'HabilitarSSH' -RunLevel Highest
+        Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "HabilitarSSH" -RunLevel Highest
         Write-Host "O serviço de SSH foi instalado e será habilitado após a próxima vez em que o sistema for reiniciado."
     }
 
@@ -293,12 +293,12 @@ function setPowerOptions {
 
 function setExtraOptions {
     Write-Host "Ativando o recurso DirectPlay..."
-    if ((Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction SilentlyContinue).State -ne 'Enabled') { 
+    if ((Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction SilentlyContinue).State -ne "Enabled") { 
         Enable-WindowsOptionalFeature -Online -FeatureName DirectPlay -All -ErrorAction SilentlyContinue | Out-Null
     }
     
     Write-Host "Ativando o recurso .NET Framework 3.5..."
-    if ((Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State -ne 'Enabled') { 
+    if ((Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State -ne "Enabled") { 
         Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All -ErrorAction SilentlyContinue | Out-Null
     }
 
@@ -311,16 +311,16 @@ function setExtraOptions {
 # Instalação de pacotes (client)
 
 function installClientPKGs {
-    Write-Host 'Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável "CLIENT_PKGS".'
-    Write-Host 'Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal.'
+    Write-Host "Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável 'CLIENT_PKGS'."
+    Write-Host "Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal."
     $count = 0
 
     foreach ($pkg in $CLIENT_PKGS) {
-        Invoke-Expression -Command 'winget list $pkg' -ErrorAction SilentlyContinue | Out-Null
+        Invoke-Expression -Command "winget list $pkg" -ErrorAction SilentlyContinue | Out-Null
 
         if (-not $?) {
             Write-Host "Instalando $pkg ..."
-            Invoke-Expression -Command 'winget install $pkg --accept-package-agreements --accept-source-agreements --disable-interactivity --silent' -ErrorAction SilentlyContinue | Out-Null
+            Invoke-Expression -Command "winget install $pkg --accept-package-agreements --accept-source-agreements --disable-interactivity --silent" -ErrorAction SilentlyContinue | Out-Null
             if ($?) { $count++ }
         }
         else {
@@ -334,17 +334,17 @@ function installClientPKGs {
 # Instalação de pacotes (server)
 
 function installServerPKGs {
-    Write-Host 'Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável "SERVER_PKGS".'
-    Write-Host 'Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal.'
+    Write-Host "Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável 'SERVER_PKGS'."
+    Write-Host "Para descobrir o ID da aplicação desejada, use "winget search <nomedoapp>" no terminal."
 
     $count = 0
 
     foreach ($pkg in $SERVER_PKGS) {
-        Invoke-Expression -Command 'winget list $pkg' -ErrorAction SilentlyContinue | Out-Null
+        Invoke-Expression -Command "winget list $pkg" -ErrorAction SilentlyContinue | Out-Null
 
         if (-not $?) {
             Write-Host "Instalando $pkg ..."
-            Invoke-Expression -Command 'winget install $pkg --accept-package-agreements --accept-source-agreements --disable-interactivity --silent' -ErrorAction SilentlyContinue | Out-Null
+            Invoke-Expression -Command "winget install $pkg --accept-package-agreements --accept-source-agreements --disable-interactivity --silent" -ErrorAction SilentlyContinue | Out-Null
             if ($?) { $count++ }
         }
         else {
@@ -359,7 +359,7 @@ function installServerPKGs {
 
 function setSecondCheckpoint {
     Write-Host "Criando ponto de restauração do sistema..."
-    Checkpoint-Computer -Description 'Pós Execução do Script Windows Post Install' -ErrorAction SilentlyContinue | Out-Null
+    Checkpoint-Computer -Description "Pós Execução do Script Windows Post Install" -ErrorAction SilentlyContinue | Out-Null
     if (-not $?) { Write-Host "Falha ao criar ponto de restauração do sistema." } else { Write-Host "Ponto de restauração do sistema criado." }
     REG DELETE "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /f
 }
