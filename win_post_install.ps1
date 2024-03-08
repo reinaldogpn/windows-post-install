@@ -16,6 +16,9 @@ param (
     [string]$option = "--help" # --help = show options | --server = install server tools only | --client = install client tools only | --full = full installation
 )
 
+# Define a codificação do PowerShell para UTF-8 temporariamente (pode ser necessário em alguns sistemas)
+$OutputEncoding = [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+
 # ------------ VARIÁVEIS ------------ #
 
 $CLIENT_PKGS  = "9NKSQGP7F2NH", # Whatsapp Desktop
