@@ -18,7 +18,7 @@ param (
     [string]$option = "--help" # --help = show options | --server = install server tools only | --client = install client tools only | --full = full installation
 )
 
-# Define a codificação do PowerShell para UTF-8 temporariamente (pode ser necessário em alguns sistemas)
+# Define a codificação do PowerShell para UTF-8 temporariamente (pode ser necessário em alguns terminais)
 $OutputEncoding = [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 # ------------ VARIÁVEIS ------------ #
@@ -141,21 +141,25 @@ function Confirm-Resources {
     Write-Host "Verificando instalação do winget..."
     
     try {
-        $wingetVer = winget -v
+        $WingetVer = winget -v
     } 
     catch {
         Write-Warning -Message "Winget não está instalado. Tentando instalar agora..."
-        Invoke-WebRequest "https://download.microsoft.com/download/4/7/c/47c6134b-d61f-4024-83bd-b9c9ea951c25/Microsoft.VCLibs.x64.14.00.Desktop.appx" -OutFile $TempDir"\Microsoft_VCLibs.appx" -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $TempDir"\Microsoft_VCLibs.appx" -ErrorAction SilentlyContinue | Out-Null
-        Invoke-WebRequest "https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx" -OutFile $TempDir"\Microsoft_UI_Xaml.appx" -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $TempDir"\Microsoft_UI_Xaml.appx" -ErrorAction SilentlyContinue | Out-Null
-        Invoke-WebRequest "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -OutFile $TempDir"\Microsoft_Winget.msixbundle" -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $TempDir"\Microsoft_Winget.msixbundle" -ErrorAction SilentlyContinue | Out-Null
+        Add-WindowsCapability -Online -Name "Microsoft.Windows.PackageManagement" -ErrorAction SilentlyContinue | Out-Null
     }
-    
-    if ($wingetVer -cne "v1.7.10582") {
-        Write-Host "Atualizando o Winget..."
-        Invoke-WebRequest "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -OutFile $TempDir"\Microsoft_Winget.msixbundle" -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $TempDir"\Microsoft_Winget.msixbundle" -ForceApplicationShutdown -ErrorAction SilentlyContinue | Out-Null
-    } 
-    else {
-        Write-Host "Winget está devidamente instalado e atualizado."
+    finally {
+        $WingetVer = winget -v
+        
+        if (-not $?) {
+            Show-Error "Falha ao tentar instalar o Winget."
+        }
+        elseif ($WingetVer -cne "v1.7.10582") {
+            Write-Host "Atualizando o Winget..."
+            Invoke-Expression -Command "winget upgrade Microsoft.AppInstaller --accept-package-agreements --accept-source-agreements --disable-interactivity --silent" -ErrorAction SilentlyContinue | Out-Null
+        } 
+        else {
+            Write-Host "Winget está devidamente instalado e atualizado."
+        }
     }
 
     Invoke-Expression -Command "winget list --accept-source-agreements" -ErrorAction SilentlyContinue | Out-Null
