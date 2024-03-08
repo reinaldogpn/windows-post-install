@@ -12,7 +12,7 @@ For further information and troubleshooting, please visit [winget's Github repos
 ### Installation
 1. Open `Windows PowerShell` **as Administrator** and download the [.ps1 file](https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/win_post_install.ps1)
     ```
-    Invoke-WebRequest 'https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/win_post_install.ps1' -OutFile 'win_post_install.ps1'
+    Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/win_post_install.ps1' -OutFile 'win_post_install.ps1' -UseBasicParsing
     ```
 
 2. If needed, set PowerShell execution policy to "Unrestricted", so you can run .ps1 scripts:
