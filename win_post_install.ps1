@@ -346,7 +346,7 @@ function setCustomOptions {
     Write-Host "Personalizações aplicadas. O Windows Explorer será reiniciado."
     pause
 
-    taskkill /F /IM explorer.exe ; Start-Process explorer.exe
+    Stop-Process -Name explorer -Force ; Start-Process explorer
 }
 
 # Configurações de energia
