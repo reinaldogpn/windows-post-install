@@ -1,4 +1,4 @@
-# win_post_install.ps1
+# WinPostInstall.ps1
 
 This PowerShell script automatically installs the programs I use in my PC, runs updates and apply some personal preferences. Tested on **Windows 10 and Windows 11**.
 
@@ -10,9 +10,9 @@ For further information and troubleshooting, please visit [winget's Github repos
 
 #
 ### Installation
-1. Open `Windows PowerShell` **as Administrator** and download the [.ps1 file](https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/win_post_install.ps1)
+1. Open `Windows PowerShell` **as Administrator** and download the [.ps1 file](https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/WinPostInstall.ps1)
     ```
-    Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/win_post_install.ps1' -OutFile 'win_post_install.ps1' -UseBasicParsing
+    Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/WinPostInstall.ps1' -OutFile 'WinPostInstall.ps1' -UseBasicParsing
     ```
 
 2. By default PowerShell scripts execution policy is "Undefined". If needed, set execution policy to "Unrestricted", so you can run .ps1 scripts:
@@ -23,17 +23,17 @@ For further information and troubleshooting, please visit [winget's Github repos
 3. To run the script, you have 3 installation options **(choose only one)**:
     - `--server`: install services as FTP and SSH servers, open specific ports in firewall (game servers ports), change power options and install useful applications for server management:
         ```
-        .\win_post_install.ps1 --server
+        .\WinPostInstall.ps1 --server
         ```
         
     - `--client`: install client-like applications, tools and frameworks, it also make customizations to Windows:
         ```
-        .\win_post_install.ps1 --client
+        .\WinPostInstall.ps1 --client
         ```
         
     - `--full`: full installation, install both server and client options:
         ```
-        .\win_post_install.ps1 --full
+        .\WinPostInstall.ps1 --full
         ```
 
 4. For security reasons, when the installation is done, change PowerShell execution policy back to default:
