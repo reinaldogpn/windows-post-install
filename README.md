@@ -10,19 +10,17 @@ For further information and troubleshooting, please visit [winget's Github repos
 
 #
 ### Installation
-1. Clone this repository or download and extract the [.zip file](https://github.com/reinaldogpn/script-windows-post-install/archive/refs/heads/main.zip)
-
-2. Open `powershell.exe` **as Administrator** and browse to the script's directory. If you downloaded the .zip file and extracted to "Downloads", you can use this command:
+1. Open `powershell.exe` **as Administrator** and download the [.ps1 file](https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/win_post_install.ps1)
     ```
-    cd "$env:UserProfile\Downloads\script-windows-post-install-main\script-windows-post-install-main"
+    Invoke-WebRequest 'https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/win_post_install.ps1' -OutFile 'win_post_install.ps1'
     ```
 
-3. If needed, set PowerShell execution policy to "Unrestricted", so you can run the .ps1 script:
+2. If needed, set PowerShell execution policy to "Unrestricted", so you can run .ps1 scripts:
     ```
     Set-ExecutionPolicy Unrestricted -Scope CurrentUser
     ```
 
-4. To run the script, you have 3 installation options **(choose only one)**:
+3. To run the script, you have 3 installation options **(choose only one)**:
     - `--server`: install services as FTP and SSH servers, open specific ports in firewall (game servers ports), change power options and install useful applications for server management:
         ```
         .\win_post_install.ps1 --server
@@ -38,7 +36,7 @@ For further information and troubleshooting, please visit [winget's Github repos
         .\win_post_install.ps1 --full
         ```
 
-5. For security reasons, when the installation is done, change PowerShell execution policy back to "Restricted":
+4. For security reasons, when the installation is done, change PowerShell execution policy back to "Restricted":
     ```
     Set-ExecutionPolicy Restricted -Scope CurrentUser
     ```
