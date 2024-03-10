@@ -102,7 +102,7 @@ function Confirm-Resources {
     
     # O sistema é compatível?
     Write-Host "Verificando compatibilidade do sistema..."
-    $OS_name = Get-CimInstance Win32_OperatingSystem | Select-Object -ExpandProperty Caption -ErrorAction SilentlyContinue
+    $OS_name = Get-CimInstance Win32_OperatingSystem | Select-Object -ExpandProperty Caption
     
     if (-not $OS_name) {
         Write-Warning -Message "Sistema operacional não encontrado."
@@ -128,10 +128,10 @@ function Confirm-Resources {
     } 
     catch {
         Write-Warning -Message "Winget não está instalado. Instalando winget e suas dependências..."
-        Invoke-WebRequest "https://download.microsoft.com/download/4/7/c/47c6134b-d61f-4024-83bd-b9c9ea951c25/Microsoft.VCLibs.x64.14.00.Desktop.appx" -OutFile $TempDir"Microsoft_VCLibs.appx" -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $TempDir"Microsoft_VCLibs.appx" -ErrorAction SilentlyContinue | Out-Null
-        Invoke-WebRequest "https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx" -OutFile $TempDir"Microsoft_UI_Xaml.appx" -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $TempDir"Microsoft_UI_Xaml.appx" -ErrorAction SilentlyContinue | Out-Null
-        Invoke-WebRequest "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -OutFile $TempDir"Microsoft_Winget.msixbundle" -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $TempDir"Microsoft_Winget.msixbundle" -ErrorAction SilentlyContinue | Out-Null
-        Invoke-Expression "winget -v" -ErrorAction SilentlyContinue | Out-Null
+        Invoke-WebRequest "https://download.microsoft.com/download/4/7/c/47c6134b-d61f-4024-83bd-b9c9ea951c25/Microsoft.VCLibs.x64.14.00.Desktop.appx" -OutFile $TempDir"Microsoft_VCLibs.appx" | Out-Null ; Add-AppxPackage -Path $TempDir"Microsoft_VCLibs.appx" | Out-Null
+        Invoke-WebRequest "https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx" -OutFile $TempDir"Microsoft_UI_Xaml.appx"  | Out-Null ; Add-AppxPackage -Path $TempDir"Microsoft_UI_Xaml.appx"  | Out-Null
+        Invoke-WebRequest "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -OutFile $TempDir"Microsoft_Winget.msixbundle"  | Out-Null ; Add-AppxPackage -Path $TempDir"Microsoft_Winget.msixbundle"  | Out-Null
+        Invoke-Expression "winget -v"  | Out-Null
     }
     
     if (-not $WingetVer) {
@@ -139,13 +139,13 @@ function Confirm-Resources {
     }
     elseif ($WingetVer -cne "v1.7.10582") {
         Write-Host "Atualizando o Winget..."
-        Invoke-WebRequest "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -OutFile $TempDir"\Microsoft_Winget.msixbundle" -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $TempDir"\Microsoft_Winget.msixbundle" -ForceApplicationShutdown -ErrorAction SilentlyContinue | Out-Null
+        Invoke-WebRequest "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -OutFile $TempDir"\Microsoft_Winget.msixbundle"  | Out-Null ; Add-AppxPackage -Path $TempDir"\Microsoft_Winget.msixbundle" -ForceApplicationShutdown  | Out-Null
     } 
     else {
         Write-Host "Winget já está devidamente instalado e atualizado."
     }
 
-    Invoke-Expression -Command "winget list --accept-source-agreements" -ErrorAction SilentlyContinue | Out-Null
+    Invoke-Expression -Command "winget list --accept-source-agreements"  | Out-Null
     #>
 
     # Chocolatey instalado?
@@ -168,24 +168,23 @@ function Set-Checkpoint {
     switch ($Code) {
         1 {
             Write-Host "Criando primeiro ponto de restauração do sistema..."
-            Enable-ComputerRestore -Drive "C:\" -ErrorAction SilentlyContinue
             REG ADD "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /t REG_DWORD /d 1 /f
-            Checkpoint-Computer -Description "Pré Execução do Script Windows Post Install" -ErrorAction SilentlyContinue | Out-Null
-            if (-not $?) {
-                Write-Warning "Falha ao criar ponto de restauração do sistema. Deseja continuar mesmo assim? (s = sim | n = não)" ; $i = Read-Host
-                if ($i -ceq 'n') {
-                    Show-Error "Script encerrado pelo usuário!"
-                }
+            
+            try {
+                Checkpoint-Computer -Description "Pré Execução do Script Windows Post Install" | Out-Null
             }
-            else {
-                Write-Host "Ponto de restauração do sistema criado."
+            catch {
+                Enable-ComputerRestore -Drive "C:\"
+                Checkpoint-Computer -Description "Pré Execução do Script Windows Post Install" -ErrorAction SilentlyContinue | Out-Null
             }
+            
+            if ($?) { Write-Host "Ponto de restauração do sistema criado." } else { Write-Host "Falha ao criar ponto de restauração do sistema." }
         }
 
         2 {
             Write-Host "Criando segundo ponto de restauração do sistema..."
             Checkpoint-Computer -Description "Pós Execução do Script Windows Post Install" -ErrorAction SilentlyContinue | Out-Null
-            if (-not $?) { Write-Host "Falha ao criar ponto de restauração do sistema." } else { Write-Host "Ponto de restauração do sistema criado." }
+            if ($?) { Write-Host "Ponto de restauração do sistema criado." } else { Write-Host "Falha ao criar ponto de restauração do sistema." }
             REG DELETE "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /f
         }
 
@@ -207,15 +206,15 @@ function Set-CustomOptions {
     REG ADD "HKCU\Control Panel\Desktop" /v "JPEGImportQuality" /t REG_DWORD /d 100 /f
 
     Write-Host "Aplicando novo wallpaper..."
-    Invoke-WebRequest "https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/resources/wallpaper.jpg" -OutFile (Join-Path -Path $env:USERPROFILE -ChildPath "wallpaper.jpg") -ErrorAction SilentlyContinue | Out-Null
+    Invoke-WebRequest "https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/resources/wallpaper.jpg" -OutFile (Join-Path -Path $env:USERPROFILE -ChildPath "wallpaper.jpg") | Out-Null
     REG ADD "HKEY_CURRENT_USER\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "$env:USERPROFILE\wallpaper.jpg" /f
-    Invoke-Expression -Command "rundll32.exe user32.dll, UpdatePerUserSystemParameters" -ErrorAction SilentlyContinue
+    Invoke-Expression -Command "rundll32.exe user32.dll, UpdatePerUserSystemParameters"
     Write-Host "Personalizações aplicadas. O Windows Explorer será reiniciado."
     PAUSE
     Stop-Process -Name explorer -Force ; Start-Process explorer
 
     # Write-Host "Baixando e instalando o DriverBooster..."
-    # Invoke-WebRequest "https://cdn.iobit.com/dl/driver_booster_setup.exe" -OutFile $TempDir"\driver_booster_setup.exe" -ErrorAction SilentlyContinue | Out-Null ; Start-Process $TempDir"\driver_booster_setup.exe" /verysilent | Out-Null
+    # Invoke-WebRequest "https://cdn.iobit.com/dl/driver_booster_setup.exe" -OutFile $TempDir"\driver_booster_setup.exe" | Out-Null ; Start-Process $TempDir"\driver_booster_setup.exe" /verysilent | Out-Null
 }
 
 # Configurações e serviços de rede
@@ -236,13 +235,10 @@ function Set-NetworkOptions {
     }
 
     try {
-        Start-Service -Name "ftpsvc" -ErrorAction SilentlyContinue | Out-Null ; Set-Service -Name "ftpsvc" -StartupType Automatic -ErrorAction SilentlyContinue | Out-Null
+        Start-Service -Name "ftpsvc" | Out-Null ; Set-Service -Name "ftpsvc" -StartupType Automatic | Out-Null
     }
     catch {
-        $action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -Command 'Start-Service -Name ftpsvc ; Set-Service -Name ftpsvc -StartupType Automatic'"
-        $trigger = New-ScheduledTaskTrigger -AtStartup
-        Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "HabilitarFTP" -RunLevel Highest
-        Write-Host "O serviço de FTP foi instalado e será habilitado após a próxima vez em que o sistema for reiniciado."
+        Write-Warning -Message "Falha ao tentar iniciar o serviço 'ftpsvc', tente fazer isso manualmente após reiniciar o computador."
     }
 
     # SSH service
@@ -259,13 +255,10 @@ function Set-NetworkOptions {
     }
 
     try {
-        Start-Service -Name "sshd" -ErrorAction SilentlyContinue | Out-Null ; Set-Service -Name "sshd" -StartupType Automatic -ErrorAction SilentlyContinue | Out-Null
+        Start-Service -Name "sshd" | Out-Null ; Set-Service -Name "sshd" -StartupType Automatic | Out-Null
     }
     catch {
-        $action = New-ScheduledTaskAction -Execute "Powershell.exe" -Argument "-NoProfile -WindowStyle Hidden -Command 'Start-Service -Name sshd ; Set-Service -Name sshd -StartupType Automatic'"
-        $trigger = New-ScheduledTaskTrigger -AtStartup
-        Register-ScheduledTask -Action $action -Trigger $trigger -TaskName "HabilitarSSH" -RunLevel Highest
-        Write-Host "O serviço de SSH foi instalado e será habilitado após a próxima vez em que o sistema for reiniciado."
+        Write-Warning -Message "Falha ao tentar iniciar o serviço 'ftpsvc', tente fazer isso manualmente após reiniciar o computador."
     }
 
     # Firewall rules
@@ -309,19 +302,18 @@ function Set-ExtraOptions {
 
 function Add-ChocoPackages {
     Write-Host "Para acrescentar ou remover pacotes ao script, edite o arquivo de configuração do Chocolatey: $ChocoConfigFile."
-
+    
     if (-not (Test-Path $ChocoConfigFile)) {
         Invoke-WebRequest -Uri $ChocoConfigUrl -OutFile $ChocoConfigFile -UseBasicParsing | Out-Null 
     }
 
     try {
         choco install --configfile=$ChocoConfigFile
+        Write-Host "O Chocolatey finalizou a instalação de pacotes. Confira os pacotes instalados:" ; choco list
     }
     catch {
         Write-Warning -Message "Ocorreu um erro ao tentar executar o script de instalação do Chocolatey."
     }
-
-    Write-Host "$count de $($ClientPackages.Count) pacotes foram instalados com sucesso."
 }
 
 # Instalação de pacotes (winget)
@@ -333,7 +325,7 @@ function Add-WingetPackages {
 
     foreach ($pkg in $WingetPackages) {
         try {
-            Invoke-Expression -Command "winget list $pkg" -ErrorAction SilentlyContinue | Out-Null
+            Invoke-Expression -Command "winget list $pkg" | Out-Null
             Write-Host "$pkg já está instalado."
         }
         catch {
