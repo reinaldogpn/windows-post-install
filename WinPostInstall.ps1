@@ -23,47 +23,30 @@ $OutputEncoding = [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 # ------------ VARIÁVEIS ------------ #
 
-$ClientPackages = "9NKSQGP7F2NH", # Whatsapp Desktop
-                  "9NCBCSZSJRSB", # Spotify Client
-                  "9PF4KZ2VN4W9", # TranslucentTB
-                  "Adobe.Acrobat.Reader.64-bit",
-                  "AnyDeskSoftwareGmbH.AnyDesk",
-                  "CPUID.CPU-Z",
-                  "Discord.Discord",
-                  "EpicGames.EpicGamesLauncher",
-                  "Git.Git",
-                  "Google.Chrome",
-                  "HyperX NGENUITY",
-                  "Microsoft.DotNet.DesktopRuntime.3_1",
-                  "Microsoft.VCRedist.2010.x86",
-                  "Microsoft.VCRedist.2010.x64",
-                  "Microsoft.VCRedist.2012.x86",
-                  "Microsoft.VCRedist.2012.x64",
-                  "Microsoft.VCRedist.2013.x86",
-                  "Microsoft.VCRedist.2013.x64",
-                  "Microsoft.VCRedist.2015+.x86",
-                  "Microsoft.VCRedist.2015+.x64",
-                  "Microsoft.XNARedist",
-                  "Microsoft.VisualStudioCode",
-                  "Notepad++.Notepad++",
-                  "OpenJS.NodeJS.LTS",
-                  "Oracle.JavaRuntimeEnvironment",
-                  "Oracle.JDK.18",
-                  "Python.Python.3.11",
-                  "qBittorrent.qBittorrent",
-                  "RARLab.WinRAR",
-                  "TeamViewer.TeamViewer",
-                  "Valve.Steam",
-                  "VideoLAN.VLC"
-
-$ServerPackages = "AnyDeskSoftwareGmbH.AnyDesk",
-                  "RARLab.WinRAR",
-                  "TeamViewer.TeamViewer"
+$WingetPackages = @("9NKSQGP7F2NH", # Whatsapp Desktop
+                    "9NCBCSZSJRSB", # Spotify Client
+                    "9PF4KZ2VN4W9", # TranslucentTB
+                    "HyperX NGENUITY",
+                    "Microsoft.DotNet.DesktopRuntime.3_1",
+                    "Microsoft.VCRedist.2010.x86",
+                    "Microsoft.VCRedist.2010.x64",
+                    "Microsoft.VCRedist.2012.x86",
+                    "Microsoft.VCRedist.2012.x64",
+                    "Microsoft.VCRedist.2013.x86",
+                    "Microsoft.VCRedist.2013.x64",
+                    "Microsoft.VCRedist.2015+.x86",
+                    "Microsoft.VCRedist.2015+.x64",
+                    "Microsoft.XNARedist")
 
 $OS_name = ""
 $OS_version = ""
+
 $TempDir = Join-Path -Path $env:TEMP -ChildPath "WinPostInstall"
-$ErrorLog = "win_post_install_errors.log"
+$ErrorLog = Join-Path -Path $PSScriptRoot -ChildPath "wpi_errors.log"
+
+# Chocolatey
+$ChocoConfigFile = Join-Path -Path $PSScriptRoot -ChildPath "packages.config"
+$ChocoConfigUrl = "https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/packages.config"
 
 # GitHub info for .gitconfig file:
 $GitUser = "reinaldogpn"
@@ -136,33 +119,43 @@ function Confirm-Resources {
             Write-Host "Versão do sistema operacional: $OS_version"
         }
     }
-    
-    # Winget instalado?
+
+    <#
     Write-Host "Verificando instalação do winget..."
     
     try {
-        $WingetVer = winget -v
+        $WingetVer = Invoke-Expression "winget -v"
     } 
     catch {
-        Write-Warning -Message "Winget não está instalado. Tentando instalar agora..."
-        Add-WindowsCapability -Online -Name "Microsoft.Windows.PackageManagement" -ErrorAction SilentlyContinue | Out-Null
+        Write-Warning -Message "Winget não está instalado. Instalando winget e suas dependências..."
+        Invoke-WebRequest "https://download.microsoft.com/download/4/7/c/47c6134b-d61f-4024-83bd-b9c9ea951c25/Microsoft.VCLibs.x64.14.00.Desktop.appx" -OutFile $TempDir"Microsoft_VCLibs.appx" -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $TempDir"Microsoft_VCLibs.appx" -ErrorAction SilentlyContinue | Out-Null
+        Invoke-WebRequest "https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx" -OutFile $TempDir"Microsoft_UI_Xaml.appx" -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $TempDir"Microsoft_UI_Xaml.appx" -ErrorAction SilentlyContinue | Out-Null
+        Invoke-WebRequest "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -OutFile $TempDir"Microsoft_Winget.msixbundle" -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $TempDir"Microsoft_Winget.msixbundle" -ErrorAction SilentlyContinue | Out-Null
+        Invoke-Expression "winget -v" -ErrorAction SilentlyContinue | Out-Null
     }
-    finally {
-        $WingetVer = winget -v
-        
-        if (-not $?) {
-            Show-Error "Falha ao tentar instalar o Winget."
-        }
-        elseif ($WingetVer -cne "v1.7.10582") {
-            Write-Host "Atualizando o Winget..."
-            Invoke-Expression -Command "winget upgrade Microsoft.AppInstaller --accept-package-agreements --accept-source-agreements --disable-interactivity --silent" -ErrorAction SilentlyContinue | Out-Null
-        } 
-        else {
-            Write-Host "Winget está devidamente instalado e atualizado."
-        }
+    
+    if (-not $WingetVer) {
+        Write-Warning "Falha ao tentar instalar o Winget."
+    }
+    elseif ($WingetVer -cne "v1.7.10582") {
+        Write-Host "Atualizando o Winget..."
+        Invoke-WebRequest "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -OutFile $TempDir"\Microsoft_Winget.msixbundle" -ErrorAction SilentlyContinue | Out-Null ; Add-AppxPackage -Path $TempDir"\Microsoft_Winget.msixbundle" -ForceApplicationShutdown -ErrorAction SilentlyContinue | Out-Null
+    } 
+    else {
+        Write-Host "Winget já está devidamente instalado e atualizado."
     }
 
     Invoke-Expression -Command "winget list --accept-source-agreements" -ErrorAction SilentlyContinue | Out-Null
+    #>
+
+    # Chocolatey instalado?
+    if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
+        Write-Host "Chocolatey não está instalado. Instalando Chocolatey..."
+        Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
+    } else {
+        Write-Host "Chocolatey está devidamente instalado."
+    }
+
 }
 
 # ------------ FUNÇÕES ------------ #
@@ -214,15 +207,15 @@ function Set-CustomOptions {
     REG ADD "HKCU\Control Panel\Desktop" /v "JPEGImportQuality" /t REG_DWORD /d 100 /f
 
     Write-Host "Aplicando novo wallpaper..."
-    Invoke-WebRequest "https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/resources/wallpaper.jpg" -OutFile $env:USERPROFILE"\wallpaper.jpg" -ErrorAction SilentlyContinue | Out-Null
+    Invoke-WebRequest "https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/resources/wallpaper.jpg" -OutFile (Join-Path -Path $env:USERPROFILE -ChildPath "wallpaper.jpg") -ErrorAction SilentlyContinue | Out-Null
     REG ADD "HKEY_CURRENT_USER\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "$env:USERPROFILE\wallpaper.jpg" /f
     Invoke-Expression -Command "rundll32.exe user32.dll, UpdatePerUserSystemParameters" -ErrorAction SilentlyContinue
     Write-Host "Personalizações aplicadas. O Windows Explorer será reiniciado."
-    Pause
+    PAUSE
     Stop-Process -Name explorer -Force ; Start-Process explorer
 
-    Write-Host "Baixando e instalando o DriverBooster..."
-    Invoke-WebRequest "https://cdn.iobit.com/dl/driver_booster_setup.exe" -OutFile $TempDir"\driver_booster_setup.exe" -ErrorAction SilentlyContinue | Out-Null ; Start-Process $TempDir"\driver_booster_setup.exe" /verysilent | Out-Null
+    # Write-Host "Baixando e instalando o DriverBooster..."
+    # Invoke-WebRequest "https://cdn.iobit.com/dl/driver_booster_setup.exe" -OutFile $TempDir"\driver_booster_setup.exe" -ErrorAction SilentlyContinue | Out-Null ; Start-Process $TempDir"\driver_booster_setup.exe" /verysilent | Out-Null
 }
 
 # Configurações e serviços de rede
@@ -312,51 +305,52 @@ function Set-ExtraOptions {
     "    email = $GitEmail" | Out-File -FilePath $GitConfigFile -Append
 }
 
-# Instalação de pacotes (client)
+# Instalação de pacotes (chocolatey)
 
-function Add-ClientPackages {
-    Write-Host "Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável 'ClientPackages'."
-    Write-Host "Para descobrir o ID da aplicação desejada, use 'winget search <nomedoapp>' no terminal."
-    $count = 0
+function Add-ChocoPackages {
+    Write-Host "Para acrescentar ou remover pacotes ao script, edite o arquivo de configuração do Chocolatey: $ChocoConfigFile."
 
-    foreach ($pkg in $ClientPackages) {
-        Invoke-Expression -Command "winget list $pkg" -ErrorAction SilentlyContinue | Out-Null
-
-        if (-not $?) {
-            Write-Host "Instalando $pkg ..."
-            Invoke-Expression -Command "winget install $pkg --accept-package-agreements --accept-source-agreements --disable-interactivity --silent" -ErrorAction SilentlyContinue | Out-Null
-            if ($?) { $count++ }
-        }
-        else {
-            Write-Host "$pkg já está instalado."
-        }
+    if (-not (Test-Path $ChocoConfigFile)) {
+        Invoke-WebRequest -Uri $ChocoConfigUrl -OutFile $ChocoConfigFile -UseBasicParsing | Out-Null 
     }
 
-    Write-Host "$count de $ClientPackages.Count pacotes foram instalados com sucesso."
+    try {
+        choco install --configfile=$ChocoConfigFile
+    }
+    catch {
+        Write-Warning -Message "Ocorreu um erro ao tentar executar o script de instalação do Chocolatey."
+    }
+
+    Write-Host "$count de $($ClientPackages.Count) pacotes foram instalados com sucesso."
 }
 
-# Instalação de pacotes (server)
+# Instalação de pacotes (winget)
 
-function Add-ServerPackages {
-    Write-Host "Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável 'ServerPackages'."
+function Add-WingetPackages {
+    Write-Host "Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável 'WingetPackages'."
     Write-Host "Para descobrir o ID da aplicação desejada, use 'winget search <nomedoapp>' no terminal."
-
     $count = 0
 
-    foreach ($pkg in $ServerPackages) {
-        Invoke-Expression -Command "winget list $pkg" -ErrorAction SilentlyContinue | Out-Null
-
-        if (-not $?) {
+    foreach ($pkg in $WingetPackages) {
+        try {
+            Invoke-Expression -Command "winget list $pkg" -ErrorAction SilentlyContinue | Out-Null
+            Write-Host "$pkg já está instalado."
+        }
+        catch {
             Write-Host "Instalando $pkg ..."
             Invoke-Expression -Command "winget install $pkg --accept-package-agreements --accept-source-agreements --disable-interactivity --silent" -ErrorAction SilentlyContinue | Out-Null
-            if ($?) { $count++ }
-        }
-        else {
-            Write-Host "$pkg já está instalado."
+            
+            if ($?) {
+                Write-Host "O pacote $pkg foi instalado com sucesso!"
+                $count++
+            }
+            else {
+                Write-Warning -Message "Falha ao tentar instalar o pacote $pkg."
+            }
         }
     }
 
-    Write-Host "$count de $ServerPackages.Count pacotes foram instalados com sucesso."
+    Write-Host "$count de $WingetPackages.Count pacotes foram instalados com sucesso."
 }
 
 # ------------ EXECUÇÃO ------------ #
@@ -368,7 +362,6 @@ switch ($option) {
         Set-CustomOptions
         Set-NetworkOptions
         Set-PowerOptions
-        Add-ServerPackages
         Set-Checkpoint 2
         Exit-Script
     }
@@ -378,7 +371,8 @@ switch ($option) {
         Set-Checkpoint 1
         Set-CustomOptions
         Set-ExtraOptions
-        Add-ClientPackages
+        Add-ChocoPackages
+        Add-WingetPackages
         Set-Checkpoint 2
         Exit-Script
     }
@@ -390,8 +384,8 @@ switch ($option) {
         Set-NetworkOptions
         Set-PowerOptions
         Set-ExtraOptions
-        Add-ClientPackages
-        Add-ServerPackages
+        Add-ChocoPackages
+        Add-WingetPackages
         Set-Checkpoint 2
         Exit-Script
     }
