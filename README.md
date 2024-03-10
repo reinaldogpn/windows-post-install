@@ -19,7 +19,7 @@ For further information and troubleshooting, please visit [winget's official Git
 ### Installation
 1. Open `Windows PowerShell` **as Administrator** and download the [.ps1 file](https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/WinPostInstall.ps1)
     ```
-    Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/WinPostInstall.ps1' -OutFile 'WinPostInstall.ps1' -UseBasicParsing
+    cd ~ ; Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/WinPostInstall.ps1' -OutFile 'WinPostInstall.ps1' -UseBasicParsing
     ```
 
 2. To run the script, you have 3 installation options **(choose only one)**. Note that this command uses "-ExecutionPolicy Bypass" allowing PowerShell scripts execution:
