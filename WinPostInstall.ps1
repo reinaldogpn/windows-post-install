@@ -55,7 +55,21 @@ $GitConfigFile = Join-Path -Path $env:USERPROFILE -ChildPath ".gitconfig"
 
 # ------------ FUNÇÕES DE SAÍDA ------------ #
 
-function Show-Error {
+function Write-Cyan {
+    param(
+        [string]$Message
+    )
+    Write-Host $Message -ForegroundColor Cyan
+}
+
+function Write-Magenta {
+    param(
+        [string]$Message
+    )
+    Write-Host $Message -ForegroundColor Magenta
+}
+
+function Exit-Error {
     param ([string]$ErrorMessage)
 
     Write-Error -Message $ErrorMessage
@@ -63,16 +77,16 @@ function Show-Error {
 }
 
 function Exit-Script {
-    Write-Host "Fazendo a limpeza do sistema... `nEventuais erros podem ser visualizados posteriormente em: '$ErrorLog'."
+    Write-Cyan "Fazendo a limpeza do sistema... `nEventuais erros podem ser visualizados posteriormente em: '$ErrorLog'."
     if (Test-Path $TempDir) {
         Remove-Item -Path $TempDir -Recurse -Force | Out-Null 
     }
     
     $error | Out-File -FilePath $ErrorLog
     
-    Write-Host "Fim do script! `nO computador precisa ser reiniciado para que todas as alterações sejam aplicadas. Deseja reiniciar agora? (s = sim | n = não)" ; $i = Read-Host
+    Write-Magenta "Fim do script! `nO computador precisa ser reiniciado para que todas as alterações sejam aplicadas. Deseja reiniciar agora? (s = sim | n = não)" ; $i = Read-Host
     if ($i -ceq 's') {
-        Write-Host "Reiniciando agora..."
+        Write-Cyan "Reiniciando agora..."
         Restart-Computer
     }
     
@@ -89,39 +103,39 @@ function Confirm-Resources {
 
     # Executando como admin?
     if (-not ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole] "Administrator")) {
-        Show-Error "Este script deve ser executado como Administrador!"
+        Exit-Error "Este script deve ser executado como Administrador!"
     }
     
     # Conectado à internet?
-    Write-Host "Verificando conexão com a internet..."
+    Write-Cyan "Verificando conexão com a internet..."
     Test-NetConnection -ErrorAction SilentlyContinue | Out-Null
     
     if (-not $?) {
-        Show-Error "O computador precisa estar conectado à internet para executar este script!"
+        Exit-Error "O computador precisa estar conectado à internet para executar este script!"
     }
     
     # O sistema é compatível?
-    Write-Host "Verificando compatibilidade do sistema..."
+    Write-Cyan "Verificando compatibilidade do sistema..."
     $OS_name = Get-CimInstance Win32_OperatingSystem | Select-Object -ExpandProperty Caption
     
     if (-not $OS_name) {
         Write-Warning -Message "Sistema operacional não encontrado."
-        Show-Error "Versão do windows desconhecida ou não suportada!"
+        Exit-Error "Versão do windows desconhecida ou não suportada!"
     } 
     else {
-        Write-Host "Sistema operacional identificado: $OS_name"
+        Write-Cyan "Sistema operacional identificado: $OS_name"
         $OS_version = ($OS_name -split ' ')[2]
     
         if ($OS_version -lt 10) {
-            Show-Error "Versão do windows desconhecida ou não suportada!"
+            Exit-Error "Versão do windows desconhecida ou não suportada!"
         } 
         else {
-            Write-Host "Versão do sistema operacional: $OS_version"
+            Write-Cyan "Versão do sistema operacional: $OS_version"
         }
     }
 
     <#
-    Write-Host "Verificando instalação do winget..."
+    Write-Cyan "Verificando instalação do winget..."
     
     try {
         $WingetVer = Invoke-Expression "winget -v"
@@ -138,11 +152,11 @@ function Confirm-Resources {
         Write-Warning "Falha ao tentar instalar o Winget."
     }
     elseif ($WingetVer -cne "v1.7.10582") {
-        Write-Host "Atualizando o Winget..."
+        Write-Cyan "Atualizando o Winget..."
         Invoke-WebRequest "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle" -OutFile $TempDir"\Microsoft_Winget.msixbundle"  | Out-Null ; Add-AppxPackage -Path $TempDir"\Microsoft_Winget.msixbundle" -ForceApplicationShutdown  | Out-Null
     } 
     else {
-        Write-Host "Winget já está devidamente instalado e atualizado."
+        Write-Cyan "Winget já está devidamente instalado e atualizado."
     }
 
     Invoke-Expression -Command "winget list --accept-source-agreements"  | Out-Null
@@ -150,10 +164,10 @@ function Confirm-Resources {
 
     # Chocolatey instalado?
     if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
-        Write-Host "Chocolatey não está instalado. Instalando Chocolatey..."
+        Write-Magenta "Chocolatey não está instalado. Instalando Chocolatey..."
         Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
     } else {
-        Write-Host "Chocolatey está devidamente instalado."
+        Write-Cyan "Chocolatey está devidamente instalado."
     }
 
 }
@@ -167,7 +181,7 @@ function Set-Checkpoint {
     
     switch ($Code) {
         1 {
-            Write-Host "Criando primeiro ponto de restauração do sistema..."
+            Write-Cyan "Criando primeiro ponto de restauração do sistema..."
             REG ADD "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /t REG_DWORD /d 1 /f
             
             try {
@@ -178,18 +192,18 @@ function Set-Checkpoint {
                 Checkpoint-Computer -Description "Pré Execução do Script Windows Post Install" -ErrorAction SilentlyContinue | Out-Null
             }
             
-            if ($?) { Write-Host "Ponto de restauração do sistema criado." } else { Write-Host "Falha ao criar ponto de restauração do sistema." }
+            if ($?) { Write-Cyan "Ponto de restauração do sistema criado." } else { Write-Warning -Message "Falha ao criar ponto de restauração do sistema." }
         }
 
         2 {
-            Write-Host "Criando segundo ponto de restauração do sistema..."
+            Write-Cyan "Criando segundo ponto de restauração do sistema..."
             Checkpoint-Computer -Description "Pós Execução do Script Windows Post Install" -ErrorAction SilentlyContinue | Out-Null
-            if ($?) { Write-Host "Ponto de restauração do sistema criado." } else { Write-Host "Falha ao criar ponto de restauração do sistema." }
+            if ($?) { Write-Cyan "Ponto de restauração do sistema criado." } else { Write-Warning -Message "Falha ao criar ponto de restauração do sistema." }
             REG DELETE "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /f
         }
 
         default {
-            Show-Error "Parâmetro inválido para criação de ponto de restauração!"
+            Exit-Error "Parâmetro inválido para criação de ponto de restauração!"
         }
     }
 }
@@ -197,7 +211,7 @@ function Set-Checkpoint {
 # Personalização do sistema
 
 function Set-CustomOptions {
-    Write-Host "Aplicando personalizações do sistema..."
+    Write-Cyan "Aplicando personalizações do sistema..."
     REG ADD "HKCU\Software\Microsoft\Windows\CurrentVersion\Feeds" /v "ShellFeedsTaskbarViewMode" /t REG_DWORD /d 2 /f
     REG ADD "HKCU\Software\Microsoft\Windows\CurrentVersion\Search" /v "SearchBoxTaskbarMode" /t REG_DWORD /d 1 /f
     REG ADD "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v "AppsUseLightTheme" /t REG_DWORD /d 0 /f
@@ -205,15 +219,15 @@ function Set-CustomOptions {
     REG ADD "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v "SystemUsesLightTheme" /t REG_DWORD /d 0 /f
     REG ADD "HKCU\Control Panel\Desktop" /v "JPEGImportQuality" /t REG_DWORD /d 100 /f
 
-    Write-Host "Aplicando novo wallpaper..."
+    Write-Cyan "Aplicando novo wallpaper..."
     Invoke-WebRequest "https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/resources/wallpaper.jpg" -OutFile (Join-Path -Path $env:USERPROFILE -ChildPath "wallpaper.jpg") | Out-Null
     REG ADD "HKEY_CURRENT_USER\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "$env:USERPROFILE\wallpaper.jpg" /f
     Invoke-Expression -Command "rundll32.exe user32.dll, UpdatePerUserSystemParameters"
-    Write-Host "Personalizações aplicadas. O Windows Explorer será reiniciado."
+    Write-Magenta "Personalizações aplicadas. O Windows Explorer será reiniciado."
     PAUSE
     Stop-Process -Name explorer -Force ; Start-Process explorer
 
-    # Write-Host "Baixando e instalando o DriverBooster..."
+    # Write-Cyan "Baixando e instalando o DriverBooster..."
     # Invoke-WebRequest "https://cdn.iobit.com/dl/driver_booster_setup.exe" -OutFile $TempDir"\driver_booster_setup.exe" | Out-Null ; Start-Process $TempDir"\driver_booster_setup.exe" /verysilent | Out-Null
 }
 
@@ -221,17 +235,17 @@ function Set-CustomOptions {
 
 function Set-NetworkOptions {
     # FTP service
-    Write-Host "Habilitando serviço de FTP..."
+    Write-Cyan "Habilitando serviço de FTP..."
     Get-Service -Name "ftpsvc" -ErrorAction SilentlyContinue | Out-Null
 
     if (-not $?) {
-        Write-Host "O serviço de FTP (ftpsvc) não está habilitado, habilitando agora..."
+        Write-Magenta "O serviço de FTP (ftpsvc) não está habilitado, habilitando agora..."
         Enable-WindowsOptionalFeature -Online -FeatureName "IIS-WebServerRole" -All | Out-Null
         Enable-WindowsOptionalFeature -Online -FeatureName "IIS-WebServer" -All | Out-Null
         Enable-WindowsOptionalFeature -Online -FeatureName "IIS-FTPServer" -All | Out-Null
     }
     else {
-        Write-Host "O serviço de FTP (ftpsvc) já está habilitado."
+        Write-Cyan "O serviço de FTP (ftpsvc) já está habilitado."
     }
 
     try {
@@ -242,16 +256,16 @@ function Set-NetworkOptions {
     }
 
     # SSH service
-    Write-Host "Habilitando serviço de SSH..."
+    Write-Cyan "Habilitando serviço de SSH..."
     Get-Service -Name "sshd" -ErrorAction SilentlyContinue | Out-Null
 
     if (-not $?) {
-        Write-Host "O serviço SSH (sshd) não está habilitado, habilitando agora..."
+        Write-Magenta "O serviço SSH (sshd) não está habilitado, habilitando agora..."
         Add-WindowsCapability -Online -Name OpenSSH.Client | Out-Null
         Add-WindowsCapability -Online -Name OpenSSH.Server | Out-Null
     }
     else {
-        Write-Host "O serviço de SSH (sshd) já está habilitado."
+        Write-Cyan "O serviço de SSH (sshd) já está habilitado."
     }
 
     try {
@@ -262,19 +276,19 @@ function Set-NetworkOptions {
     }
 
     # Firewall rules
-    Write-Host "Criando regras de firewall para serviços e game servers..."
+    Write-Cyan "Criando regras de firewall para serviços e game servers..."
     New-NetFirewallRule -DisplayName "FTP" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 21 | Out-Null
     New-NetFirewallRule -DisplayName "SSH" -Direction Inbound -Action Allow -Protocol TCP -LocalPort 22 | Out-Null
     New-NetFirewallRule -DisplayName "PZ Dedicated Server" -Direction Inbound -Action Allow -Protocol UDP -LocalPort 16261-16262 | Out-Null
     New-NetFirewallRule -DisplayName "Valheim Dedicated Server" -Direction Inbound -Action Allow -Protocol UDP -LocalPort 2456-2458 | Out-Null
     New-NetFirewallRule -DisplayName "DST Dedicated Server" -Direction Inbound -Action Allow -Protocol UDP -LocalPort 10889 | Out-Null
-    Write-Host "Configurações de rede aplicadas."
+    Write-Cyan "Configurações de rede aplicadas."
 }
 
 # Configurações de energia
 
 function Set-PowerOptions {
-    Write-Host "Alterando configurações de energia do Windows..."
+    Write-Cyan "Alterando configurações de energia do Windows..."
     Invoke-Expression -Command "powercfg /change standby-timeout-ac 0"
     Invoke-Expression -Command "powercfg /change standby-timeout-dc 0"
 }
@@ -282,17 +296,17 @@ function Set-PowerOptions {
 # Outros recursos
 
 function Set-ExtraOptions {
-    Write-Host "Ativando o recurso DirectPlay..."
+    Write-Cyan "Ativando o recurso DirectPlay..."
     if ((Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction SilentlyContinue).State -ne "Enabled") { 
         Enable-WindowsOptionalFeature -Online -FeatureName DirectPlay -All -ErrorAction SilentlyContinue | Out-Null
     }
     
-    Write-Host "Ativando o recurso .NET Framework 3.5..."
+    Write-Cyan "Ativando o recurso .NET Framework 3.5..."
     if ((Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State -ne "Enabled") { 
         Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All -ErrorAction SilentlyContinue | Out-Null
     }
 
-    Write-Host "Configurando o git..."
+    Write-Cyan "Configurando o git..."
     "[user]" | Out-File -FilePath $GitConfigFile
     "    name = $GitUser" | Out-File -FilePath $GitConfigFile -Append
     "    email = $GitEmail" | Out-File -FilePath $GitConfigFile -Append
@@ -301,7 +315,7 @@ function Set-ExtraOptions {
 # Instalação de pacotes (chocolatey)
 
 function Add-ChocoPackages {
-    Write-Host "Para acrescentar ou remover pacotes ao script, edite o arquivo de configuração do Chocolatey: $ChocoConfigFile."
+    Write-Cyan "Para acrescentar ou remover pacotes ao script, edite o arquivo de configuração do Chocolatey: $ChocoConfigFile."
     
     if (-not (Test-Path $ChocoConfigFile)) {
         Invoke-WebRequest -Uri $ChocoConfigUrl -OutFile $ChocoConfigFile -UseBasicParsing | Out-Null 
@@ -309,7 +323,7 @@ function Add-ChocoPackages {
 
     try {
         choco install --configfile=$ChocoConfigFile
-        Write-Host "O Chocolatey finalizou a instalação de pacotes. Confira os pacotes instalados:" ; choco list
+        Write-Cyan "O Chocolatey finalizou a instalação de pacotes. Confira os pacotes instalados:" ; choco list
     }
     catch {
         Write-Warning -Message "Ocorreu um erro ao tentar executar o script de instalação do Chocolatey."
@@ -319,21 +333,21 @@ function Add-ChocoPackages {
 # Instalação de pacotes (winget)
 
 function Add-WingetPackages {
-    Write-Host "Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável 'WingetPackages'."
-    Write-Host "Para descobrir o ID da aplicação desejada, use 'winget search <nomedoapp>' no terminal."
+    Write-Cyan "Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável 'WingetPackages'."
+    Write-Cyan "Para descobrir o ID da aplicação desejada, use 'winget search <nomedoapp>' no terminal."
     $count = 0
 
     foreach ($pkg in $WingetPackages) {
         try {
             Invoke-Expression -Command "winget list $pkg" | Out-Null
-            Write-Host "$pkg já está instalado."
+            Write-Cyan "$pkg já está instalado."
         }
         catch {
-            Write-Host "Instalando $pkg ..."
+            Write-Cyan "Instalando $pkg ..."
             Invoke-Expression -Command "winget install $pkg --accept-package-agreements --accept-source-agreements --disable-interactivity --silent" -ErrorAction SilentlyContinue | Out-Null
             
             if ($?) {
-                Write-Host "O pacote $pkg foi instalado com sucesso!"
+                Write-Cyan "O pacote $pkg foi instalado com sucesso!"
                 $count++
             }
             else {
@@ -342,7 +356,7 @@ function Add-WingetPackages {
         }
     }
 
-    Write-Host "$count de $WingetPackages.Count pacotes foram instalados com sucesso."
+    Write-Magenta "$count de $WingetPackages.Count pacotes foram instalados com sucesso."
 }
 
 # ------------ EXECUÇÃO ------------ #
@@ -388,6 +402,6 @@ switch ($option) {
     }
     
     default {
-        Show-Error "Parâmetro inválido! Para obter a lista de parâmetros use .\WinPostInstall.ps1 --help"
+        Exit-Error "Parâmetro inválido! Para obter a lista de parâmetros use .\WinPostInstall.ps1 --help"
     }
 }
