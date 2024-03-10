@@ -271,7 +271,7 @@ function Set-NetworkOptions {
     )
 
     foreach ($rule in $firewallRules) {
-        New-NetFirewallRule -DisplayName $rule.DisplayName -Direction Inbound -Action Allow -Protocol ($rule.Protocol ?? "TCP") -LocalPort $rule.LocalPort | Out-Null
+        New-NetFirewallRule -DisplayName $rule.DisplayName -Direction Inbound -Action Allow -Protocol $rule.Protocol -LocalPort $rule.LocalPort | Out-Null
     }
 
     Write-Cyan "Configurações de rede aplicadas."
