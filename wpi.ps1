@@ -422,6 +422,6 @@ switch ($option) {
     }
     
     default {
-        Exit-Error "Parâmetro inválido! Para obter a lista de parâmetros use .\WinPostInstall.ps1 --help"
+        Exit-Error "Parâmetro inválido! Para obter a lista de parâmetros use .\wpi.ps1 --help"
     }
 }
