@@ -18,8 +18,7 @@ param (
     [string]$option = "--help" # --help = show options | --server = install server tools only | --client = install client tools only | --full = full installation
 )
 
-# Define a codificação do PowerShell para UTF-8 temporariamente (pode ser necessário em alguns terminais)
-$OutputEncoding = [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
+chcp 65001 | Out-Null
 
 # ------------ VARIÁVEIS ------------ #
 
@@ -130,7 +129,7 @@ function Confirm-Resources {
     # Chocolatey instalado?
     if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
         Write-Magenta "Chocolatey não está instalado. Instalando Chocolatey..."
-        Set-ExecutionPolicy Bypass -Scope Process -Force; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072 | Out-Null ; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1')) | Out-Null 
+        Set-ExecutionPolicy Bypass -Scope Process -Force ; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072 ; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
     } else {
         Write-Cyan "Chocolatey está devidamente instalado."
     }
