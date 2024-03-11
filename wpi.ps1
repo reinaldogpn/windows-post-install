@@ -355,9 +355,22 @@ function Add-ChocoPackages {
 # Instalação de pacotes (winget)
 
 function Add-WingetPackages {
+    if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
+        Write-Magenta "Winget não encontrado. Instalando o winget..."
+        Invoke-Expression -Command "choco install winget-cli --version 1.7.10582 -y" -ErrorAction SilentlyContinue | Out-Null
+        
+        try {
+            $output = Invoke-Expression -Command "echo y | winget list --accept-source-agreements" -ErrorAction Stop
+        }
+        catch {
+            Write-Warning -Message "Falha ao tentar instalar o winget."
+            Write-Warning -Message "Detalhes do erro: " $output
+            return
+        }
+    }
+
     Write-Cyan "Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável 'WingetPackages'."
     Write-Cyan "Para descobrir o ID da aplicação desejada, use 'winget search <nomedoapp>' no terminal."
-    Invoke-Expression -Command "echo y | winget list --accept-source-agreements" | Out-Null
     $count = 0
 
     foreach ($pkg in $WingetPackages) {
