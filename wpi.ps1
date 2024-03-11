@@ -185,7 +185,7 @@ function Set-CustomOptions {
     Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "JPEGImportQuality" -Value 100 -Type DWORD -Force
 
     Write-Cyan "Aplicando novo wallpaper..."
-    $wallpaperUrl = "https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/resources/wallpaper.jpg"
+    $wallpaperUrl = "https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/resources/wallpaper.jpg"
     $wallpaperPath = Join-Path -Path $TempDir -ChildPath "wallpaper.jpg"
     Invoke-WebRequest -Uri $wallpaperUrl -OutFile $wallpaperPath | Out-Null
     Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "Wallpaper" -Value $wallpaperPath -Type STRING -Force
@@ -333,7 +333,7 @@ function Add-ChocoPackages {
     Write-Cyan "Para acrescentar ou remover pacotes ao script, edite o arquivo de configuração do Chocolatey: $ChocoConfigFile."
 
     $ChocoConfigFile = Join-Path -Path $TempDir -ChildPath "packages.config"
-    $ChocoConfigUrl = "https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/packages.config"
+    $ChocoConfigUrl = "https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/packages.config"
     
     if (-not (Test-Path $ChocoConfigFile)) {
         Invoke-WebRequest -Uri $ChocoConfigUrl -OutFile $ChocoConfigFile -UseBasicParsing | Out-Null 
