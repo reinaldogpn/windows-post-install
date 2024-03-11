@@ -355,7 +355,7 @@ function Add-WingetPackages {
     $WingetVer = Invoke-Expression -Command "winget -v" -ErrorAction SilentlyContinue | Out-Null
 
     if (-not ($WingetVer -ceq "v1.7.10582")) {
-        Write-Warning "Winget não encontrado ou desatualizado. Tentando atualizar o winget..."
+        Write-Warning -Message "Winget não encontrado ou desatualizado. Tentando atualizar o winget..."
 
         try {
             $VCLibsURL = "https://download.microsoft.com/download/4/7/c/47c6134b-d61f-4024-83bd-b9c9ea951c25/Microsoft.VCLibs.x64.14.00.Desktop.appx"
@@ -368,13 +368,13 @@ function Add-WingetPackages {
             Invoke-Expression -Command "echo y | winget list" -ErrorAction Stop | Out-Null
         }
         catch {
-            Write-Error "Falha ao tentar atualizar o winget."
+            Write-Warning -Message "Falha ao tentar atualizar o winget."
             return
         }
     }
 
-    Write-Host "Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável 'WingetPackages'."
-    Write-Host "Para descobrir o ID da aplicação desejada, use 'winget search <nomedoapp>' no terminal."
+    Write-Cyan "Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável 'WingetPackages'."
+    Write-Cyan "Para descobrir o ID da aplicação desejada, use 'winget search <nomedoapp>' no terminal."
 
     $count = 0
 
@@ -382,24 +382,24 @@ function Add-WingetPackages {
         $installed = Invoke-Expression -Command "winget list $pkg"
 
         if ($installed -match $pkg) {
-            Write-Host "$pkg já está instalado."
+            Write-Magenta "$pkg já está instalado."
         }
         else {
-            Write-Host "Instalando $pkg ..."
+            Write-Cyan "Instalando $pkg ..."
             $output = Invoke-Expression -Command "winget install $pkg --accept-package-agreements --accept-source-agreements --silent"
             
             if ($output -match "Successfully installed") {
-                Write-Host "O pacote $pkg foi instalado com sucesso!"
+                Write-Cyan "O pacote $pkg foi instalado com sucesso!"
                 $count++
             }
             else {
-                Write-Warning "Falha ao tentar instalar o pacote $pkg."
-                Write-Warning "Detalhes sobre o erro: $output"
+                Write-Warning -Message "Falha ao tentar instalar o pacote $pkg."
+                Write-Warning -Message "Detalhes sobre o erro: $output"
             }
         }
     }
 
-    Write-Host "$count de $($WingetPackages.Count) pacotes foram instalados com sucesso."
+    Write-Cyan "$count de $($WingetPackages.Count) pacotes foram instalados com sucesso."
 }
 
 # ------------ EXECUÇÃO ------------ #
@@ -408,9 +408,9 @@ switch ($option) {
     "--server" {
         Confirm-Resources
         Set-Checkpoint 1
-        Set-CustomOptions
         Set-NetworkOptions
         Set-PowerOptions
+        Set-ExtraOptions
         Set-Checkpoint 2
         Exit-Script
     }
@@ -445,6 +445,6 @@ switch ($option) {
     }
     
     default {
-        Exit-Error "Parâmetro inválido! Para obter a lista de parâmetros use .\wpi.ps1 --help"
+        Exit-Error "Parâmetro inválido! Para obter a lista de parâmetros use o parâmetro --help"
     }
 }
