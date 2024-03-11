@@ -1,4 +1,4 @@
-# WinPostInstall.ps1
+# Windows Post Install (wpi.ps1)
 
 This PowerShell script automatically installs the programs I use in my PC, runs updates and apply some personal preferences. Tested on **Windows 10 and Windows 11**.
 
@@ -17,25 +17,25 @@ For further information and troubleshooting, please visit [winget's official Git
 
 #
 ### Installation
-1. Open `Windows PowerShell` **as Administrator** and download the [.ps1 file](https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/WinPostInstall.ps1)
+1. Open `Windows PowerShell` **as Administrator** and download the [.ps1 file](https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/wpi.ps1)
     ```
-    cd ~ ; Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/WinPostInstall.ps1' -OutFile 'WinPostInstall.ps1' -UseBasicParsing
+    cd ~ ; Invoke-WebRequest -Uri 'https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/wpi.ps1' -OutFile 'wpi.ps1' -UseBasicParsing
     ```
 
 2. To run the script, you have 3 installation options **(choose only one)**. Note that this command uses "-ExecutionPolicy Bypass" allowing PowerShell scripts execution:
     - `--server`: install services as FTP and SSH servers, open specific ports in firewall (game servers ports), change power options and install useful applications for server management:
         ```
-        powershell -ExecutionPolicy Bypass -Command "& .\WinPostInstall.ps1 --server"
+        powershell -ExecutionPolicy Bypass -Command "& .\wpi.ps1 --server"
         ```
         
     - `--client`: install client-like applications, tools and frameworks, it also make customizations to Windows:
         ```
-        powershell -ExecutionPolicy Bypass -Command "& .\WinPostInstall.ps1 --client"
+        powershell -ExecutionPolicy Bypass -Command "& .\wpi.ps1 --client"
         ```
         
     - `--full`: full installation, install both server and client options:
         ```
-        powershell -ExecutionPolicy Bypass -Command "& .\WinPostInstall.ps1 --full"
+        powershell -ExecutionPolicy Bypass -Command "& .\wpi.ps1 --full"
         ```
 
 #
