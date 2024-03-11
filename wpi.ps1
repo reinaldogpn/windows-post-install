@@ -101,7 +101,7 @@ function Confirm-Resources {
     
     # Conectado à internet?
     Write-Cyan "Verificando conexão com a internet..."
-    Test-NetConnection -ErrorAction SilentlyContinue | Out-Null
+    Test-Connection 8.8.8.8 -Count 1 -ErrorAction SilentlyContinue | Out-Null
     
     if (-not $?) {
         Exit-Error "O computador precisa estar conectado à internet para executar este script!"
@@ -177,7 +177,7 @@ function Set-Checkpoint {
 
 function Set-CustomOptions {
     $wallpaperUrl = "https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/resources/wallpaper.jpg"
-    $wallpaperPath = Join-Path -Path $TempDir -ChildPath "wallpaper.jpg"
+    $wallpaperPath = Join-Path -Path $env:UserProfile -ChildPath "wallpaper.jpg"
     
     Write-Cyan "Aplicando personalizações do sistema..."
     if ($OS_version -eq 10) { Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Feeds" -Name "ShellFeedsTaskbarViewMode" -Value 2 -Type DWORD -Force }
@@ -311,7 +311,7 @@ function Set-ExtraOptions {
             }
         }
         catch {
-        Write-Warning -Message "Ocorreu um erro ao ativar o recurso .NET Framework 3.5: $_"
+            Write-Warning -Message "Ocorreu um erro ao ativar o recurso .NET Framework 3.5: $_"
         }
     }
 
@@ -357,10 +357,10 @@ function Add-ChocoPackages {
 function Add-WingetPackages {
     if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
         Write-Magenta "Winget não encontrado. Instalando o winget..."
-        Invoke-Expression -Command "choco install winget-cli --version 1.7.10582 -y" -ErrorAction SilentlyContinue | Out-Null
+        $output = Invoke-Expression -Command "choco install winget-cli --version 1.7.10582 -y" -ErrorAction SilentlyContinue | Out-Null
         
         try {
-            $output = Invoke-Expression -Command "echo y | winget list --accept-source-agreements" -ErrorAction Stop
+            Invoke-Expression -Command "echo y | winget list --accept-source-agreements" -ErrorAction Stop
         }
         catch {
             Write-Warning -Message "Falha ao tentar instalar o winget."
@@ -380,14 +380,15 @@ function Add-WingetPackages {
         }
         else {
             Write-Cyan "Instalando $pkg ..."
-            $output = Invoke-Expression -Command "winget install $pkg --accept-package-agreements --accept-source-agreements --disable-interactivity --silent" -ErrorAction SilentlyContinue
-            if ($?) {
+            $output = winget install $pkg --accept-package-agreements --accept-source-agreements --disable-interactivity --silent
+            
+            if ($installed -match $pkg) {
                 Write-Cyan "O pacote $pkg foi instalado com sucesso!"
                 $count++
             }
             else {
                 Write-Warning -Message "Falha ao tentar instalar o pacote $pkg."
-                Write-Warning -Message "Detalhes do erro: " $output
+                Write-Warning -Message "Detalhes sobre o erro: $output"
             }
         }
     }
