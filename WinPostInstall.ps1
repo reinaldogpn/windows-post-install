@@ -38,7 +38,7 @@ $WingetPackages = @("9NKSQGP7F2NH", # Whatsapp Desktop
                     "Microsoft.VCRedist.2015+.x64",
                     "Microsoft.XNARedist")
 
-$TempDir = Join-Path -Path $env:TEMP -ChildPath "WinPostInstall"
+$TempDir = Join-Path -Path $PSScriptRoot -ChildPath "wpi_temp"
 $ErrorLog = Join-Path -Path $PSScriptRoot -ChildPath "wpi_errors.log"
 
 # GitHub info for .gitconfig file:
@@ -147,7 +147,7 @@ function Set-Checkpoint {
     switch ($Code) {
         1 {
             Write-Cyan "Criando primeiro ponto de restauração do sistema..."
-            REG ADD "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /t REG_DWORD /d 1 /f | Out-Null
+            Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" -Name "SystemRestorePointCreationFrequency" -Value 1 -Type DWORD -Force | Out-Null
             
             try {
                 Checkpoint-Computer -Description "Pré Execução do Script Windows Post Install" -ErrorAction Stop | Out-Null
@@ -164,7 +164,7 @@ function Set-Checkpoint {
             Write-Cyan "Criando segundo ponto de restauração do sistema..."
             Checkpoint-Computer -Description "Pós Execução do Script Windows Post Install" -ErrorAction SilentlyContinue | Out-Null
             if ($?) { Write-Cyan "Ponto de restauração do sistema criado." } else { Write-Warning -Message "Falha ao criar ponto de restauração do sistema." }
-            REG DELETE "HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" /v SystemRestorePointCreationFrequency /f | Out-Null
+            Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" -Name "SystemRestorePointCreationFrequency" -Force | Out-Null
         }
 
         default {
@@ -177,22 +177,22 @@ function Set-Checkpoint {
 
 function Set-CustomOptions {
     Write-Cyan "Aplicando personalizações do sistema..."
-    REG ADD "HKCU\Software\Microsoft\Windows\CurrentVersion\Feeds" /v "ShellFeedsTaskbarViewMode" /t REG_DWORD /d 2 /f
-    REG ADD "HKCU\Software\Microsoft\Windows\CurrentVersion\Search" /v "SearchBoxTaskbarMode" /t REG_DWORD /d 1 /f
-    REG ADD "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v "AppsUseLightTheme" /t REG_DWORD /d 0 /f
-    REG ADD "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v "ColorPrevalence" /t REG_DWORD /d 1 /f
-    REG ADD "HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" /v "SystemUsesLightTheme" /t REG_DWORD /d 0 /f
-    REG ADD "HKCU\Control Panel\Desktop" /v "JPEGImportQuality" /t REG_DWORD /d 100 /f
+    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Feeds" -Name "ShellFeedsTaskbarViewMode" -Value 2 -Type DWORD -Force
+    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "SearchBoxTaskbarMode" -Value 1 -Type DWORD -Force
+    Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Value 0 -Type DWORD -Force
+    Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "ColorPrevalence" -Value 1 -Type DWORD -Force
+    Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 0 -Type DWORD -Force
+    Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "JPEGImportQuality" -Value 100 -Type DWORD -Force
 
     Write-Cyan "Aplicando novo wallpaper..."
     $wallpaperUrl = "https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/resources/wallpaper.jpg"
-    $wallpaperPath = Join-Path -Path $env:USERPROFILE -ChildPath "wallpaper.jpg"
+    $wallpaperPath = Join-Path -Path $TempDir -ChildPath "wallpaper.jpg"
     Invoke-WebRequest -Uri $wallpaperUrl -OutFile $wallpaperPath | Out-Null
-    REG ADD "HKEY_CURRENT_USER\Control Panel\Desktop" /v Wallpaper /t REG_SZ /d "$wallpaperPath" /f
-    Invoke-Expression -Command "rundll32.exe user32.dll, UpdatePerUserSystemParameters"
+    Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "Wallpaper" -Value $wallpaperPath -Type STRING -Force
+    Invoke-Expression -Command 'rundll32.EXE user32.dll, UpdatePerUserSystemParameters 1, True'
 
     Write-Magenta "Personalizações aplicadas. O Windows Explorer será reiniciado."
-    PAUSE
+    Pause
     Stop-Process -Name explorer -Force ; Start-Process explorer
 }
 
@@ -332,7 +332,7 @@ function Set-ExtraOptions {
 function Add-ChocoPackages {
     Write-Cyan "Para acrescentar ou remover pacotes ao script, edite o arquivo de configuração do Chocolatey: $ChocoConfigFile."
 
-    $ChocoConfigFile = Join-Path -Path $PSScriptRoot -ChildPath "packages.config"
+    $ChocoConfigFile = Join-Path -Path $TempDir -ChildPath "packages.config"
     $ChocoConfigUrl = "https://raw.githubusercontent.com/reinaldogpn/script-windows-post-install/main/packages.config"
     
     if (-not (Test-Path $ChocoConfigFile)) {
