@@ -248,10 +248,12 @@ function Set-NetworkOptions {
         @{
             DisplayName = "FTP"
             LocalPort = 21
+            Protocol = "TCP"
         },
         @{
             DisplayName = "SSH"
             LocalPort = 22
+            Protocol = "TCP"
         },
         @{
             DisplayName = "PZ Dedicated Server"
