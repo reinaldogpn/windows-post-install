@@ -356,7 +356,7 @@ function Add-ChocoPackages {
 function Add-WingetPackages {
     $WingetVer = Invoke-Expression -Command "winget -v" -ErrorAction SilentlyContinue
 
-    if (-not ($WingetVer -ceq "v1.7.10582") {
+    if (-not ($WingetVer -ceq "v1.7.10582")) {
         Write-Magenta "Winget não encontrado ou desatualizado. Atualizando o winget..."
         
         try {
