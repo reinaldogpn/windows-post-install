@@ -352,7 +352,7 @@ function Add-ChocoPackages {
 
 function Add-WingetPackages {
     # Verificar se o winget está instalado e na versão correta
-    $WingetVer = Invoke-Expression -Command "winget -v" -ErrorAction SilentlyContinue
+    $WingetVer = Invoke-Expression -Command "winget -v" -ErrorAction SilentlyContinue | Out-Null
 
     if (-not ($WingetVer -ceq "v1.7.10582")) {
         Write-Warning "Winget não encontrado ou desatualizado. Tentando atualizar o winget..."
@@ -362,19 +362,14 @@ function Add-WingetPackages {
             $UIXamlURL = "https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx"
             $WingetURL = "https://github.com/microsoft/winget-cli/releases/download/v1.7.10582/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
     
-            Invoke-WebRequest $VCLibsURL -OutFile "$TempDir\Microsoft_VCLibs.appx" -ErrorAction Stop | Out-Null
-            Add-AppxPackage -Path "$TempDir\Microsoft_VCLibs.appx" -ErrorAction Stop | Out-Null
-            Invoke-WebRequest $UIXamlURL -OutFile "$TempDir\Microsoft_UI_Xaml.appx" -ErrorAction Stop | Out-Null
-            Add-AppxPackage -Path "$TempDir\Microsoft_UI_Xaml.appx" -ErrorAction Stop | Out-Null
-            Invoke-WebRequest $WingetURL -OutFile "$TempDir\Microsoft_Winget.msixbundle" -ErrorAction Stop | Out-Null
-            Add-AppxPackage -Path "$TempDir\Microsoft_Winget.msixbundle" -ErrorAction Stop | Out-Null
+            Invoke-WebRequest $VCLibsURL -OutFile "$TempDir\Microsoft_VCLibs.appx" -ErrorAction Stop | Out-Null ; Add-AppxPackage -Path "$TempDir\Microsoft_VCLibs.appx" -ErrorAction Stop | Out-Null
+            Invoke-WebRequest $UIXamlURL -OutFile "$TempDir\Microsoft_UI_Xaml.appx" -ErrorAction Stop | Out-Null ; Add-AppxPackage -Path "$TempDir\Microsoft_UI_Xaml.appx" -ErrorAction Stop | Out-Null
+            Invoke-WebRequest $WingetURL -OutFile "$TempDir\Microsoft_Winget.msixbundle" -ErrorAction Stop | Out-Null ; Add-AppxPackage -Path "$TempDir\Microsoft_Winget.msixbundle" -ErrorAction Stop | Out-Null
+            Invoke-Expression -Command "echo y | winget list" -ErrorAction Stop | Out-Null
         }
         catch {
             Write-Error "Falha ao tentar atualizar o winget."
             return
-        }
-        finally {
-            Invoke-Expression -Command "echo y | winget list" | Out-Null
         }
     }
 
