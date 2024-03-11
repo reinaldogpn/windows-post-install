@@ -364,7 +364,7 @@ function Add-WingetPackages {
     
             Invoke-WebRequest $VCLibsURL -OutFile "$TempDir\Microsoft_VCLibs.appx" -ErrorAction Stop | Out-Null ; Add-AppxPackage -Path "$TempDir\Microsoft_VCLibs.appx" -ErrorAction Stop | Out-Null
             Invoke-WebRequest $UIXamlURL -OutFile "$TempDir\Microsoft_UI_Xaml.appx" -ErrorAction Stop | Out-Null ; Add-AppxPackage -Path "$TempDir\Microsoft_UI_Xaml.appx" -ErrorAction Stop | Out-Null
-            Invoke-WebRequest $WingetURL -OutFile "$TempDir\Microsoft_Winget.msixbundle" -ErrorAction Stop | Out-Null ; Add-AppxPackage -Path "$TempDir\Microsoft_Winget.msixbundle" -ErrorAction Stop | Out-Null
+            Invoke-WebRequest $WingetURL -OutFile "$TempDir\Microsoft_Winget.msixbundle" -ErrorAction Stop | Out-Null ; Add-AppxPackage -Path "$TempDir\Microsoft_Winget.msixbundle" -ForceApplicationShutdown -ErrorAction Stop | Out-Null
             Invoke-Expression -Command "echo y | winget list" -ErrorAction Stop | Out-Null
         }
         catch {
