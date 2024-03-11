@@ -314,13 +314,10 @@ function Set-ExtraOptions {
         }
     }
 
-    try {
+    if (-not (Test-Path "C:\Program Files (x86)\IObit\Driver Booster")) {
         Write-Cyan "Baixando e instalando o DriverBooster..."
         Invoke-WebRequest "https://cdn.iobit.com/dl/driver_booster_setup.exe" -OutFile $TempDir"\driver_booster_setup.exe" -ErrorAction SilentlyContinue | Out-Null
         Start-Process $TempDir"\driver_booster_setup.exe" /verysilent -ErrorAction Stop | Out-Null
-    }
-    catch {
-        Write-Warning -Message "Ocorreu um erro ao tentar instalar o DriverBooster."
     }
 
     Write-Cyan "Configurando o git..."
