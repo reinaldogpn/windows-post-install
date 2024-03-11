@@ -176,6 +176,9 @@ function Set-Checkpoint {
 # Personalização do sistema
 
 function Set-CustomOptions {
+    $wallpaperUrl = "https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/resources/wallpaper.jpg"
+    $wallpaperPath = Join-Path -Path $TempDir -ChildPath "wallpaper.jpg"
+    
     Write-Cyan "Aplicando personalizações do sistema..."
     Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Feeds" -Name "ShellFeedsTaskbarViewMode" -Value 2 -Type DWORD -Force
     Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "SearchBoxTaskbarMode" -Value 1 -Type DWORD -Force
@@ -185,8 +188,6 @@ function Set-CustomOptions {
     Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "JPEGImportQuality" -Value 100 -Type DWORD -Force
 
     Write-Cyan "Aplicando novo wallpaper..."
-    $wallpaperUrl = "https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/resources/wallpaper.jpg"
-    $wallpaperPath = Join-Path -Path $TempDir -ChildPath "wallpaper.jpg"
     Invoke-WebRequest -Uri $wallpaperUrl -OutFile $wallpaperPath | Out-Null
     Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "Wallpaper" -Value $wallpaperPath -Type STRING -Force
     Invoke-Expression -Command 'rundll32.EXE user32.dll, UpdatePerUserSystemParameters 1, True'
@@ -330,10 +331,10 @@ function Set-ExtraOptions {
 # Instalação de pacotes (chocolatey)
 
 function Add-ChocoPackages {
-    Write-Cyan "Para acrescentar ou remover pacotes ao script, edite o arquivo de configuração do Chocolatey: $ChocoConfigFile."
-
     $ChocoConfigFile = Join-Path -Path $TempDir -ChildPath "packages.config"
     $ChocoConfigUrl = "https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/packages.config"
+
+    Write-Cyan "Para acrescentar ou remover pacotes ao script, edite o arquivo de configuração do Chocolatey: $ChocoConfigFile."
     
     if (-not (Test-Path $ChocoConfigFile)) {
         Invoke-WebRequest -Uri $ChocoConfigUrl -OutFile $ChocoConfigFile -UseBasicParsing | Out-Null 
