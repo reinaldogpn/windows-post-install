@@ -1,4 +1,4 @@
-# Windows Post Install (wpi.ps1)
+# Windows Post Install (WPI)
 
 This PowerShell script automatically installs the programs I use in my PC, runs updates and apply some personal preferences. Tested on **Windows 10 and Windows 11**.
 
