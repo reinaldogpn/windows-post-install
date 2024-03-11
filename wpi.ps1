@@ -336,13 +336,13 @@ function Add-ChocoPackages {
     $ChocoConfigUrl = "https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/packages.config"
 
     Write-Cyan "Para acrescentar ou remover pacotes ao script, edite o arquivo de configuração do Chocolatey: $ChocoConfigFile."
-    
+
     if (-not (Test-Path $ChocoConfigFile)) {
         Invoke-WebRequest -Uri $ChocoConfigUrl -OutFile $ChocoConfigFile -UseBasicParsing | Out-Null 
     }
 
     try {
-        choco install $ChocoConfigFile -y -ErrorAction Stop
+        Invoke-Expression -Command "choco install $ChocoConfigFile -y" -ErrorAction Stop
         Start-Sleep -Seconds 3
         Write-Cyan "O Chocolatey finalizou a instalação de pacotes. Confira os pacotes instalados:" ; choco list
     }
@@ -356,7 +356,7 @@ function Add-ChocoPackages {
 function Add-WingetPackages {
     if (-not (Get-Command winget -ErrorAction SilentlyContinue)) {
         Write-Magenta "Winget não encontrado. Instalando o winget..."
-        $output = Invoke-Expression -Command "choco install winget-cli --version 1.7.10582 -y" -ErrorAction SilentlyContinue | Out-Null
+        $output = Invoke-Expression -Command "choco install winget-cli --version 1.7.10582 -y" -ErrorAction SilentlyContinue
         
         try {
             Invoke-Expression -Command "echo y | winget list --accept-source-agreements" -ErrorAction Stop
