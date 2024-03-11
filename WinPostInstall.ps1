@@ -345,11 +345,11 @@ function Add-ChocoPackages {
 function Add-WingetPackages {
     Write-Cyan "Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável 'WingetPackages'."
     Write-Cyan "Para descobrir o ID da aplicação desejada, use 'winget search <nomedoapp>' no terminal."
-    Invoke-Expression -Command "echo y | winget list" | Out-Null
+    Invoke-Expression -Command "echo y | winget list --accept-source-agreements" | Out-Null
     $count = 0
 
     foreach ($pkg in $WingetPackages) {
-        $installed = winget list $pkg
+        $installed = Invoke-Expression -Command "winget list $pkg"
         if ($installed -match $pkg) {
             Write-Magenta "$pkg já está instalado."
         }
