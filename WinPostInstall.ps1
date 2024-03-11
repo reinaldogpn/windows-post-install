@@ -364,13 +364,14 @@ function Add-WingetPackages {
         }
         else {
             Write-Cyan "Instalando $pkg ..."
-            Invoke-Expression -Command "winget install $pkg --accept-package-agreements --accept-source-agreements --disable-interactivity --silent" -ErrorAction SilentlyContinue | Out-Null
+            $output = Invoke-Expression -Command "winget install $pkg --accept-package-agreements --accept-source-agreements --disable-interactivity --silent" -ErrorAction SilentlyContinue
             if ($?) {
                 Write-Cyan "O pacote $pkg foi instalado com sucesso!"
                 $count++
             }
             else {
                 Write-Warning -Message "Falha ao tentar instalar o pacote $pkg."
+                Write-Warning -Message "Detalhes do erro: " $output
             }
         }
     }
