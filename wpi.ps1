@@ -354,20 +354,20 @@ function Add-ChocoPackages {
 # Instalação de pacotes (winget)
 
 function Add-WingetPackages {
-    try {
-        Invoke-Expression -Command "echo y | winget list --accept-source-agreements" -ErrorAction Stop
-    }
-    catch {
-        Write-Magenta "Winget não encontrado. Instalando o winget..."
-        $output = Invoke-Expression -Command "choco install winget-cli --version 1.7.10582 -y" -ErrorAction SilentlyContinue
+    $WingetVer = Invoke-Expression -Command "winget -v" -ErrorAction SilentlyContinue
 
-        if (Get-Command winget -ErrorAction SilentlyContinue) {
-            Invoke-Expression -Command "echo y | winget list --accept-source-agreements" | Out-Null
+    if (-not ($WingetVer -ceq "v1.7.10582") {
+        Write-Magenta "Winget não encontrado ou desatualizado. Atualizando o winget..."
+        
+        try {
+            Invoke-Expression -Command "choco install winget-cli --version 1.7.10582 -y" -ErrorAction Stop
         }
-        else {
-            Write-Warning -Message "Falha ao tentar instalar o winget."
-            Write-Warning -Message "Detalhes do erro: " $output
+        catch {
+            Write-Warning -Message "Falha ao tentar atualizar o winget."
             return
+        }
+        finally {
+            Invoke-Expression -Command "echo y | winget list" | Out-Null
         }
     }
     
