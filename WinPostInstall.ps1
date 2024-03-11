@@ -298,7 +298,7 @@ function Set-ExtraOptions {
         }
     }
     catch {
-        Write-Warning "Ocorreu um erro ao ativar o recurso DirectPlay: $_"
+        Write-Warning -Message "Ocorreu um erro ao ativar o recurso DirectPlay: $_"
     }
     
     try {
@@ -309,7 +309,16 @@ function Set-ExtraOptions {
         }
     }
     catch {
-        Write-Warning "Ocorreu um erro ao ativar o recurso .NET Framework 3.5: $_"
+        Write-Warning -Message "Ocorreu um erro ao ativar o recurso .NET Framework 3.5: $_"
+    }
+
+    try {
+        Write-Cyan "Baixando e instalando o DriverBooster..."
+        Invoke-WebRequest "https://cdn.iobit.com/dl/driver_booster_setup.exe" -OutFile $TempDir"\driver_booster_setup.exe" -ErrorAction SilentlyContinue | Out-Null
+        Start-Process $TempDir"\driver_booster_setup.exe" /verysilent -ErrorAction Stop | Out-Null
+    }
+    catch {
+        Write-Warning -Message "Ocorreu um erro ao tentar instalar o DriverBooster."
     }
 
     Write-Cyan "Configurando o git..."
