@@ -354,48 +354,60 @@ function Add-ChocoPackages {
 # Instalação de pacotes (winget)
 
 function Add-WingetPackages {
+    # Verificar se o winget está instalado e na versão correta
     $WingetVer = Invoke-Expression -Command "winget -v" -ErrorAction SilentlyContinue
 
     if (-not ($WingetVer -ceq "v1.7.10582")) {
-        Write-Magenta "Winget não encontrado ou desatualizado. Atualizando o winget..."
-        
+        Write-Warning "Winget não encontrado ou desatualizado. Tentando atualizar o winget..."
+
         try {
-            Invoke-Expression -Command "choco install winget-cli --version 1.7.10582 -y" -ErrorAction Stop
+            $VCLibsURL = "https://download.microsoft.com/download/4/7/c/47c6134b-d61f-4024-83bd-b9c9ea951c25/Microsoft.VCLibs.x64.14.00.Desktop.appx"
+            $UIXamlURL = "https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx"
+            $WingetURL = "https://github.com/microsoft/winget-cli/releases/download/v1.7.10582/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
+    
+            Invoke-WebRequest $VCLibsURL -OutFile "$TempDir\Microsoft_VCLibs.appx" -ErrorAction Stop | Out-Null
+            Add-AppxPackage -Path "$TempDir\Microsoft_VCLibs.appx" -ErrorAction Stop | Out-Null
+            Invoke-WebRequest $UIXamlURL -OutFile "$TempDir\Microsoft_UI_Xaml.appx" -ErrorAction Stop | Out-Null
+            Add-AppxPackage -Path "$TempDir\Microsoft_UI_Xaml.appx" -ErrorAction Stop | Out-Null
+            Invoke-WebRequest $WingetURL -OutFile "$TempDir\Microsoft_Winget.msixbundle" -ErrorAction Stop | Out-Null
+            Add-AppxPackage -Path "$TempDir\Microsoft_Winget.msixbundle" -ErrorAction Stop | Out-Null
         }
         catch {
-            Write-Warning -Message "Falha ao tentar atualizar o winget."
+            Write-Error "Falha ao tentar atualizar o winget."
             return
         }
         finally {
             Invoke-Expression -Command "echo y | winget list" | Out-Null
         }
     }
-    
-    Write-Cyan "Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável 'WingetPackages'."
-    Write-Cyan "Para descobrir o ID da aplicação desejada, use 'winget search <nomedoapp>' no terminal."
+
+    Write-Host "Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável 'WingetPackages'."
+    Write-Host "Para descobrir o ID da aplicação desejada, use 'winget search <nomedoapp>' no terminal."
+
     $count = 0
 
     foreach ($pkg in $WingetPackages) {
         $installed = Invoke-Expression -Command "winget list $pkg"
+
         if ($installed -match $pkg) {
-            Write-Magenta "$pkg já está instalado."
+            Write-Host "$pkg já está instalado."
         }
         else {
-            Write-Cyan "Instalando $pkg ..."
-            $output = winget install $pkg --accept-package-agreements --accept-source-agreements --silent
+            Write-Host "Instalando $pkg ..."
+            $output = Invoke-Expression -Command "winget install $pkg --accept-package-agreements --accept-source-agreements --silent"
             
-            if ($installed -match $pkg) {
-                Write-Cyan "O pacote $pkg foi instalado com sucesso!"
+            if ($output -match "Successfully installed") {
+                Write-Host "O pacote $pkg foi instalado com sucesso!"
                 $count++
             }
             else {
-                Write-Warning -Message "Falha ao tentar instalar o pacote $pkg."
-                Write-Warning -Message "Detalhes sobre o erro: $output"
+                Write-Warning "Falha ao tentar instalar o pacote $pkg."
+                Write-Warning "Detalhes sobre o erro: $output"
             }
         }
     }
 
-    Write-Magenta "$count de $($WingetPackages.Count) pacotes foram instalados com sucesso."
+    Write-Host "$count de $($WingetPackages.Count) pacotes foram instalados com sucesso."
 }
 
 # ------------ EXECUÇÃO ------------ #
