@@ -180,7 +180,7 @@ function Set-CustomOptions {
     $wallpaperPath = Join-Path -Path $TempDir -ChildPath "wallpaper.jpg"
     
     Write-Cyan "Aplicando personalizações do sistema..."
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Feeds" -Name "ShellFeedsTaskbarViewMode" -Value 2 -Type DWORD -Force
+    if ($OS_version -eq 10) { Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Feeds" -Name "ShellFeedsTaskbarViewMode" -Value 2 -Type DWORD -Force }
     Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "SearchBoxTaskbarMode" -Value 1 -Type DWORD -Force
     Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Value 0 -Type DWORD -Force
     Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "ColorPrevalence" -Value 1 -Type DWORD -Force
@@ -291,26 +291,28 @@ function Set-PowerOptions {
 # Outros recursos
 
 function Set-ExtraOptions {
-    try {
-        Write-Cyan "Ativando o recurso DirectPlay..."
-        $directPlayState = (Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction SilentlyContinue).State
-        if ($directPlayState -ne "Enabled") { 
-            Enable-WindowsOptionalFeature -Online -FeatureName DirectPlay -All -ErrorAction Stop | Out-Null
+    if ($OS_version -eq 10) {
+        try {
+            Write-Cyan "Ativando o recurso DirectPlay..."
+            $directPlayState = (Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction SilentlyContinue).State
+            if ($directPlayState -ne "Enabled") { 
+                Enable-WindowsOptionalFeature -Online -FeatureName DirectPlay -All -ErrorAction Stop | Out-Null
+            }
         }
-    }
-    catch {
-        Write-Warning -Message "Ocorreu um erro ao ativar o recurso DirectPlay: $_"
-    }
-    
-    try {
-        Write-Cyan "Ativando o recurso .NET Framework 3.5..."
-        $netFx3State = (Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State
-        if ($netFx3State -ne "Enabled") { 
-            Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All -ErrorAction Stop | Out-Null
+        catch {
+            Write-Warning -Message "Ocorreu um erro ao ativar o recurso DirectPlay: $_"
         }
-    }
-    catch {
+        
+        try {
+            Write-Cyan "Ativando o recurso .NET Framework 3.5..."
+            $netFx3State = (Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State
+            if ($netFx3State -ne "Enabled") { 
+                Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All -ErrorAction Stop | Out-Null
+            }
+        }
+        catch {
         Write-Warning -Message "Ocorreu um erro ao ativar o recurso .NET Framework 3.5: $_"
+        }
     }
 
     try {
