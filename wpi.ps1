@@ -366,6 +366,7 @@ function Add-WingetPackages {
             Invoke-WebRequest $UIXamlURL -OutFile "$TempDir\Microsoft_UI_Xaml.appx" -ErrorAction Stop | Out-Null ; Add-AppxPackage -Path "$TempDir\Microsoft_UI_Xaml.appx" -ErrorAction Stop | Out-Null
             Invoke-WebRequest $WingetURL -OutFile "$TempDir\Microsoft_Winget.msixbundle" -ErrorAction Stop | Out-Null ; Add-AppxPackage -Path "$TempDir\Microsoft_Winget.msixbundle" -ForceApplicationShutdown -ErrorAction Stop | Out-Null
             Invoke-Expression -Command "echo y | winget list" -ErrorAction Stop | Out-Null
+            Write-Cyan "Winget foi devidamente atualizado e está pronto para o uso."
         }
         catch {
             Write-Warning -Message "Falha ao tentar atualizar o winget."
