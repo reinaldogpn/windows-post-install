@@ -345,6 +345,7 @@ function Add-ChocoPackages {
 function Add-WingetPackages {
     Write-Cyan "Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável 'WingetPackages'."
     Write-Cyan "Para descobrir o ID da aplicação desejada, use 'winget search <nomedoapp>' no terminal."
+    Invoke-Expression -Command "echo y | winget list" | Out-Null
     $count = 0
 
     foreach ($pkg in $WingetPackages) {
@@ -354,14 +355,13 @@ function Add-WingetPackages {
         }
         else {
             Write-Cyan "Instalando $pkg ..."
-            $output = winget install $pkg --accept-package-agreements --accept-source-agreements --disable-interactivity --silent 2>&1
+            Invoke-Expression -Command "winget install $pkg --accept-package-agreements --accept-source-agreements --disable-interactivity --silent" -ErrorAction SilentlyContinue | Out-Null
             if ($?) {
                 Write-Cyan "O pacote $pkg foi instalado com sucesso!"
                 $count++
             }
             else {
                 Write-Warning -Message "Falha ao tentar instalar o pacote $pkg."
-                Write-Warning -Message "Detalhes do erro: $output"
             }
         }
     }
