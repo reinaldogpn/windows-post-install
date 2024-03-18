@@ -23,9 +23,8 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 # ------------ VARIÁVEIS ------------ #
 
 $WingetPackages = @("9NKSQGP7F2NH", # Whatsapp Desktop
-                    "9NCBCSZSJRSB", # Spotify Client
                     "9PF4KZ2VN4W9", # TranslucentTB
-                    "HyperX NGENUITY",
+                    "9P1TBXR6QDCX", # HyperX NGENUITY
                     "Microsoft.DotNet.DesktopRuntime.3_1",
                     "Microsoft.VCRedist.2010.x86",
                     "Microsoft.VCRedist.2010.x64",
@@ -348,27 +347,71 @@ function Add-ChocoPackages {
     }
 }
 
+# Instalação do winget
+
+function Add-Winget {
+    # Fazer o download dos 3 arquivos manualmente economiza MUITO tempo! 
+    # De qualquer forma, o script faz o download automático dos arquivos caso não sejam encontrados na pasta Downloads.
+    $VCLibsURL = "https://download.microsoft.com/download/4/7/c/47c6134b-d61f-4024-83bd-b9c9ea951c25/Microsoft.VCLibs.x64.14.00.Desktop.appx"
+    $UIXamlURL = "https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx"
+    $WingetURL = "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
+
+    $VCLibsPKG = $VCLibsURL.Split('/')[-1]
+    $UIXamlPKG = $UIXamlURL.Split('/')[-1]
+    $WingetPKG = $WingetURL.Split('/')[-1]
+    
+    $VCLibsPath = Join-Path -Path "$env:UserProfile\Downloads" -ChildPath $VCLibsPKG
+    $UIXamlPath = Join-Path -Path "$env:UserProfile\Downloads" -ChildPath $UIXamlPKG
+    $WingetPath = Join-Path -Path "$env:UserProfile\Downloads" -ChildPath $WingetPKG
+    
+    try {
+        if (-not (Test-Path $VCLibsPath)) {
+            Write-Magenta "Fazendo o download de $($VCLibsPKG). Isso pode demorar um pouco..."
+            Invoke-WebRequest $VCLibsURL -OutFile (Join-Path -Path $TempDir -ChildPath $VCLibsPKG) -ErrorAction Stop | Out-Null
+            Add-AppxPackage -Path (Join-Path -Path $TempDir -ChildPath $VCLibsPKG) -ErrorAction Stop | Out-Null
+        }
+        else {
+            Add-AppxPackage -Path $VCLibsPath -ErrorAction Stop | Out-Null
+        }
+        
+        if (-not (Test-Path $UIXamlPath)) {
+            Write-Magenta "Fazendo o download de $($UIXamlPKG). Isso pode demorar um pouco..."
+            Invoke-WebRequest $UIXamlURL -OutFile (Join-Path -Path $TempDir -ChildPath $UIXamlPKG) -ErrorAction Stop | Out-Null
+            Add-AppxPackage -Path (Join-Path -Path $TempDir -ChildPath $UIXamlPKG) -ErrorAction Stop | Out-Null
+        }
+        else {
+            Add-AppxPackage -Path $UIXamlPath -ErrorAction Stop | Out-Null
+        }
+        
+        if (-not (Test-Path $WingetPath)) {
+            Write-Magenta "Fazendo o download de $($WingetPKG). Isso pode demorar um pouco..."
+            Invoke-WebRequest $WingetURL -OutFile (Join-Path -Path $TempDir -ChildPath $WingetPKG) -ErrorAction Stop | Out-Null
+            Add-AppxPackage -Path (Join-Path -Path $TempDir -ChildPath $WingetPKG) -ForceApplicationShutdown -ErrorAction Stop | Out-Null
+        }
+        else {
+            Add-AppxPackage -Path $WingetPath -ForceApplicationShutdown -ErrorAction Stop | Out-Null
+        }
+        
+        Invoke-Expression -Command "echo y | winget list" -ErrorAction Stop | Out-Null
+        Write-Cyan "Winget foi devidamente atualizado e está pronto para o uso."
+    }
+    catch {
+        return 1
+    }
+    
+    return 0
+}
+
 # Instalação de pacotes (winget)
 
-function Add-WingetPackages {
-    # Verificar se o winget está instalado e na versão correta
+function Add-WingetPkgs {
+    # Verifica se o winget está instalado e na versão correta
     $WingetVer = Invoke-Expression -Command "winget -v" 2> $null
 
-    if (-not ($WingetVer -ceq "v1.7.10582")) {
+    if (!$WingetVer -or ([version]($WingetVer.Split('v')[1]) -lt [version]("1.7.10661"))) {
         Write-Warning -Message "Winget não encontrado ou desatualizado. Tentando atualizar o winget..."
-
-        try {
-            $VCLibsURL = "https://download.microsoft.com/download/4/7/c/47c6134b-d61f-4024-83bd-b9c9ea951c25/Microsoft.VCLibs.x64.14.00.Desktop.appx"
-            $UIXamlURL = "https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx"
-            $WingetURL = "https://github.com/microsoft/winget-cli/releases/download/v1.7.10582/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
-    
-            Invoke-WebRequest $VCLibsURL -OutFile "$TempDir\Microsoft_VCLibs.appx" -ErrorAction Stop | Out-Null ; Add-AppxPackage -Path "$TempDir\Microsoft_VCLibs.appx" -ErrorAction Stop | Out-Null
-            Invoke-WebRequest $UIXamlURL -OutFile "$TempDir\Microsoft_UI_Xaml.appx" -ErrorAction Stop | Out-Null ; Add-AppxPackage -Path "$TempDir\Microsoft_UI_Xaml.appx" -ErrorAction Stop | Out-Null
-            Invoke-WebRequest $WingetURL -OutFile "$TempDir\Microsoft_Winget.msixbundle" -ErrorAction Stop | Out-Null ; Add-AppxPackage -Path "$TempDir\Microsoft_Winget.msixbundle" -ForceApplicationShutdown -ErrorAction Stop | Out-Null
-            Invoke-Expression -Command "echo y | winget list" -ErrorAction Stop | Out-Null
-            Write-Cyan "Winget foi devidamente atualizado e está pronto para o uso."
-        }
-        catch {
+        $output = Add-Winget
+        if ($output -ne 0) {
             Write-Warning -Message "Falha ao tentar atualizar o winget."
             return
         }
@@ -422,7 +465,7 @@ switch ($option) {
         Set-CustomOptions
         Set-ExtraOptions
         Add-ChocoPackages
-        Add-WingetPackages
+        Add-WingetPkgs
         Set-Checkpoint 2
         Exit-Script
     }
@@ -435,7 +478,7 @@ switch ($option) {
         Set-PowerOptions
         Set-ExtraOptions
         Add-ChocoPackages
-        Add-WingetPackages
+        Add-WingetPkgs
         Set-Checkpoint 2
         Exit-Script
     }
