@@ -204,13 +204,13 @@ function Set-NetworkOptions {
 
     if (-not $ftpService) {
         Write-Magenta "O serviço de FTP (ftpsvc) não está habilitado, habilitando agora..."
-        Enable-WindowsOptionalFeature -Online -FeatureName "IIS-WebServerRole" -All | Out-Null
-        Enable-WindowsOptionalFeature -Online -FeatureName "IIS-WebServer" -All | Out-Null
-        Enable-WindowsOptionalFeature -Online -FeatureName "IIS-FTPServer" -All | Out-Null
+        Enable-WindowsOptionalFeature -FeatureName "IIS-WebServerRole" -Online -All -NoRestart | Out-Null
+        Enable-WindowsOptionalFeature -FeatureName "IIS-WebServer" -Online -All -NoRestart | Out-Null
+        Enable-WindowsOptionalFeature -FeatureName "IIS-FTPServer" -Online -All -NoRestart | Out-Null
 
         try {
-            Start-Service -Name "ftpsvc" -ErrorAction Stop | Out-Null
             Set-Service -Name "ftpsvc" -StartupType Automatic -ErrorAction Stop | Out-Null
+            Start-Service -Name "ftpsvc" -ErrorAction Stop | Out-Null
         }
         catch {
             Write-Warning -Message "Falha ao tentar iniciar o serviço 'ftpsvc', tente fazer isso manualmente após reiniciar o computador."
@@ -230,8 +230,8 @@ function Set-NetworkOptions {
         Add-WindowsCapability -Online -Name OpenSSH.Server | Out-Null
 
         try {
-            Start-Service -Name "sshd" -ErrorAction Stop | Out-Null
             Set-Service -Name "sshd" -StartupType Automatic -ErrorAction Stop | Out-Null
+            Start-Service -Name "sshd" -ErrorAction Stop | Out-Null
         }
         catch {
             Write-Warning -Message "Falha ao tentar iniciar o serviço 'sshd', tente fazer isso manualmente após reiniciar o computador."
@@ -392,7 +392,7 @@ function Add-Winget {
             Add-AppxPackage -Path $WingetPath -ForceApplicationShutdown -ErrorAction Stop | Out-Null
         }
         
-        Invoke-Expression -Command "echo y | winget list" -ErrorAction Stop | Out-Null
+        Invoke-Expression -Command "echo y | winget list --accept-source-agreements" -ErrorAction Stop | Out-Null
         Write-Cyan "Winget foi devidamente atualizado e está pronto para o uso."
     }
     catch {
@@ -423,7 +423,7 @@ function Add-WingetPkgs {
     $count = 0
 
     foreach ($pkg in $WingetPackages) {
-        $installed = Invoke-Expression -Command "winget list $pkg"
+        $installed = Invoke-Expression -Command "winget list $pkg --accept-source-agreements"
 
         if ($installed -match $pkg) {
             Write-Magenta "$pkg já está instalado."
