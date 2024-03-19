@@ -15,6 +15,21 @@ Winget is the Windows Package Manager (as good as '*apt install*' on Linux, no j
 
 For further information and troubleshooting, please visit [winget's official Github repository](https://github.com/microsoft/winget-cli).
 
+**Winget download files (OPTIONAL):**
+> Download this files manually to go faster:
+> 
+> **1) Microsoft Visual C Libs:**
+> 
+> - https://download.microsoft.com/download/4/7/c/47c6134b-d61f-4024-83bd-b9c9ea951c25/Microsoft.VCLibs.x64.14.00.Desktop.appx
+> 
+> **2) Microsoft UI Xaml:**
+> 
+> - https://github.com/microsoft/microsoft-ui-xaml/releases/download/v2.8.6/Microsoft.UI.Xaml.2.8.x64.appx
+>   
+> **3) Microsoft Desktop App Installer (Winget):**
+> 
+> - https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle
+
 #
 ### Installation
 1. Open `Windows PowerShell` **as Administrator** and download the [.ps1 file](https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/wpi.ps1)
