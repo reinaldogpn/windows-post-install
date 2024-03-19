@@ -18,7 +18,7 @@ For further information and troubleshooting, please visit [winget's official Git
 **Winget download files (OPTIONAL):**
 > Download this files manually to go faster:
 > 
-> **1) Microsoft Visual C Libs:**
+> **1) Microsoft Visual C++ Redist:**
 > 
 > - https://download.microsoft.com/download/4/7/c/47c6134b-d61f-4024-83bd-b9c9ea951c25/Microsoft.VCLibs.x64.14.00.Desktop.appx
 > 
