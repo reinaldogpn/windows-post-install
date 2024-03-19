@@ -294,7 +294,7 @@ function Set-ExtraOptions {
             Write-Cyan "Ativando o recurso DirectPlay..."
             $directPlayState = (Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction SilentlyContinue).State
             if ($directPlayState -ne "Enabled") { 
-                Enable-WindowsOptionalFeature -Online -FeatureName DirectPlay -All -ErrorAction Stop | Out-Null
+                Enable-WindowsOptionalFeature -FeatureName "DirectPlay" -Online -All -NoRestart -ErrorAction Stop | Out-Null
             }
         }
         catch {
@@ -305,7 +305,7 @@ function Set-ExtraOptions {
             Write-Cyan "Ativando o recurso .NET Framework 3.5..."
             $netFx3State = (Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State
             if ($netFx3State -ne "Enabled") { 
-                Enable-WindowsOptionalFeature -Online -FeatureName NetFx3 -All -ErrorAction Stop | Out-Null
+                Enable-WindowsOptionalFeature -FeatureName "NetFx3" -Online -All -NoRestart -ErrorAction Stop | Out-Null
             }
         }
         catch {
@@ -314,9 +314,11 @@ function Set-ExtraOptions {
     }
 
     if (-not (Test-Path "C:\Program Files (x86)\IObit\Driver Booster")) {
+        $DriverBPath = Join-Path -Path $TempDir -ChildPath "driver_booster_setup.exe"
+        
         Write-Cyan "Baixando e instalando o DriverBooster..."
-        Invoke-WebRequest "https://cdn.iobit.com/dl/driver_booster_setup.exe" -OutFile $TempDir"\driver_booster_setup.exe" -ErrorAction SilentlyContinue | Out-Null
-        Start-Process $TempDir"\driver_booster_setup.exe" /verysilent -ErrorAction SilentlyContinue | Out-Null
+        Invoke-WebRequest "https://cdn.iobit.com/dl/driver_booster_setup.exe" -OutFile $DriverBPath -ErrorAction SilentlyContinue | Out-Null
+        Start-Process $DriverBPath /verysilent -ErrorAction SilentlyContinue | Out-Null
     }
 
     Write-Cyan "Configurando o git..."
