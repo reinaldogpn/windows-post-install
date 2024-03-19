@@ -15,8 +15,9 @@ Winget is the Windows Package Manager (as good as '*apt install*' on Linux, no j
 
 For further information and troubleshooting, please visit [winget's official Github repository](https://github.com/microsoft/winget-cli).
 
-**Winget download files (OPTIONAL):**
-> Download this files manually to go faster:
+**Winget dependencies (OPTIONAL):**
+
+> The script downloads these files automatically, but you should download it manually to go faster:
 > 
 > **1) Microsoft Visual C++ Redist:**
 > 
