@@ -1,4 +1,4 @@
-﻿<#
+<#
 .SYNOPSIS
     Este é um script de customização do Windows.
 
@@ -22,10 +22,7 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 
 # ------------ VARIÁVEIS ------------ #
 
-$WingetPackages = @("9NKSQGP7F2NH", # Whatsapp Desktop
-                    "9PF4KZ2VN4W9", # TranslucentTB
-                    "9P1TBXR6QDCX", # HyperX NGENUITY
-                    "Microsoft.DotNet.DesktopRuntime.3_1",
+$WingetPackages = @("Microsoft.DotNet.DesktopRuntime.3_1",
                     "Microsoft.VCRedist.2010.x86",
                     "Microsoft.VCRedist.2010.x64",
                     "Microsoft.VCRedist.2012.x86",
@@ -34,7 +31,10 @@ $WingetPackages = @("9NKSQGP7F2NH", # Whatsapp Desktop
                     "Microsoft.VCRedist.2013.x64",
                     "Microsoft.VCRedist.2015+.x86",
                     "Microsoft.VCRedist.2015+.x64",
-                    "Microsoft.XNARedist")
+                    "Microsoft.XNARedist",
+                    "NoIP.DUC",
+                    "TeamViewer.TeamViewer",
+                    "AnyDeskSoftwareGmbH.AnyDesk")
 
 $TempDir = Join-Path -Path $PSScriptRoot -ChildPath "wpi_temp"
 $ErrorLog = Join-Path -Path $PSScriptRoot -ChildPath "wpi_errors.log"
@@ -198,6 +198,11 @@ function Set-CustomOptions {
 # Configurações e serviços de rede
 
 function Set-NetworkOptions {
+    # Definir IP estático
+    Invoke-Expression -Command "netsh interface ipv4 set address name='Ethernet' static 192.168.0.120 255.255.255.0 192.168.0.1" | Out-Null
+    Invoke-Expression -Command "netsh interface ipv4 set dnsservers name='Ethernet' static 8.8.8.8 primary" | Out-Null
+    Invoke-Expression -Command "netsh interface ipv4 add dnsservers name='Ethernet' 8.8.4.4 index=2" | Out-Null
+    
     # FTP service
     Write-Cyan "Habilitando serviço de FTP..."
     $ftpService = Get-Service -Name "ftpsvc" -ErrorAction SilentlyContinue
@@ -313,14 +318,6 @@ function Set-ExtraOptions {
         }
     }
 
-    if (-not (Test-Path "C:\Program Files (x86)\IObit\Driver Booster")) {
-        $DriverBPath = Join-Path -Path $TempDir -ChildPath "driver_booster_setup.exe"
-        
-        Write-Cyan "Baixando e instalando o DriverBooster..."
-        Invoke-WebRequest "https://cdn.iobit.com/dl/driver_booster_setup.exe" -OutFile $DriverBPath -ErrorAction SilentlyContinue | Out-Null
-        Start-Process $DriverBPath /verysilent -ErrorAction SilentlyContinue | Out-Null
-    }
-
     Write-Cyan "Configurando o git..."
     "[user]" | Out-File -FilePath $GitConfigFile
     "    name = $GitUser" | Out-File -FilePath $GitConfigFile -Append
@@ -329,7 +326,7 @@ function Set-ExtraOptions {
 
 # Instalação de pacotes (chocolatey)
 
-function Add-ChocoPackages {
+function Add-ChocoPkgs {
     $ChocoConfigFile = Join-Path -Path $TempDir -ChildPath "packages.config"
     $ChocoConfigUrl = "https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/packages.config"
 
@@ -448,6 +445,32 @@ function Add-WingetPkgs {
     Write-Cyan "$count de $($WingetPackages.Count) pacotes foram instalados com sucesso."
 }
 
+# Instalação de outros pacotes
+
+function Add-ExtraPkgs {
+    # DriverBooster
+    if (-not (Test-Path "C:\Program Files (x86)\IObit\Driver Booster")) {
+        $DriverBPath = Join-Path -Path $TempDir -ChildPath "driver_booster_setup.exe"
+        
+        Write-Cyan "Baixando e instalando o DriverBooster..."
+        Invoke-WebRequest "https://cdn.iobit.com/dl/driver_booster_setup.exe" -OutFile $DriverBPath -ErrorAction SilentlyContinue | Out-Null
+        Start-Process $DriverBPath /verysilent -ErrorAction SilentlyContinue | Out-Null
+    }
+    else {
+        Write-Warning -Message "DriverBooster já está instalado."
+    }
+
+    # Windows Game Server (WGSM)
+    if (-not (Test-Path "C:\WGSM")) {
+        New-Item -ItemType Directory -Path "C:\WGSM" | Out-Null
+        $WGSMPath = Join-Path -Path "C:\WGSM" -ChildPath "WindowsGSM.exe"
+        Invoke-WebRequest "https://github.com/WindowsGSM/WindowsGSM/releases/latest/download/WindowsGSM.exe" -OutFile $WGSMPath -ErrorAction SilentlyContinue | Out-Null
+    }
+    else {
+        Write-Warning -Message "WGSM já está instalado."
+    }
+}
+
 # ------------ EXECUÇÃO ------------ #
 
 switch ($option) {
@@ -456,7 +479,8 @@ switch ($option) {
         Set-Checkpoint 1
         Set-NetworkOptions
         Set-PowerOptions
-        Set-ExtraOptions
+        Add-WingetPkgs
+        Add-ExtraPkgs
         Set-Checkpoint 2
         Exit-Script
     }
@@ -466,8 +490,9 @@ switch ($option) {
         Set-Checkpoint 1
         Set-CustomOptions
         Set-ExtraOptions
-        Add-ChocoPackages
+        Add-ChocoPkgs
         Add-WingetPkgs
+        Add-ExtraPkgs
         Set-Checkpoint 2
         Exit-Script
     }
@@ -479,8 +504,9 @@ switch ($option) {
         Set-NetworkOptions
         Set-PowerOptions
         Set-ExtraOptions
-        Add-ChocoPackages
+        Add-ChocoPkgs
         Add-WingetPkgs
+        Add-ExtraPkgs
         Set-Checkpoint 2
         Exit-Script
     }
