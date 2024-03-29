@@ -431,7 +431,7 @@ function Add-WingetPkgs {
             Write-Cyan "Instalando $pkg ..."
             $output = Invoke-Expression -Command "winget install $pkg --accept-package-agreements --accept-source-agreements --silent"
             
-            if ($output -match "Successfully installed") {
+            if ($output -match "Successfully installed" -or $output -match "Instalado com êxito") {
                 Write-Cyan "O pacote $pkg foi instalado com sucesso!"
                 $count++
             }
@@ -464,6 +464,8 @@ function Add-ExtraPkgs {
     if (-not (Test-Path "C:\WGSM")) {
         New-Item -ItemType Directory -Path "C:\WGSM" | Out-Null
         $WGSMPath = Join-Path -Path "C:\WGSM" -ChildPath "WindowsGSM.exe"
+
+        Write-Cyan "Baixando e instalando o WGSM..."
         Invoke-WebRequest "https://github.com/WindowsGSM/WindowsGSM/releases/latest/download/WindowsGSM.exe" -OutFile $WGSMPath -ErrorAction SilentlyContinue | Out-Null
     }
     else {
