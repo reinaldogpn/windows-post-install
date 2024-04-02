@@ -22,7 +22,8 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 
 # ------------ VARIÁVEIS ------------ #
 
-$WingetPackages = @("Microsoft.DotNet.DesktopRuntime.3_1",
+$WingetPackages = @("Google.Chrome",
+                    "Microsoft.DotNet.DesktopRuntime.3_1",
                     "Microsoft.VCRedist.2010.x86",
                     "Microsoft.VCRedist.2010.x64",
                     "Microsoft.VCRedist.2012.x86",
@@ -469,7 +470,7 @@ function Add-ExtraPkgs {
     }
 
     # Windows Game Server (WGSM)
-    if (-not (Test-Path "C:\WGSM")) {
+    if (-not (Test-Path "C:\WGSM") -and $option -ceq "--server") {
         New-Item -ItemType Directory -Path "C:\WGSM" | Out-Null
         $WGSMPath = Join-Path -Path "C:\WGSM" -ChildPath "WindowsGSM.exe"
 
