@@ -16,7 +16,11 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 
 # ------------ VARIÁVEIS ------------ #
 
-$WingetPackages = @("Google.Chrome",
+$WingetPackages = @("9NKSQGP7F2NH", # Whatsapp Desktop
+                    "9PF4KZ2VN4W9", # TranslucentTB
+                    "9P1TBXR6QDCX", # Hyperx NGENUITY
+                    "AnyDeskSoftwareGmbH.AnyDesk",
+                    "Google.Chrome",
                     "Microsoft.DotNet.DesktopRuntime.3_1",
                     "Microsoft.VCRedist.2010.x86",
                     "Microsoft.VCRedist.2010.x64",
@@ -28,8 +32,7 @@ $WingetPackages = @("Google.Chrome",
                     "Microsoft.VCRedist.2015+.x64",
                     "Microsoft.XNARedist",
                     "NoIP.DUC",
-                    "TeamViewer.TeamViewer",
-                    "AnyDeskSoftwareGmbH.AnyDesk")
+                    "TeamViewer.TeamViewer")
 
 $TempDir = Join-Path -Path $PSScriptRoot -ChildPath "wpi_temp"
 $ErrorLog = Join-Path -Path $PSScriptRoot -ChildPath "wpi_errors.log"
