@@ -185,6 +185,14 @@ function Set-CustomOptions {
     Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 0 -Type DWORD -Force
     Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "JPEGImportQuality" -Value 100 -Type DWORD -Force
 
+    # Cria um atalho para a pasta pessoal ($env:UserProfile) na área de trabalho
+    $SourceFileLocation = "$env:UserProfile"
+    $ShortcutLocation = [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Desktop) + "\Pasta Pessoal.lnk"
+    $WScriptShell = New-Object -ComObject WScript.Shell
+    $Shortcut = $WScriptShell.CreateShortcut($ShortcutLocation)
+    $Shortcut.TargetPath = $SourceFileLocation
+    $Shortcut.Save()
+
     Write-Cyan "Aplicando novo wallpaper..."
     Invoke-WebRequest -Uri $wallpaperUrl -OutFile $wallpaperPath | Out-Null
     Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "Wallpaper" -Value $wallpaperPath -Type STRING -Force
