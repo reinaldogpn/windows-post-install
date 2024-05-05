@@ -16,23 +16,71 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 
 # ------------ VARIÁVEIS ------------ #
 
-$WingetPackages = @("9NKSQGP7F2NH", # Whatsapp Desktop
-                    "9PF4KZ2VN4W9", # TranslucentTB
-                    "9P1TBXR6QDCX", # Hyperx NGENUITY
-                    "AnyDeskSoftwareGmbH.AnyDesk",
-                    "Google.Chrome",
-                    "Microsoft.DotNet.DesktopRuntime.3_1",
-                    "Microsoft.VCRedist.2010.x86",
-                    "Microsoft.VCRedist.2010.x64",
-                    "Microsoft.VCRedist.2012.x86",
-                    "Microsoft.VCRedist.2012.x64",
-                    "Microsoft.VCRedist.2013.x86",
-                    "Microsoft.VCRedist.2013.x64",
-                    "Microsoft.VCRedist.2015+.x86",
-                    "Microsoft.VCRedist.2015+.x64",
-                    "Microsoft.XNARedist",
-                    "NoIP.DUC",
-                    "TeamViewer.TeamViewer")
+$PkgsServer = @("Git.Git",
+                "Microsoft.DotNet.DesktopRuntime.3_1",
+                "Microsoft.VCRedist.2010.x86",
+                "Microsoft.VCRedist.2010.x64",
+                "Microsoft.VCRedist.2012.x86",
+                "Microsoft.VCRedist.2012.x64",
+                "Microsoft.VCRedist.2013.x86",
+                "Microsoft.VCRedist.2013.x64",
+                "Microsoft.VCRedist.2015+.x86",
+                "Microsoft.VCRedist.2015+.x64",
+                "Microsoft.XNARedist",
+                "NoIP.DUC",
+                "Notepad++.Notepad++",
+                "RARLab.WinRAR",
+                "TeamViewer.TeamViewer",
+                "Valve.Steam")
+
+$PkgsClient = @("9NKSQGP7F2NH", # Whatsapp Desktop
+                "CPUID.CPU-Z",
+                "Discord.Discord",
+                "Git.Git",
+                "Google.Chrome",
+                "Mozilla.Firefox",
+                "Microsoft.VisualStudioCode",
+                "Notepad++.Notepad++",
+                "OpenJS.NodeJS",
+                "Oracle.JavaRuntimeEnvironment",
+                "Python.Python.3.12",
+                "qBittorrent.qBittorrent",
+                "RARLab.WinRAR",
+                "TeamViewer.TeamViewer",
+                "Valve.Steam",
+                "VideoLAN.VLC")
+
+$PkgsFull = @("9NKSQGP7F2NH", # Whatsapp Desktop
+              "9P1TBXR6QDCX", # Hyperx NGENUITY
+              "CPUID.CPU-Z",
+              "Discord.Discord",
+              "EpicGames.EpicGamesLauncher",
+              "Git.Git",
+              "Google.Chrome",
+              "Mozilla.Firefox",
+              "Opera.OperaGX",
+              "Microsoft.VisualStudioCode",
+              "Microsoft.DotNet.DesktopRuntime.3_1",
+              "Microsoft.VCRedist.2010.x86",
+              "Microsoft.VCRedist.2010.x64",
+              "Microsoft.VCRedist.2012.x86",
+              "Microsoft.VCRedist.2012.x64",
+              "Microsoft.VCRedist.2013.x86",
+              "Microsoft.VCRedist.2013.x64",
+              "Microsoft.VCRedist.2015+.x86",
+              "Microsoft.VCRedist.2015+.x64",
+              "Microsoft.XNARedist",
+              "NoIP.DUC",
+              "Notepad++.Notepad++",
+              "OpenJS.NodeJS",
+              "Oracle.JavaRuntimeEnvironment",
+              "Oracle.JDK.21",
+              "Python.Python.3.12",
+              "qBittorrent.qBittorrent",
+              "RARLab.WinRAR",
+              "TeamViewer.TeamViewer",
+              "Valve.Steam",
+              "VideoLAN.VLC")
 
 $TempDir = Join-Path -Path $PSScriptRoot -ChildPath "wpi_temp"
 $ErrorLog = Join-Path -Path $PSScriptRoot -ChildPath "wpi_errors.log"
@@ -122,7 +170,8 @@ function Confirm-Resources {
             Write-Cyan "Versão do sistema operacional: $OS_version"
         }
     }
-
+    
+<#
     # Chocolatey instalado?
     if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
         Write-Magenta "Chocolatey não está instalado. Instalando Chocolatey..."
@@ -130,6 +179,7 @@ function Confirm-Resources {
     } else {
         Write-Cyan "Chocolatey está devidamente instalado."
     }
+#>
 
 }
 
@@ -330,6 +380,7 @@ function Set-ExtraOptions {
     "    email = $GitEmail" | Out-File -FilePath $GitConfigFile -Append
 }
 
+<#
 # Instalação de pacotes (chocolatey)
 
 function Add-ChocoPkgs {
@@ -351,6 +402,7 @@ function Add-ChocoPkgs {
         Write-Warning -Message "Ocorreu um erro ao tentar executar o script de instalação do Chocolatey. Detalhes: $_"
     }
 }
+#>
 
 # Instalação do winget
 
@@ -422,10 +474,20 @@ function Add-WingetPkgs {
         }
     }
 
-    Write-Cyan "Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável 'WingetPackages'."
+    Write-Cyan "Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável 'Pkgs'."
     Write-Cyan "Para descobrir o ID da aplicação desejada, use 'winget search <nomedoapp>' no terminal."
 
     $count = 0
+
+    if ($option -ceq "--server") {
+        $WingetPackages = $PkgsServer
+    } 
+    else if ($option -ceq "--client") {
+        $WingetPackages = $PkgsClient
+    } 
+    else if ($option -ceq "--full") {
+        $WingetPackages = $PkgsFull
+    }
 
     foreach ($pkg in $WingetPackages) {
         $installed = Invoke-Expression -Command "winget list $pkg --accept-source-agreements"
@@ -437,7 +499,7 @@ function Add-WingetPkgs {
             Write-Cyan "Instalando $pkg ..."
             $output = Invoke-Expression -Command "winget install $pkg --accept-package-agreements --accept-source-agreements --silent"
             
-            if ($output -match "Successfully installed" -or $output -match "Instalado com êxito") {
+            if ($?) {
                 Write-Cyan "O pacote $pkg foi instalado com sucesso!"
                 $count++
             }
@@ -498,7 +560,7 @@ switch ($option) {
         Set-Checkpoint 1
         Set-CustomOptions
         Set-ExtraOptions
-        Add-ChocoPkgs
+        # Add-ChocoPkgs
         Add-WingetPkgs
         Add-ExtraPkgs
         Set-Checkpoint 2
@@ -512,7 +574,7 @@ switch ($option) {
         Set-NetworkOptions
         Set-PowerOptions
         Set-ExtraOptions
-        Add-ChocoPkgs
+        # Add-ChocoPkgs
         Add-WingetPkgs
         Add-ExtraPkgs
         Set-Checkpoint 2
