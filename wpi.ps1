@@ -85,6 +85,11 @@ $PkgsFull = @("9NKSQGP7F2NH", # Whatsapp Desktop
 $TempDir = Join-Path -Path $PSScriptRoot -ChildPath "wpi_temp"
 $ErrorLog = Join-Path -Path $PSScriptRoot -ChildPath "wpi_errors.log"
 
+# Network config
+$StaticIP = "192.168.0.120"
+$StaticDNS1 = "8.8.8.8"
+$StaticDNS2 = "8.8.4.4"
+
 # GitHub info for .gitconfig file:
 $GitUser = "reinaldogpn"
 $GitEmail = "reinaldogpn@outlook.com"
@@ -99,11 +104,18 @@ function Write-Cyan {
     Write-Host $Message -ForegroundColor Cyan
 }
 
-function Write-Magenta {
+function Write-Green {
     param(
         [string]$Message
     )
-    Write-Host $Message -ForegroundColor Magenta
+    Write-Host $Message -ForegroundColor Green
+}
+
+function Write-Yellow {
+    param(
+        [string]$Message
+    )
+    Write-Host $Message -ForegroundColor Yellow
 }
 
 function Exit-Error {
@@ -121,9 +133,9 @@ function Exit-Script {
     
     $error | Out-File -FilePath $ErrorLog
     
-    Write-Magenta "Fim do script! `nO computador precisa ser reiniciado para que todas as alterações sejam aplicadas. Deseja reiniciar agora? (s = sim | n = não)" ; $i = Read-Host
+    Write-Yellow "Fim do script! `nO computador precisa ser reiniciado para que todas as alterações sejam aplicadas. Deseja reiniciar agora? (s = sim | n = não)" ; $i = Read-Host
     if ($i -ceq 's') {
-        Write-Cyan "Reiniciando agora..."
+        Write-Yellow "Reiniciando agora..."
         Restart-Computer
     }
     
@@ -160,7 +172,7 @@ function Confirm-Resources {
         Exit-Error "Versão do windows desconhecida ou não suportada!"
     } 
     else {
-        Write-Cyan "Sistema operacional identificado: $OS_name"
+        Write-Green "Sistema operacional identificado: $OS_name"
         $OS_version = ($OS_name -split ' ')[2]
     
         if ($OS_version -lt 10) {
@@ -174,7 +186,7 @@ function Confirm-Resources {
 <#
     # Chocolatey instalado?
     if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
-        Write-Magenta "Chocolatey não está instalado. Instalando Chocolatey..."
+        Write-Yellow "Chocolatey não está instalado. Instalando Chocolatey..."
         Set-ExecutionPolicy Bypass -Scope Process -Force ; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072 ; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
     } else {
         Write-Cyan "Chocolatey está devidamente instalado."
@@ -203,13 +215,13 @@ function Set-Checkpoint {
                 Checkpoint-Computer -Description "Pré Execução do Script Windows Post Install" -ErrorAction SilentlyContinue | Out-Null
             }
             
-            if ($?) { Write-Cyan "Ponto de restauração do sistema criado." } else { Write-Warning -Message "Falha ao criar ponto de restauração do sistema." }
+            if ($?) { Write-Green "Ponto de restauração do sistema criado." } else { Write-Warning -Message "Falha ao criar ponto de restauração do sistema." }
         }
 
         2 {
             Write-Cyan "Criando segundo ponto de restauração do sistema..."
             Checkpoint-Computer -Description "Pós Execução do Script Windows Post Install" -ErrorAction SilentlyContinue | Out-Null
-            if ($?) { Write-Cyan "Ponto de restauração do sistema criado." } else { Write-Warning -Message "Falha ao criar ponto de restauração do sistema." }
+            if ($?) { Write-Green "Ponto de restauração do sistema criado." } else { Write-Warning -Message "Falha ao criar ponto de restauração do sistema." }
             Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" -Name "SystemRestorePointCreationFrequency" -Force | Out-Null
         }
 
@@ -246,7 +258,7 @@ function Set-CustomOptions {
     Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "Wallpaper" -Value $wallpaperPath -Type STRING -Force
     Invoke-Expression -Command 'rundll32.EXE user32.dll, UpdatePerUserSystemParameters 1, True'
 
-    Write-Magenta "Personalizações aplicadas. O Windows Explorer será reiniciado."
+    Write-Green "Personalizações aplicadas. O Windows Explorer será reiniciado."
     Pause
     Stop-Process -Name explorer -Force ; Start-Process explorer
 }
@@ -255,16 +267,17 @@ function Set-CustomOptions {
 
 function Set-NetworkOptions {
     # Definir IP estático
-    Invoke-Expression -Command "netsh interface ipv4 set address name='Ethernet' static 192.168.0.120 255.255.255.0 192.168.0.1" | Out-Null
-    Invoke-Expression -Command "netsh interface ipv4 set dnsservers name='Ethernet' static 8.8.8.8 primary" | Out-Null
-    Invoke-Expression -Command "netsh interface ipv4 add dnsservers name='Ethernet' 8.8.4.4 index=2" | Out-Null
+    Write-Cyan "Definindo um IP estático: $($StaticIP) ..."
+    Invoke-Expression -Command "netsh interface ipv4 set address name='Ethernet' static $StaticIP 255.255.255.0 192.168.0.1" | Out-Null
+    Invoke-Expression -Command "netsh interface ipv4 set dnsservers name='Ethernet' static $StaticDNS1 primary" | Out-Null
+    Invoke-Expression -Command "netsh interface ipv4 add dnsservers name='Ethernet' $StaticDNS2 index=2" | Out-Null
     
     # FTP service
     Write-Cyan "Habilitando serviço de FTP..."
     $ftpService = Get-Service -Name "ftpsvc" -ErrorAction SilentlyContinue
 
     if (-not $ftpService) {
-        Write-Magenta "O serviço de FTP (ftpsvc) não está habilitado, habilitando agora..."
+        Write-Yellow "O serviço de FTP (ftpsvc) não está habilitado, habilitando agora..."
         Enable-WindowsOptionalFeature -FeatureName "IIS-WebServerRole" -Online -All -NoRestart | Out-Null
         Enable-WindowsOptionalFeature -FeatureName "IIS-WebServer" -Online -All -NoRestart | Out-Null
         Enable-WindowsOptionalFeature -FeatureName "IIS-FTPServer" -Online -All -NoRestart | Out-Null
@@ -278,7 +291,7 @@ function Set-NetworkOptions {
         }
     }
     else {
-        Write-Cyan "O serviço de FTP (ftpsvc) já está habilitado."
+        Write-Yellow "O serviço de FTP (ftpsvc) já está habilitado."
     }
 
     # SSH service
@@ -286,7 +299,7 @@ function Set-NetworkOptions {
     $sshService = Get-Service -Name "sshd" -ErrorAction SilentlyContinue
 
     if (-not $sshService) {
-        Write-Magenta "O serviço SSH (sshd) não está habilitado, habilitando agora..."
+        Write-Yellow "O serviço SSH (sshd) não está habilitado, habilitando agora..."
         Add-WindowsCapability -Online -Name OpenSSH.Client | Out-Null
         Add-WindowsCapability -Online -Name OpenSSH.Server | Out-Null
 
@@ -299,7 +312,7 @@ function Set-NetworkOptions {
         }
     }
     else {
-        Write-Cyan "O serviço de SSH (sshd) já está habilitado."
+        Write-Yellow "O serviço de SSH (sshd) já está habilitado."
     }
 
     # Firewall rules
@@ -336,20 +349,25 @@ function Set-NetworkOptions {
         New-NetFirewallRule -DisplayName $rule.DisplayName -Direction Inbound -Action Allow -Protocol $rule.Protocol -LocalPort $rule.LocalPort | Out-Null
     }
 
-    Write-Cyan "Configurações de rede aplicadas."
+    Write-Green "Configurações de rede aplicadas."
 }
 
 # Configurações de energia
 
 function Set-PowerOptions {
     Write-Cyan "Alterando configurações de energia do Windows..."
+    
     Invoke-Expression -Command "powercfg /change standby-timeout-ac 0"
     Invoke-Expression -Command "powercfg /change standby-timeout-dc 0"
+
+    Write-Green "Configurações de energia aplicadas."
 }
 
 # Outros recursos
 
 function Set-ExtraOptions {
+    Write-Cyan "Aplicando configurações extras..."
+    
     if ($OS_version -eq 10) {
         try {
             Write-Cyan "Ativando o recurso DirectPlay..."
@@ -378,6 +396,8 @@ function Set-ExtraOptions {
     "[user]" | Out-File -FilePath $GitConfigFile
     "    name = $GitUser" | Out-File -FilePath $GitConfigFile -Append
     "    email = $GitEmail" | Out-File -FilePath $GitConfigFile -Append
+
+    Write-Green "Configurações extras aplicadas."
 }
 
 <#
@@ -387,7 +407,7 @@ function Add-ChocoPkgs {
     $ChocoConfigFile = Join-Path -Path $TempDir -ChildPath "packages.config"
     $ChocoConfigUrl = "https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/packages.config"
 
-    Write-Cyan "Para acrescentar ou remover pacotes ao script, edite o arquivo de configuração do Chocolatey: $ChocoConfigFile."
+    Write-Yellow "Para acrescentar ou remover pacotes ao script, edite o arquivo de configuração do Chocolatey: $ChocoConfigFile."
 
     if (-not (Test-Path $ChocoConfigFile)) {
         Invoke-WebRequest -Uri $ChocoConfigUrl -OutFile $ChocoConfigFile -UseBasicParsing | Out-Null 
@@ -396,7 +416,7 @@ function Add-ChocoPkgs {
     try {
         Invoke-Expression -Command "choco install $ChocoConfigFile -y" -ErrorAction Stop
         Start-Sleep -Seconds 3
-        Write-Cyan "O Chocolatey finalizou a instalação de pacotes. Confira os pacotes instalados:" ; choco list
+        Write-Green "O Chocolatey finalizou a instalação de pacotes. Confira os pacotes instalados:" ; choco list
     }
     catch {
         Write-Warning -Message "Ocorreu um erro ao tentar executar o script de instalação do Chocolatey. Detalhes: $_"
@@ -407,6 +427,8 @@ function Add-ChocoPkgs {
 # Instalação do winget
 
 function Add-Winget {
+    Write-Cyan "Iniciando o download e instalação do Winget e suas dependências..."
+
     # Fazer o download dos 3 arquivos manualmente economiza MUITO tempo! 
     # De qualquer forma, o script faz o download automático dos arquivos caso não sejam encontrados na pasta Downloads.
     $VCLibsURL = "https://download.microsoft.com/download/4/7/c/47c6134b-d61f-4024-83bd-b9c9ea951c25/Microsoft.VCLibs.x64.14.00.Desktop.appx"
@@ -423,7 +445,7 @@ function Add-Winget {
     
     try {
         if (-not (Test-Path $VCLibsPath)) {
-            Write-Magenta "Fazendo o download de $($VCLibsPKG). Isso pode demorar um pouco..."
+            Write-Cyan "Fazendo o download de $($VCLibsPKG). Isso pode demorar um pouco..."
             Invoke-WebRequest $VCLibsURL -OutFile (Join-Path -Path $TempDir -ChildPath $VCLibsPKG) -ErrorAction Stop | Out-Null
             Add-AppxPackage -Path (Join-Path -Path $TempDir -ChildPath $VCLibsPKG) -ErrorAction Stop | Out-Null
         }
@@ -432,7 +454,7 @@ function Add-Winget {
         }
         
         if (-not (Test-Path $UIXamlPath)) {
-            Write-Magenta "Fazendo o download de $($UIXamlPKG). Isso pode demorar um pouco..."
+            Write-Cyan "Fazendo o download de $($UIXamlPKG). Isso pode demorar um pouco..."
             Invoke-WebRequest $UIXamlURL -OutFile (Join-Path -Path $TempDir -ChildPath $UIXamlPKG) -ErrorAction Stop | Out-Null
             Add-AppxPackage -Path (Join-Path -Path $TempDir -ChildPath $UIXamlPKG) -ErrorAction Stop | Out-Null
         }
@@ -441,7 +463,7 @@ function Add-Winget {
         }
         
         if (-not (Test-Path $WingetPath)) {
-            Write-Magenta "Fazendo o download de $($WingetPKG). Isso pode demorar um pouco..."
+            Write-Cyan "Fazendo o download de $($WingetPKG). Isso pode demorar um pouco..."
             Invoke-WebRequest $WingetURL -OutFile (Join-Path -Path $TempDir -ChildPath $WingetPKG) -ErrorAction Stop | Out-Null
             Add-AppxPackage -Path (Join-Path -Path $TempDir -ChildPath $WingetPKG) -ForceApplicationShutdown -ErrorAction Stop | Out-Null
         }
@@ -450,7 +472,8 @@ function Add-Winget {
         }
         
         Invoke-Expression -Command "echo y | winget list --accept-source-agreements" -ErrorAction Stop | Out-Null
-        Write-Cyan "Winget foi devidamente atualizado e está pronto para o uso."
+        
+        Write-Green "Winget foi devidamente atualizado e está pronto para o uso."
     }
     catch {
         return 1
@@ -474,8 +497,9 @@ function Add-WingetPkgs {
         }
     }
 
-    Write-Cyan "Para acrescentar ou remover pacotes ao script, edite o conteúdo da variável 'Pkgs'."
-    Write-Cyan "Para descobrir o ID da aplicação desejada, use 'winget search <nomedoapp>' no terminal."
+    Write-Cyan "Iniciando a instalação de pacotes do Winget..."
+    Write-Yellow "Para acrescentar ou remover pacotes ao script, edite o conteúdo da respectiva variável 'Pkgs'."
+    Write-Yellow "Para descobrir o ID da aplicação desejada, use 'winget search <nomedoapp>' no terminal."
 
     $count = 0
 
@@ -493,14 +517,14 @@ function Add-WingetPkgs {
         $installed = Invoke-Expression -Command "winget list $pkg --accept-source-agreements"
 
         if ($installed -match $pkg) {
-            Write-Magenta "$pkg já está instalado."
+            Write-Yellow "$pkg já está instalado."
         }
         else {
             Write-Cyan "Instalando $pkg ..."
             $output = Invoke-Expression -Command "winget install $pkg --accept-package-agreements --accept-source-agreements --silent"
             
             if ($?) {
-                Write-Cyan "O pacote $pkg foi instalado com sucesso!"
+                Write-Green "O pacote $pkg foi instalado com sucesso!"
                 $count++
             }
             else {
@@ -510,12 +534,14 @@ function Add-WingetPkgs {
         }
     }
 
-    Write-Cyan "$count de $($WingetPackages.Count) pacotes foram instalados com sucesso."
+    Write-Green "Fim da instalação de pacotes."
+    Write-Green "$count de $($WingetPackages.Count) pacotes foram instalados com sucesso."
 }
 
 # Instalação de outros pacotes
 
 function Add-ExtraPkgs {
+    Write-Cyan "Iniciando a instalação de pacotes extras..."
     # DriverBooster
     if (-not (Test-Path "C:\Program Files (x86)\IObit\Driver Booster")) {
         $DriverBPath = Join-Path -Path $TempDir -ChildPath "driver_booster_setup.exe"
@@ -539,6 +565,8 @@ function Add-ExtraPkgs {
     else {
         Write-Warning -Message "WGSM já está instalado."
     }
+
+    Write-Green "Fim da instalação de pacotes."
 }
 
 # ------------ EXECUÇÃO ------------ #
