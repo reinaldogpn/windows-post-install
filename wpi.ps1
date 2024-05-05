@@ -482,10 +482,10 @@ function Add-WingetPkgs {
     if ($option -ceq "--server") {
         $WingetPackages = $PkgsServer
     } 
-    else if ($option -ceq "--client") {
+    elseif ($option -ceq "--client") {
         $WingetPackages = $PkgsClient
     } 
-    else if ($option -ceq "--full") {
+    elseif ($option -ceq "--full") {
         $WingetPackages = $PkgsFull
     }
 
