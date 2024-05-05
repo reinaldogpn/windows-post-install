@@ -561,9 +561,6 @@ function Add-ExtraPkgs {
         Write-Cyan "Baixando e instalando o WGSM..."
         Invoke-WebRequest "https://github.com/WindowsGSM/WindowsGSM/releases/latest/download/WindowsGSM.exe" -OutFile $WGSMPath -ErrorAction SilentlyContinue | Out-Null
     }
-    else {
-        Write-Warning -Message "WGSM já está instalado."
-    }
 
     Write-Green "Fim da instalação de pacotes."
 }
