@@ -17,6 +17,16 @@ $OutputEncoding = [System.Text.Encoding]::UTF8
 # ------------ VARIÁVEIS ------------ #
 
 $PkgsServer = @("Git.Git",
+                "NoIP.DUC",
+                "RARLab.WinRAR",
+                "TeamViewer.TeamViewer",
+                "Valve.Steam")
+
+$PkgsClient = @("9NKSQGP7F2NH", # Whatsapp Desktop
+                "Discord.Discord",
+                "Google.Chrome",
+                "Mozilla.Firefox",
+                "Microsoft.VisualStudioCode",
                 "Microsoft.DotNet.DesktopRuntime.3_1",
                 "Microsoft.VCRedist.2008.x86",
                 "Microsoft.VCRedist.2008.x64",
@@ -29,21 +39,8 @@ $PkgsServer = @("Git.Git",
                 "Microsoft.VCRedist.2015+.x86",
                 "Microsoft.VCRedist.2015+.x64",
                 "Microsoft.XNARedist",
-                "NoIP.DUC",
-                "RARLab.WinRAR",
-                "TeamViewer.TeamViewer",
-                "Valve.Steam")
-
-$PkgsClient = @("9NKSQGP7F2NH", # Whatsapp Desktop
-                "CPUID.CPU-Z",
-                "Discord.Discord",
-                "Git.Git",
-                "Google.Chrome",
-                "Mozilla.Firefox",
-                "Microsoft.VisualStudioCode",
-                "OpenJS.NodeJS",
+                "Notepad++.Notepad++",
                 "Oracle.JavaRuntimeEnvironment",
-                "Python.Python.3.12",
                 "qBittorrent.qBittorrent",
                 "RARLab.WinRAR",
                 "TeamViewer.TeamViewer",
@@ -71,9 +68,10 @@ $PkgsFull = @("9NKSQGP7F2NH", # Whatsapp Desktop
               "Microsoft.VCRedist.2015+.x64",
               "Microsoft.XNARedist",
               "NoIP.DUC",
+              "Notepad++.Notepad++",
               "OpenJS.NodeJS",
               "Oracle.JavaRuntimeEnvironment",
-              "Oracle.JDK.21",
+              "Oracle.JDK.22",
               "Python.Python.3.12",
               "qBittorrent.qBittorrent",
               "RARLab.WinRAR",
@@ -237,11 +235,12 @@ function Set-CustomOptions {
     $wallpaperPath = Join-Path -Path $env:UserProfile -ChildPath "wallpaper.jpg"
     
     Write-Cyan "Aplicando personalizações do sistema..."
-    if ($OS_version -eq 10) { Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Feeds" -Name "ShellFeedsTaskbarViewMode" -Value 2 -Type DWORD -Force }
     Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "SearchBoxTaskbarMode" -Value 1 -Type DWORD -Force
     Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Value 0 -Type DWORD -Force
     Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "ColorPrevalence" -Value 1 -Type DWORD -Force
     Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 0 -Type DWORD -Force
+    Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowTaskViewButton" -Value 0 -Type DWORD -Force
+    Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Feeds" -Name "ShellFeedsTaskbarViewMode" -Value 2 -Type DWORD -Force
     Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "JPEGImportQuality" -Value 100 -Type DWORD -Force
 
     # Cria um atalho para a pasta pessoal ($env:UserProfile) na área de trabalho
@@ -520,7 +519,7 @@ function Add-WingetPkgs {
         }
         else {
             Write-Cyan "Instalando $pkg ..."
-            $output = Invoke-Expression -Command "winget install $pkg --accept-package-agreements --accept-source-agreements --silent"
+            Invoke-Expression -Command "winget install $pkg --accept-package-agreements --accept-source-agreements --silent" -ErrorAction SilentlyContinue
             
             if ($?) {
                 Write-Green "O pacote $pkg foi instalado com sucesso!"
@@ -528,7 +527,6 @@ function Add-WingetPkgs {
             }
             else {
                 Write-Warning -Message "Falha ao tentar instalar o pacote $pkg."
-                Write-Warning -Message "Detalhes sobre o erro: $output"
             }
         }
     }
@@ -573,8 +571,8 @@ switch ($option) {
         Set-Checkpoint 1
         Set-NetworkOptions
         Set-PowerOptions
-        Add-WingetPkgs
         Add-ExtraPkgs
+        Add-WingetPkgs
         Set-Checkpoint 2
         Exit-Script
     }
@@ -585,8 +583,8 @@ switch ($option) {
         Set-CustomOptions
         Set-ExtraOptions
         # Add-ChocoPkgs
-        Add-WingetPkgs
         Add-ExtraPkgs
+        Add-WingetPkgs
         Set-Checkpoint 2
         Exit-Script
     }
@@ -599,8 +597,8 @@ switch ($option) {
         Set-PowerOptions
         Set-ExtraOptions
         # Add-ChocoPkgs
-        Add-WingetPkgs
         Add-ExtraPkgs
+        Add-WingetPkgs
         Set-Checkpoint 2
         Exit-Script
     }
