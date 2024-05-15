@@ -340,6 +340,16 @@ function Set-NetworkOptions {
             DisplayName = "DST Dedicated Server"
             LocalPort = 10889
             Protocol = "UDP"
+        },
+        @{
+            DisplayName = "Minecraft Dedicated Server UDP"
+            LocalPort = 25565
+            Protocol = "UDP"
+        },
+        @{
+            DisplayName = "Minecraft Dedicated Server TCP"
+            LocalPort = 25565
+            Protocol = "TCP"
         }
     )
 
@@ -390,10 +400,12 @@ function Set-ExtraOptions {
         }
     }
 
-    Write-Cyan "Configurando o git..."
-    "[user]" | Out-File -FilePath $GitConfigFile
-    "    name = $GitUser" | Out-File -FilePath $GitConfigFile -Append
-    "    email = $GitEmail" | Out-File -FilePath $GitConfigFile -Append
+    if ($option -ceq "--server" -or $option -ceq "--full") {
+        Write-Cyan "Configurando o git..."
+        "[user]" | Out-File -FilePath $GitConfigFile
+        "    name = $GitUser" | Out-File -FilePath $GitConfigFile -Append
+        "    email = $GitEmail" | Out-File -FilePath $GitConfigFile -Append
+    }
 
     Write-Green "Configurações extras aplicadas."
 }
