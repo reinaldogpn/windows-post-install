@@ -525,8 +525,8 @@ function Add-WingetPkgs {
 
     foreach ($pkg in $WingetPackages) {
         $installed = Invoke-Expression -Command "winget list $pkg --accept-source-agreements"
-
-        if ($installed -match $pkg) {
+        # Comparação feita escapando caracteres especiais nos nomes dos pacotes.
+        if ($installed -match ([regex]::Escape($pkg))) {
             Write-Yellow "$pkg já está instalado."
         }
         else {
@@ -539,6 +539,7 @@ function Add-WingetPkgs {
             }
             else {
                 Write-Warning -Message "Falha ao tentar instalar o pacote $pkg."
+                Write-Warning -Message "Detalhes sobre o erro podem ser vistos no arquivo de log."
             }
         }
     }
