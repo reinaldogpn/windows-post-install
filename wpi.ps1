@@ -27,7 +27,6 @@ $PkgsClient = @("9NKSQGP7F2NH", # Whatsapp Desktop
                 "Google.Chrome",
                 "Mozilla.Firefox",
                 "Microsoft.VisualStudioCode",
-                "Microsoft.DotNet.DesktopRuntime.3_1",
                 "Microsoft.VCRedist.2008.x86",
                 "Microsoft.VCRedist.2008.x64",
                 "Microsoft.VCRedist.2010.x86",
@@ -39,6 +38,7 @@ $PkgsClient = @("9NKSQGP7F2NH", # Whatsapp Desktop
                 "Microsoft.VCRedist.2015+.x86",
                 "Microsoft.VCRedist.2015+.x64",
                 "Microsoft.XNARedist",
+                "Microsoft.WindowsTerminal",
                 "Notepad++.Notepad++",
                 "Oracle.JavaRuntimeEnvironment",
                 "qBittorrent.qBittorrent",
@@ -57,7 +57,6 @@ $PkgsFull = @("9NKSQGP7F2NH", # Whatsapp Desktop
               "Mozilla.Firefox",
               "Opera.OperaGX",
               "Microsoft.VisualStudioCode",
-              "Microsoft.DotNet.DesktopRuntime.3_1",
               "Microsoft.VCRedist.2010.x86",
               "Microsoft.VCRedist.2010.x64",
               "Microsoft.VCRedist.2012.x86",
@@ -67,6 +66,7 @@ $PkgsFull = @("9NKSQGP7F2NH", # Whatsapp Desktop
               "Microsoft.VCRedist.2015+.x86",
               "Microsoft.VCRedist.2015+.x64",
               "Microsoft.XNARedist",
+              "Microsoft.WindowsTerminal",
               "NoIP.DUC",
               "Notepad++.Notepad++",
               "OpenJS.NodeJS",
@@ -376,28 +376,26 @@ function Set-PowerOptions {
 function Set-ExtraOptions {
     Write-Cyan "Aplicando configurações extras..."
     
-    if ($OS_version -eq 10) {
-        try {
-            Write-Cyan "Ativando o recurso DirectPlay..."
-            $directPlayState = (Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction SilentlyContinue).State
-            if ($directPlayState -ne "Enabled") { 
-                Enable-WindowsOptionalFeature -FeatureName "DirectPlay" -Online -All -NoRestart -ErrorAction Stop | Out-Null
-            }
+    try {
+        Write-Cyan "Ativando o recurso DirectPlay..."
+        $directPlayState = (Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction Stop).State
+        if ($directPlayState -ne "Enabled") { 
+            Enable-WindowsOptionalFeature -FeatureName "DirectPlay" -Online -All -NoRestart -ErrorAction Stop | Out-Null
         }
-        catch {
-            Write-Warning -Message "Ocorreu um erro ao ativar o recurso DirectPlay: $_"
+    }
+    catch {
+        Write-Warning -Message "Ocorreu um erro ao ativar o recurso DirectPlay: $_"
+    }
+    
+    try {
+        Write-Cyan "Ativando o recurso .NET Framework 3.5..."
+        $netFx3State = (Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction Stop).State
+        if ($netFx3State -ne "Enabled") { 
+            Enable-WindowsOptionalFeature -FeatureName "NetFx3" -Online -All -NoRestart -ErrorAction Stop | Out-Null
         }
-        
-        try {
-            Write-Cyan "Ativando o recurso .NET Framework 3.5..."
-            $netFx3State = (Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction SilentlyContinue).State
-            if ($netFx3State -ne "Enabled") { 
-                Enable-WindowsOptionalFeature -FeatureName "NetFx3" -Online -All -NoRestart -ErrorAction Stop | Out-Null
-            }
-        }
-        catch {
-            Write-Warning -Message "Ocorreu um erro ao ativar o recurso .NET Framework 3.5: $_"
-        }
+    }
+    catch {
+        Write-Warning -Message "Ocorreu um erro ao ativar o recurso .NET Framework 3.5: $_"
     }
 
     if ($option -ceq "--server" -or $option -ceq "--full") {
