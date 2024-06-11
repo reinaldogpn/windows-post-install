@@ -9,7 +9,7 @@
 # Dica: instalar o windows 11 usando uma conta local (offline) --> oobe\bypassnro
 
 param (
-    [string]$option = "--help" # --help = show options | --server = install server tools only | --client = install client tools only | --full = full installation
+    [string]$option = "--help" # --help = show options | --server = install server tools only | --client = install client tools only | --full = full installation | --stock = para clientes
 )
 
 $OutputEncoding = [System.Text.Encoding]::UTF8
@@ -21,6 +21,15 @@ $PkgsServer = @("Git.Git",
                 "RARLab.WinRAR",
                 "TeamViewer.TeamViewer",
                 "Valve.Steam")
+
+$PkgsStock = @("9NKSQGP7F2NH", # Whatsapp Desktop
+                "AnyDeskSoftwareGmbH.AnyDesk",
+                "Google.Chrome",
+                "Mozilla.Firefox",
+                "Oracle.JavaRuntimeEnvironment",
+                "qBittorrent.qBittorrent",
+                "RARLab.WinRAR",
+                "VideoLAN.VLC")
 
 $PkgsClient = @("9NKSQGP7F2NH", # Whatsapp Desktop
                 "Discord.Discord",
@@ -511,14 +520,27 @@ function Add-WingetPkgs {
 
     $count = 0
 
-    if ($option -ceq "--server") {
-        $WingetPackages = $PkgsServer
-    } 
-    elseif ($option -ceq "--client") {
-        $WingetPackages = $PkgsClient
-    } 
-    elseif ($option -ceq "--full") {
-        $WingetPackages = $PkgsFull
+    switch ($option) {
+    
+        "--server" {
+            $WingetPackages = $PkgsServer
+        }
+    
+        "--stock" {
+            $WingetPackages = $PkgsStock
+        }
+        
+        "--client" {
+            $WingetPackages = $PkgsClient
+        }
+        
+        "--full" {
+            $WingetPackages = $PkgsFull
+        }
+
+        default {
+            return
+        }
     }
 
     foreach ($pkg in $WingetPackages) {
@@ -582,6 +604,15 @@ switch ($option) {
         Set-Checkpoint 1
         Set-NetworkOptions
         Set-PowerOptions
+        Add-ExtraPkgs
+        Add-WingetPkgs
+        Set-Checkpoint 2
+        Exit-Script
+    }
+
+    "--stock" {
+        Confirm-Resources
+        Set-Checkpoint 1
         Add-ExtraPkgs
         Add-WingetPkgs
         Set-Checkpoint 2
