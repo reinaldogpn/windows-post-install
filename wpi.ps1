@@ -9,84 +9,34 @@
 # Dica: instalar o windows 11 usando uma conta local (offline) --> oobe\bypassnro
 
 param (
-    [string]$option = "--help" # --help = show options | --server = install server tools only | --client = install client tools only | --full = full installation | --stock = para clientes
+    [Parameter(Mandatory = $true)]
+    [ValidateSet("--default", "--dev")]
+    [string]$option
 )
 
 $OutputEncoding = [System.Text.Encoding]::UTF8
 
 # ------------ VARIÁVEIS ------------ #
 
-$PkgsServer = @("Git.Git",
-                "NoIP.DUC",
-                "RARLab.WinRAR",
-                "TeamViewer.TeamViewer",
-                "Valve.Steam")
+$DEV_PKGS       = @("Git.Git",
+                    "Microsoft.VisualStudioCode",
+                    "Microsoft.VisualStudio.2022.Community",
+                    "Microsoft.WindowsTerminal",
+                    "NoIP.DUC",
+                    "Notepad++.Notepad++",
+                    "OpenJS.NodeJS",
+                    "Oracle.JDK.22",
+                    "Python.Python.3.12")
 
-$PkgsStock = @("9NKSQGP7F2NH", # Whatsapp Desktop
-                "AnyDeskSoftwareGmbH.AnyDesk",
-                "Google.Chrome",
-                "Mozilla.Firefox",
-                "Oracle.JavaRuntimeEnvironment",
-                "qBittorrent.qBittorrent",
-                "RARLab.WinRAR",
-                "VideoLAN.VLC")
-
-$PkgsClient = @("9NKSQGP7F2NH", # Whatsapp Desktop
-                "Discord.Discord",
-                "Google.Chrome",
-                "Mozilla.Firefox",
-                "Microsoft.VisualStudioCode",
-                "Microsoft.VCRedist.2008.x86",
-                "Microsoft.VCRedist.2008.x64",
-                "Microsoft.VCRedist.2010.x86",
-                "Microsoft.VCRedist.2010.x64",
-                "Microsoft.VCRedist.2012.x86",
-                "Microsoft.VCRedist.2012.x64",
-                "Microsoft.VCRedist.2013.x86",
-                "Microsoft.VCRedist.2013.x64",
-                "Microsoft.VCRedist.2015+.x86",
-                "Microsoft.VCRedist.2015+.x64",
-                "Microsoft.XNARedist",
-                "Microsoft.WindowsTerminal",
-                "Notepad++.Notepad++",
-                "Oracle.JavaRuntimeEnvironment",
-                "qBittorrent.qBittorrent",
-                "RARLab.WinRAR",
-                "TeamViewer.TeamViewer",
-                "Valve.Steam",
-                "VideoLAN.VLC")
-
-$PkgsFull = @("9NKSQGP7F2NH", # Whatsapp Desktop
-              "9P1TBXR6QDCX", # Hyperx NGENUITY
-              "CPUID.CPU-Z",
-              "Discord.Discord",
-              "EpicGames.EpicGamesLauncher",
-              "Git.Git",
-              "Google.Chrome",
-              "Mozilla.Firefox",
-              "Opera.OperaGX",
-              "Microsoft.VisualStudioCode",
-              "Microsoft.VCRedist.2010.x86",
-              "Microsoft.VCRedist.2010.x64",
-              "Microsoft.VCRedist.2012.x86",
-              "Microsoft.VCRedist.2012.x64",
-              "Microsoft.VCRedist.2013.x86",
-              "Microsoft.VCRedist.2013.x64",
-              "Microsoft.VCRedist.2015+.x86",
-              "Microsoft.VCRedist.2015+.x64",
-              "Microsoft.XNARedist",
-              "Microsoft.WindowsTerminal",
-              "NoIP.DUC",
-              "Notepad++.Notepad++",
-              "OpenJS.NodeJS",
-              "Oracle.JavaRuntimeEnvironment",
-              "Oracle.JDK.22",
-              "Python.Python.3.12",
-              "qBittorrent.qBittorrent",
-              "RARLab.WinRAR",
-              "TeamViewer.TeamViewer",
-              "Valve.Steam",
-              "VideoLAN.VLC")
+$DEFAULT_PKGS   = @("9NKSQGP7F2NH", # Whatsapp Desktop
+                    "Discord.Discord",
+                    "Google.Chrome",
+                    "Oracle.JavaRuntimeEnvironment",
+                    "qBittorrent.qBittorrent",
+                    "RARLab.WinRAR",
+                    "TeamViewer.TeamViewer",
+                    "Valve.Steam",
+                    "VideoLAN.VLC")
 
 $TempDir = Join-Path -Path $PSScriptRoot -ChildPath "wpi_temp"
 $ErrorLog = Join-Path -Path $PSScriptRoot -ChildPath "wpi_errors.log"
@@ -97,7 +47,7 @@ $StaticDNS1 = "8.8.8.8"
 $StaticDNS2 = "8.8.4.4"
 
 # GitHub info for .gitconfig file:
-$GitUser = "reinaldogpn"
+$GitUser = "Reinaldo G. P. Neto"
 $GitEmail = "reinaldogpn@outlook.com"
 $GitConfigFile = Join-Path -Path $env:USERPROFILE -ChildPath ".gitconfig"
 
@@ -188,17 +138,6 @@ function Confirm-Resources {
             Write-Cyan "Versão do sistema operacional: $OS_version"
         }
     }
-    
-<#
-    # Chocolatey instalado?
-    if (-not (Get-Command choco -ErrorAction SilentlyContinue)) {
-        Write-Yellow "Chocolatey não está instalado. Instalando Chocolatey..."
-        Set-ExecutionPolicy Bypass -Scope Process -Force ; [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072 ; Invoke-Expression ((New-Object System.Net.WebClient).DownloadString('https://community.chocolatey.org/install.ps1'))
-    } else {
-        Write-Cyan "Chocolatey está devidamente instalado."
-    }
-#>
-
 }
 
 # ------------ FUNÇÕES ------------ #
@@ -206,34 +145,20 @@ function Confirm-Resources {
 # Ponto de restauração 1
 
 function Set-Checkpoint {
-    param ([int]$Code)
+    Write-Cyan "Criando ponto de restauração do sistema..."
     
-    switch ($Code) {
-        1 {
-            Write-Cyan "Criando primeiro ponto de restauração do sistema..."
-            Set-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" -Name "SystemRestorePointCreationFrequency" -Value 1 -Type DWORD -Force | Out-Null
-            
-            try {
-                Checkpoint-Computer -Description "Pré Execução do Script Windows Post Install" -ErrorAction Stop | Out-Null
-            }
-            catch {
-                Enable-ComputerRestore -Drive "C:\"
-                Checkpoint-Computer -Description "Pré Execução do Script Windows Post Install" -ErrorAction SilentlyContinue | Out-Null
-            }
-            
-            if ($?) { Write-Green "Ponto de restauração do sistema criado." } else { Write-Warning -Message "Falha ao criar ponto de restauração do sistema." }
-        }
-
-        2 {
-            Write-Cyan "Criando segundo ponto de restauração do sistema..."
-            Checkpoint-Computer -Description "Pós Execução do Script Windows Post Install" -ErrorAction SilentlyContinue | Out-Null
-            if ($?) { Write-Green "Ponto de restauração do sistema criado." } else { Write-Warning -Message "Falha ao criar ponto de restauração do sistema." }
-            Remove-ItemProperty -Path "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\SystemRestore" -Name "SystemRestorePointCreationFrequency" -Force | Out-Null
-        }
-
-        default {
-            Write-Warning "Parâmetro inválido para criação de ponto de restauração!"
-        }
+    try {
+        Checkpoint-Computer -Description "Pré Execução do Script Windows Post Install" -ErrorAction Stop | Out-Null
+    }
+    catch {
+        Enable-ComputerRestore -Drive "C:\"
+        Checkpoint-Computer -Description "Pré Execução do Script Windows Post Install" -ErrorAction SilentlyContinue | Out-Null
+    }
+    
+    if ($?) { 
+        Write-Green "Ponto de restauração do sistema criado." 
+    } else { 
+        Write-Warning -Message "Falha ao criar ponto de restauração do sistema." 
     }
 }
 
@@ -322,46 +247,6 @@ function Set-NetworkOptions {
         Write-Yellow "O serviço de SSH (sshd) já está habilitado."
     }
 
-    # Firewall rules
-    Write-Cyan "Criando regras de firewall para serviços e game servers..."
-    $firewallRules = @(
-        @{
-            DisplayName = "FTP"
-            LocalPort = 21
-            Protocol = "TCP"
-        },
-        @{
-            DisplayName = "SSH"
-            LocalPort = 22
-            Protocol = "TCP"
-        },
-        @{
-            DisplayName = "PZ Dedicated Server"
-            LocalPort = "16261-16262"
-            Protocol = "UDP"
-        },
-        @{
-            DisplayName = "Valheim Dedicated Server"
-            LocalPort = "2456-2458"
-            Protocol = "UDP"
-        },
-        @{
-            DisplayName = "DST Dedicated Server"
-            LocalPort = 10889
-            Protocol = "UDP"
-        },
-        @{
-            DisplayName = "Minecraft Dedicated Server UDP"
-            LocalPort = 25565
-            Protocol = "UDP"
-        },
-        @{
-            DisplayName = "Minecraft Dedicated Server TCP"
-            LocalPort = 25565
-            Protocol = "TCP"
-        }
-    )
-
     foreach ($rule in $firewallRules) {
         New-NetFirewallRule -DisplayName $rule.DisplayName -Direction Inbound -Action Allow -Protocol $rule.Protocol -LocalPort $rule.LocalPort | Out-Null
     }
@@ -384,62 +269,14 @@ function Set-PowerOptions {
 
 function Set-ExtraOptions {
     Write-Cyan "Aplicando configurações extras..."
-    
-    try {
-        Write-Cyan "Ativando o recurso DirectPlay..."
-        $directPlayState = (Get-WindowsOptionalFeature -Online -FeatureName DirectPlay -ErrorAction Stop).State
-        if ($directPlayState -ne "Enabled") { 
-            Enable-WindowsOptionalFeature -FeatureName "DirectPlay" -Online -All -NoRestart -ErrorAction Stop | Out-Null
-        }
-    }
-    catch {
-        Write-Warning -Message "Ocorreu um erro ao ativar o recurso DirectPlay: $_"
-    }
-    
-    try {
-        Write-Cyan "Ativando o recurso .NET Framework 3.5..."
-        $netFx3State = (Get-WindowsOptionalFeature -Online -FeatureName NetFx3 -ErrorAction Stop).State
-        if ($netFx3State -ne "Enabled") { 
-            Enable-WindowsOptionalFeature -FeatureName "NetFx3" -Online -All -NoRestart -ErrorAction Stop | Out-Null
-        }
-    }
-    catch {
-        Write-Warning -Message "Ocorreu um erro ao ativar o recurso .NET Framework 3.5: $_"
-    }
 
-    if ($option -ceq "--server" -or $option -ceq "--full") {
-        Write-Cyan "Configurando o git..."
-        "[user]" | Out-File -FilePath $GitConfigFile
-        "    name = $GitUser" | Out-File -FilePath $GitConfigFile -Append
-        "    email = $GitEmail" | Out-File -FilePath $GitConfigFile -Append
-    }
+    Write-Cyan "Configurando o git..."
+    "[user]" | Out-File -FilePath $GitConfigFile
+    "    name = $GitUser" | Out-File -FilePath $GitConfigFile -Append
+    "    email = $GitEmail" | Out-File -FilePath $GitConfigFile -Append
 
     Write-Green "Configurações extras aplicadas."
 }
-
-<#
-# Instalação de pacotes (chocolatey)
-
-function Add-ChocoPkgs {
-    $ChocoConfigFile = Join-Path -Path $TempDir -ChildPath "packages.config"
-    $ChocoConfigUrl = "https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/packages.config"
-
-    Write-Yellow "Para acrescentar ou remover pacotes ao script, edite o arquivo de configuração do Chocolatey: $ChocoConfigFile."
-
-    if (-not (Test-Path $ChocoConfigFile)) {
-        Invoke-WebRequest -Uri $ChocoConfigUrl -OutFile $ChocoConfigFile -UseBasicParsing | Out-Null 
-    }
-
-    try {
-        Invoke-Expression -Command "choco install $ChocoConfigFile -y" -ErrorAction Stop
-        Start-Sleep -Seconds 3
-        Write-Green "O Chocolatey finalizou a instalação de pacotes. Confira os pacotes instalados:" ; choco list
-    }
-    catch {
-        Write-Warning -Message "Ocorreu um erro ao tentar executar o script de instalação do Chocolatey. Detalhes: $_"
-    }
-}
-#>
 
 # Instalação do winget
 
@@ -522,20 +359,12 @@ function Add-WingetPkgs {
 
     switch ($option) {
     
-        "--server" {
-            $WingetPackages = $PkgsServer
+        "--default" {
+            $WingetPackages = $DEFAULT_PKGS
         }
     
-        "--stock" {
-            $WingetPackages = $PkgsStock
-        }
-        
-        "--client" {
-            $WingetPackages = $PkgsClient
-        }
-        
-        "--full" {
-            $WingetPackages = $PkgsFull
+        "--dev" {
+            $WingetPackages = $DEV_PKGS
         }
 
         default {
@@ -584,69 +413,33 @@ function Add-ExtraPkgs {
         Write-Warning -Message "DriverBooster já está instalado."
     }
 
-    # Windows Game Server (WGSM)
-    if (-not (Test-Path "C:\WGSM") -and $option -ceq "--server") {
-        New-Item -ItemType Directory -Path "C:\WGSM" | Out-Null
-        $WGSMPath = Join-Path -Path "C:\WGSM" -ChildPath "WindowsGSM.exe"
-
-        Write-Cyan "Baixando e instalando o WGSM..."
-        Invoke-WebRequest "https://github.com/WindowsGSM/WindowsGSM/releases/latest/download/WindowsGSM.exe" -OutFile $WGSMPath -ErrorAction SilentlyContinue | Out-Null
-    }
-
     Write-Green "Fim da instalação de pacotes."
 }
 
 # ------------ EXECUÇÃO ------------ #
 
 switch ($option) {
-    "--server" {
+    "--default" {
         Confirm-Resources
-        Set-Checkpoint 1
-        Set-NetworkOptions
-        Set-PowerOptions
+        Set-Checkpoint
         Add-ExtraPkgs
         Add-WingetPkgs
-        Set-Checkpoint 2
         Exit-Script
     }
 
-    "--stock" {
+    "--dev" {
         Confirm-Resources
-        Set-Checkpoint 1
-        Add-ExtraPkgs
-        Add-WingetPkgs
-        Set-Checkpoint 2
-        Exit-Script
-    }
-    
-    "--client" {
-        Confirm-Resources
-        Set-Checkpoint 1
+        Set-Checkpoint
         Set-CustomOptions
-        Set-ExtraOptions
-        # Add-ChocoPkgs
-        Add-ExtraPkgs
-        Add-WingetPkgs
-        Set-Checkpoint 2
-        Exit-Script
-    }
-    
-    "--full" {
-        Confirm-Resources
-        Set-Checkpoint 1
-        Set-CustomOptions
-        Set-NetworkOptions
         Set-PowerOptions
         Set-ExtraOptions
-        # Add-ChocoPkgs
         Add-ExtraPkgs
         Add-WingetPkgs
-        Set-Checkpoint 2
         Exit-Script
     }
     
     "--help" {
-        Write-Warning -Message "Parâmetros válidos: `n`n    --client  =  Instala pacotes e configurações para máquinas do tipo CLIENTE `n    --server  =  Instala pacotes e configurações para máquinas do tipo SERVER `n    --full  =  Realiza uma instalação completa e aplica todas as configurações válidas `n    --help  =  Exibe esta mensagem de ajuda"
+        Write-Warning -Message "Parâmetros válidos: `n`n    --default  =  Instala pacotes e configurações padrão para sistemas ordinários `n    --dev  =  Instala ferramentas e recursos para desenvolvedor `n    --help  =  Exibe esta mensagem de ajuda"
         exit 0
     }
     
