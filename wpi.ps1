@@ -440,6 +440,6 @@ switch ($option) {
     }
     
     default {
-        Write-Warning -Message "Parâmetros válidos: `n`n    --default  =  Instala pacotes e configurações padrão para sistemas ordinários `n    --dev  =  Instala ferramentas e recursos para desenvolvedor `n
+        Write-Warning -Message "Parâmetros válidos: `n`n    --default  =  Instala pacotes e configurações padrão para sistemas ordinários `n    --dev  =  Instala ferramentas e recursos para desenvolvedor"
     }
 }
