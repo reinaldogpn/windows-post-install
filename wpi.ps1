@@ -43,11 +43,6 @@ $DEFAULT_PKGS   = @("9NKSQGP7F2NH", # Whatsapp Desktop
 $TempDir = Join-Path -Path $PSScriptRoot -ChildPath "wpi_temp"
 $ErrorLog = Join-Path -Path $PSScriptRoot -ChildPath "wpi_errors.log"
 
-# Network config
-$StaticIP = "192.168.0.120"
-$StaticDNS1 = "8.8.8.8"
-$StaticDNS2 = "8.8.4.4"
-
 # GitHub info for .gitconfig file:
 $GitUser = "Reinaldo G. P. Neto"
 $GitEmail = "reinaldogpn@outlook.com"
@@ -200,12 +195,6 @@ function Set-CustomOptions {
 # Configurações e serviços de rede
 
 function Set-NetworkOptions {
-    # Definir IP estático
-    Write-Cyan "Definindo um IP estático: $($StaticIP) ..."
-    Invoke-Expression -Command "netsh interface ipv4 set address name='Ethernet' static $StaticIP 255.255.255.0 192.168.0.1" | Out-Null
-    Invoke-Expression -Command "netsh interface ipv4 set dnsservers name='Ethernet' static $StaticDNS1 primary" | Out-Null
-    Invoke-Expression -Command "netsh interface ipv4 add dnsservers name='Ethernet' $StaticDNS2 index=2" | Out-Null
-    
     # FTP service
     Write-Cyan "Habilitando serviço de FTP..."
     $ftpService = Get-Service -Name "ftpsvc" -ErrorAction SilentlyContinue
@@ -247,10 +236,6 @@ function Set-NetworkOptions {
     }
     else {
         Write-Yellow "O serviço de SSH (sshd) já está habilitado."
-    }
-
-    foreach ($rule in $firewallRules) {
-        New-NetFirewallRule -DisplayName $rule.DisplayName -Direction Inbound -Action Allow -Protocol $rule.Protocol -LocalPort $rule.LocalPort | Out-Null
     }
 
     Write-Green "Configurações de rede aplicadas."
@@ -432,6 +417,7 @@ switch ($option) {
 
     "--dev" {
         Set-CustomOptions
+        Set-NetworkOptions
         Set-PowerOptions
         Set-ExtraOptions
         Add-ExtraPkgs
