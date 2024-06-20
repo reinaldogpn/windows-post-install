@@ -1,9 +1,11 @@
 ﻿<#
 .SYNOPSIS
     Este é um script de customização do Windows.
-
 .DESCRIPTION
     Este script automatiza a configuração e personalização do Windows. Compatível com Windows 10 ou superior.
+.PARAMETER option
+    Modo de instalação:
+    --default OU --dev
 #>
 
 # Dica: instalar o windows 11 usando uma conta local (offline) --> oobe\bypassnro
@@ -418,18 +420,17 @@ function Add-ExtraPkgs {
 
 # ------------ EXECUÇÃO ------------ #
 
+Confirm-Resources
+Set-Checkpoint
+
 switch ($option) {
     "--default" {
-        Confirm-Resources
-        Set-Checkpoint
         Add-ExtraPkgs
         Add-WingetPkgs
         Exit-Script
     }
 
     "--dev" {
-        Confirm-Resources
-        Set-Checkpoint
         Set-CustomOptions
         Set-PowerOptions
         Set-ExtraOptions
@@ -438,12 +439,7 @@ switch ($option) {
         Exit-Script
     }
     
-    "--help" {
-        Write-Warning -Message "Parâmetros válidos: `n`n    --default  =  Instala pacotes e configurações padrão para sistemas ordinários `n    --dev  =  Instala ferramentas e recursos para desenvolvedor `n    --help  =  Exibe esta mensagem de ajuda"
-        exit 0
-    }
-    
     default {
-        Exit-Error "Parâmetro inválido! Para obter a lista de parâmetros use o parâmetro --help"
+        Write-Warning -Message "Parâmetros válidos: `n`n    --default  =  Instala pacotes e configurações padrão para sistemas ordinários `n    --dev  =  Instala ferramentas e recursos para desenvolvedor `n
     }
 }
