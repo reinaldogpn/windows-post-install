@@ -24,9 +24,7 @@ $DEV_PKGS       = @("Git.Git",
                     "Microsoft.VisualStudioCode",
                     "Microsoft.VisualStudio.2022.Community",
                     "Microsoft.WindowsTerminal",
-                    "NoIP.DUC",
                     "Notepad++.Notepad++",
-                    "OpenJS.NodeJS",
                     "Oracle.JDK.22",
                     "Python.Python.3.12")
 
@@ -37,8 +35,7 @@ $DEFAULT_PKGS   = @("9NKSQGP7F2NH", # Whatsapp Desktop
                     "qBittorrent.qBittorrent",
                     "RARLab.WinRAR",
                     "TeamViewer.TeamViewer",
-                    "Valve.Steam",
-                    "VideoLAN.VLC")
+                    "Valve.Steam")
 
 $TempDir = Join-Path -Path $PSScriptRoot -ChildPath "wpi_temp"
 $ErrorLog = Join-Path -Path $PSScriptRoot -ChildPath "wpi_errors.log"
@@ -164,14 +161,14 @@ function Set-Checkpoint {
 function Set-CustomOptions {
     $wallpaperUrl = "https://raw.githubusercontent.com/reinaldogpn/windows-post-install/main/resources/wallpaper.jpg"
     $wallpaperPath = Join-Path -Path $env:UserProfile -ChildPath "wallpaper.jpg"
-    
+
     Write-Cyan "Aplicando personalizações do sistema..."
-    Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "SearchBoxTaskbarMode" -Value 1 -Type DWORD -Force
-    Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Value 0 -Type DWORD -Force
-    Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "ColorPrevalence" -Value 1 -Type DWORD -Force
-    Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 0 -Type DWORD -Force
-    Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowTaskViewButton" -Value 0 -Type DWORD -Force
-    Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Feeds" -Name "ShellFeedsTaskbarViewMode" -Value 2 -Type DWORD -Force
+    #Set-ItemProperty -Path "HKCU:\Software\Microsoft\Windows\CurrentVersion\Search" -Name "SearchBoxTaskbarMode" -Value 1 -Type DWORD -Force
+    #Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "AppsUseLightTheme" -Value 0 -Type DWORD -Force
+    #Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "ColorPrevalence" -Value 1 -Type DWORD -Force
+    #Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Themes\Personalize" -Name "SystemUsesLightTheme" -Value 0 -Type DWORD -Force
+    #Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Explorer\Advanced" -Name "ShowTaskViewButton" -Value 0 -Type DWORD -Force
+    #Set-ItemProperty -Path "HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Feeds" -Name "ShellFeedsTaskbarViewMode" -Value 2 -Type DWORD -Force
     Set-ItemProperty -Path "HKCU:\Control Panel\Desktop" -Name "JPEGImportQuality" -Value 100 -Type DWORD -Force
 
     # Cria um atalho para a pasta pessoal ($env:UserProfile) na área de trabalho
@@ -417,8 +414,8 @@ switch ($option) {
 
     "--dev" {
         Set-CustomOptions
-        Set-NetworkOptions
-        Set-PowerOptions
+        #Set-NetworkOptions
+        #Set-PowerOptions
         Set-ExtraOptions
         Add-ExtraPkgs
         Add-WingetPkgs
