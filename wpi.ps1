@@ -340,6 +340,7 @@ function Add-WingetPkgs {
     Write-Yellow "Para descobrir o ID da aplicação desejada, use 'winget search <nomedoapp>' no terminal."
 
     $count = 0
+    $WingetPackages = @()
 
     switch ($option) {
     
@@ -348,7 +349,7 @@ function Add-WingetPkgs {
         }
     
         "--dev" {
-            $WingetPackages = $DEV_PKGS
+            $WingetPackages = $DEFAULT_PKGS + $DEV_PKGS
         }
 
         default {
