@@ -1,6 +1,4 @@
-﻿$Pkgs = @(
-    "9NKSQGP7F2NH",
-    "9NCBCSZSJRSB",
+$Pkgs = @(
     "7zip.7zip",
     "Cloudflare.Warp",
     "Discord.Discord",
@@ -22,66 +20,112 @@
     "VideoLAN.VLC"
 )
 
-$Winget = "$env:LOCALAPPDATA\Microsoft\WindowsApps\winget.exe"
-$TempDir = Join-Path -Path $PSScriptRoot -ChildPath "Temp"
-$CPUArch = $env:Processor_Architecture.ToLower()
+$RootDir = Join-Path -Path $env:UserProfile -ChildPath "WPI"
+$DownloadDir = Join-Path -Path $RootDir -ChildPath "downloads"
+$OutputLog = Join-Path -Path $RootDir -ChildPath "output.log"
+$Architecture = $env:Processor_Architecture.ToLower()
 
-if (!(Test-Path $Winget)) {
-    Write-Warning "Winget executable not found at: $Winget\nDownloading now..."
-
-    if (-not (Test-Path $TempDir)) {
-        New-Item -ItemType Directory -Path $TempDir
+# Retry function
+function Retry-Command {
+    param (
+        [ScriptBlock]$Command,
+        [int]$MaxRetries = 5,
+        [int]$RetryDelay = 5
+    )
+    $attempts = 0
+    $success = $false
+    while (-not $success -and $attempts -lt $MaxRetries) {
+        try {
+            & $Command
+            $success = $true
+        } catch {
+            Write-Warning "Attempt $($attempts + 1) failed. Error: $($_.Exception.Message)"
+            Start-Sleep -Seconds $RetryDelay
+            $attempts++
+        }
     }
-
-    $DependenciesURL = "https://github.com/microsoft/winget-cli/releases/latest/download/DesktopAppInstaller_Dependencies.zip"
-    $WingetURL = "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
-
-    $DependenciesPath = Join-Path -Path $TempDir -ChildPath "Dependencies.zip"
-    $WingetPath = Join-Path -Path $TempDir -ChildPath "Winget.msixbundle"
-
-    try {
-        Invoke-WebRequest $DependenciesURL -OutFile $DependenciesPath -ErrorAction Stop
-        Invoke-WebRequest $WingetURL -OutFile $WingetPath -ErrorAction Stop
-        Expand-Archive -Path $DependenciesPath -DestinationPath $TempDir -Force
-
-        $AppxFiles = @()
-        if ($CPUArch -ieq "amd64") {
-            $AppxFiles = Get-ChildItem -Path (Join-Path -Path $TempDir -ChildPath "x64") -Filter "*.appx"
-        } else {
-            $AppxFiles = Get-ChildItem -Path (Join-Path -Path $TempDir -ChildPath $CPUArch) -Filter "*.appx"
-        }
-
-        foreach ($Appx in $AppxFiles) {
-            Add-AppxPackage -Path $Appx.FullName -ForceApplicationShutdown -DisableDevelopmentMode -ErrorAction Stop 
-        }
-        Add-AppxPackage -Path $WingetPath -ForceApplicationShutdown -DisableDevelopmentMode -ErrorAction Stop
-
-    } catch {
-        Write-Warning "An error occured: $($_.Exception.Message)"
-        return
+    if (-not $success) {
+        throw "Command failed after $MaxRetries attempts."
     }
 }
 
-foreach ($Pkg in $Pkgs) {
-    try {
-        $installed = Invoke-Expression -Command "winget list $Pkg --accept-source-agreements"
-        if ($installed -match ([regex]::Escape($Pkg))) {
-            Write-Warning "$Pkg já está instalado."
-        }
-        else {
-            Invoke-Expression -Command "winget install --exact --id $Pkg --silent --accept-package-agreements --accept-source-agreements --source winget --scope machine"
-            Write-Host "Package $Pkg installed successfully." -ForegroundColor Green
-        }
-    } catch {
-        Write-Warning "Failed to install package: $Pkg. Error: $($_.Exception.Message)"
-    }
+# Is winget installed and updated?
+function Update-Winget {
+	$WingetVer = Invoke-Expression -Command "winget -v" 2> $null
+
+	if (!$WingetVer -or ([version]($WingetVer.Split('v')[1]) -lt [version]("1.9.25200"))) {
+		Write-Warning "Winget command failed or outdated.\nDownloading winget last version now..."
+
+		$DependenciesURL = "https://github.com/microsoft/winget-cli/releases/latest/download/DesktopAppInstaller_Dependencies.zip"
+		$WingetURL = "https://github.com/microsoft/winget-cli/releases/latest/download/Microsoft.DesktopAppInstaller_8wekyb3d8bbwe.msixbundle"
+		$DependenciesPath = Join-Path -Path $DownloadDir -ChildPath "Dependencies.zip"
+		$WingetPath = Join-Path -Path $DownloadDir -ChildPath "Winget.msixbundle"
+		
+		(Test-Path $DownloadDir) -or New-Item -ItemType Directory -Path $DownloadDir
+
+		try {
+			Retry-Command -Command { Invoke-WebRequest $DependenciesURL -OutFile $DependenciesPath -ErrorAction Stop }
+			Retry-Command -Command { Invoke-WebRequest $WingetURL -OutFile $WingetPath -ErrorAction Stop }
+
+			Expand-Archive -Path $DependenciesPath -DestinationPath $DownloadDir -Force
+
+			$AppxFiles = @()
+			if ($Architecture -ieq "amd64") {
+				$AppxFiles = Get-ChildItem -Path (Join-Path -Path $DownloadDir -ChildPath "x64") -Filter "*.appx"
+			} else {
+				$AppxFiles = Get-ChildItem -Path (Join-Path -Path $DownloadDir -ChildPath $Architecture) -Filter "*.appx"
+			}
+
+			foreach ($Appx in $AppxFiles) {
+				Retry-Command -Command { Add-AppxPackage -Path $Appx.FullName -ForceApplicationShutdown -DisableDevelopmentMode -ErrorAction Stop }
+			}
+
+			Retry-Command -Command { Add-AppxPackage -Path $WingetPath -ForceApplicationShutdown -DisableDevelopmentMode -ErrorAction Stop }
+
+		} catch {
+			Write-Warning "An error occurred: $($_.Exception.Message)"
+			return
+		}
+	}
 }
 
-Write-Host "All packages processed."
+# Install packages using winget
+function Add-WingetPkgs {
+	foreach ($Pkg in $Pkgs) {
+		try {
+			$installed = Invoke-Expression -Command "winget list $Pkg --accept-source-agreements"
+			if ($installed -match ([regex]::Escape($Pkg))) {
+				Write-Warning "$Pkg já está instalado."
+			}
+			else {
+				Retry-Command -Command { Invoke-Expression -Command "winget install --exact --id $Pkg --silent --accept-package-agreements --accept-source-agreements --source winget" -ErrorAction Stop }
+				Write-Host "Package $Pkg installed successfully." -ForegroundColor Green
+			}
+		} catch {
+			Write-Warning "Failed to install package: $Pkg. Error: $($_.Exception.Message)"
+		}
+	}
+	Write-Host "All packages processed." -ForegroundColor Blue
+}
 
-# Add shortcut in desktop to %USERPROFILE%
-$ShortcutLocation = [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Desktop) + "\Pasta Pessoal.lnk"
-$WScriptShell = New-Object -ComObject WScript.Shell
-$Shortcut = $WScriptShell.CreateShortcut($ShortcutLocation)
-$Shortcut.TargetPath = "$env:UserProfile"
-$Shortcut.Save()
+# Add $UserProfile shortcut to desktop
+function Add-UserShortcut {
+	$ShortcutLocation = [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Desktop) + "\Pasta Pessoal.lnk"
+	$WScriptShell = New-Object -ComObject WScript.Shell
+	$Shortcut = $WScriptShell.CreateShortcut($ShortcutLocation)
+	$Shortcut.TargetPath = "$env:UserProfile"
+	$Shortcut.Save()
+	
+	Write-Host "Added UserProfile shortcut to desktop." -ForegroundColor Blue
+}
+
+# Execution
+Start-Transcript -Path $OutputLog 
+
+(Test-Path $RootDir) -or New-Item -ItemType Directory -Path $RootDir
+
+Add-UserShortcut
+Update-Winget
+Add-WingetPkgs
+
+Stop-Transcript
