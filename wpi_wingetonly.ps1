@@ -1,11 +1,17 @@
 $Pkgs = @(
-    "9NKSQGP7F2NH",
+    "9NKSQGP7F2NH", # Whatsapp
+    "9NCBCSZSJRSB", # Spotify
+    "7zip.7zip",
+    "Cloudflare.Warp",
     "Discord.Discord",
     "Google.Chrome",
     "Oracle.JavaRuntimeEnvironment",
+    "Oracle.MySQLWorkbench",
+    "Oracle.MySQL",
     "qBittorrent.qBittorrent",
     "RARLab.WinRAR",
     "TeamViewer.TeamViewer",
+    "VideoLAN.VLC",
     "Valve.Steam",
     "Git.Git",
     "Microsoft.VCRedist.2015+.x64",
