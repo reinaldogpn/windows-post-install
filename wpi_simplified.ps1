@@ -1,6 +1,6 @@
 ﻿$Pkgs = @(
-    "9NKSQGP7F2NH", # Whatsapp
-    "9NCBCSZSJRSB", # Spotify
+    "9NKSQGP7F2NH",
+    "9NCBCSZSJRSB",
     "7zip.7zip",
     "Cloudflare.Warp",
     "Discord.Discord",
