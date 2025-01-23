@@ -4,7 +4,7 @@
     "7zip.7zip",
     "Cloudflare.Warp",
     "Discord.Discord",
-	"Git.Git",
+    "Git.Git",
     "Google.Chrome.EXE",
     "Microsoft.VCRedist.2015+.x64",
     "Microsoft.VCRedist.2015+.x86",
@@ -13,12 +13,12 @@
     "Microsoft.WindowsTerminal",
     "Notepad++.Notepad++",
     "Oracle.JavaRuntimeEnvironment",
-    "Oracle.MySQLWorkbench",
     "Oracle.MySQL",
+    "Oracle.MySQLWorkbench",
     "qBittorrent.qBittorrent",
     "RARLab.WinRAR",
     "TeamViewer.TeamViewer",
-	"Valve.Steam",
+    "Valve.Steam",
     "VideoLAN.VLC"
 )
 
