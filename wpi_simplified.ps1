@@ -24,12 +24,11 @@ $DownloadDir = Join-Path -Path $RootDir -ChildPath "downloads"
 $OutputLog = Join-Path -Path $RootDir -ChildPath "output.log"
 $Architecture = $env:Processor_Architecture.ToLower()
 
-$OtherParams = @{
-    ForceApplicationShutdown = $true
-    ErrorAction = "Stop"
-}
 if ([System.Environment]::OSVersion.Version.Build -ge 26100) {
-    $OtherParams["AllowUnsigned"] = $true
+    $OtherParams = "-AllowUnsigned -ForceApplicationShutdown -ErrorAction Stop"
+}
+else {
+    $OtherParams = "-ForceApplicationShutdown -ErrorAction Stop"
 }
 
 if (-not (Test-Path $RootDir)) { New-Item -ItemType Directory -Path $RootDir | Out-Null }
@@ -81,10 +80,10 @@ function Add-WingetLocally {
         }
 
         foreach ($Appx in $AppxFiles) {
-            Retry-Command -Command { Add-AppxPackage -Path $Appx.FullName $OtherParams }
+            Retry-Command -Command { Invoke-Expression "Add-AppxPackage -Path '$($Appx.FullName)' $OtherParams" }
         }
 
-        Retry-Command -Command { Add-AppxPackage -Path (Join-Path -Path $found -ChildPath "Winget.msixbundle") $OtherParams }
+        Retry-Command -Command { Invoke-Expression "Add-AppxPackage -Path '$(Join-Path -Path $found -ChildPath 'Winget.msixbundle')' $OtherParams" }
     } 
     else {
         Write-Warning "An error occurred: $($_.Exception.Message)"
@@ -112,10 +111,10 @@ function Add-WingetRemotely {
     }
 
     foreach ($Appx in $AppxFiles) {
-        Retry-Command -Command { Add-AppxPackage -Path $Appx.FullName $OtherParams }
+        Retry-Command -Command { Invoke-Expression "Add-AppxPackage -Path '$($Appx.FullName)' $OtherParams" }
     }
 
-    Retry-Command -Command { Add-AppxPackage -Path $WingetPath $OtherParams }
+    Retry-Command -Command { Invoke-Expression "Add-AppxPackage -Path '$WingetPath' $OtherParams" }
 }
 
 function Test-Winget {
