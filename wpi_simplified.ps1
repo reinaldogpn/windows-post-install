@@ -79,10 +79,10 @@ function Add-WingetLocally {
         }
 
         foreach ($Appx in $AppxFiles) {
-            Retry-Command -Command { Add-AppxPackage -Path $Appx.FullName -ForceApplicationShutdown $AppxParam -ErrorAction Stop }
+            Retry-Command -Command { Add-AppxPackage -Path $Appx.FullName -ForceApplicationShutdown -ErrorAction Stop $AppxParam }
         }
 
-        Retry-Command -Command { Add-AppxPackage -Path (Join-Path -Path $found -ChildPath "Winget.msixbundle") -ForceApplicationShutdown $AppxParam -ErrorAction Stop }
+        Retry-Command -Command { Add-AppxPackage -Path (Join-Path -Path $found -ChildPath "Winget.msixbundle") -ForceApplicationShutdown -ErrorAction Stop $AppxParam }
     } 
     else {
         Write-Warning "An error occurred: $($_.Exception.Message)"
@@ -110,10 +110,10 @@ function Add-WingetRemotely {
     }
 
     foreach ($Appx in $AppxFiles) {
-        Retry-Command -Command { Add-AppxPackage -Path $Appx.FullName -ForceApplicationShutdown $AppxParam -ErrorAction Stop }
+        Retry-Command -Command { Add-AppxPackage -Path $Appx.FullName -ForceApplicationShutdown -ErrorAction Stop $AppxParam }
     }
 
-    Retry-Command -Command { Add-AppxPackage -Path $WingetPath -ForceApplicationShutdown $AppxParam -ErrorAction Stop }
+    Retry-Command -Command { Add-AppxPackage -Path $WingetPath -ForceApplicationShutdown -ErrorAction Stop $AppxParam }
 }
 
 function Test-Winget {
