@@ -24,13 +24,6 @@ $DownloadDir = Join-Path -Path $RootDir -ChildPath "downloads"
 $OutputLog = Join-Path -Path $RootDir -ChildPath "output.log"
 $Architecture = $env:Processor_Architecture.ToLower()
 
-if ([System.Environment]::OSVersion.Version.Build -ge 26100) {
-    $OtherParams = "-AllowUnsigned -ForceApplicationShutdown -ErrorAction Stop"
-}
-else {
-    $OtherParams = "-ForceApplicationShutdown -ErrorAction Stop"
-}
-
 if (-not (Test-Path $RootDir)) { New-Item -ItemType Directory -Path $RootDir | Out-Null }
 if (-not (Test-Path $DownloadDir)) { New-Item -ItemType Directory -Path $DownloadDir | Out-Null }
 
@@ -64,9 +57,13 @@ function Retry-Command {
 }
 
 function Add-WingetLocally {
-    foreach ($drive in [System.IO.DriveInfo]::GetDrives()) {
-        $found = Join-Path -Path $drive.RootDirectory -ChildPath 'Winget' -Resolve -ErrorAction 'SilentlyContinue';
-    }
+	foreach ($drive in [System.IO.DriveInfo]::GetDrives()) {
+		$path = Join-Path -Path $drive.RootDirectory -ChildPath 'Winget'
+		if (Test-Path $path) {
+			$found = $path
+			break
+		}
+	}
 
     if ($found) {
         $AppxFiles = @()
@@ -80,10 +77,20 @@ function Add-WingetLocally {
         }
 
         foreach ($Appx in $AppxFiles) {
-            Retry-Command -Command { Invoke-Expression "Add-AppxPackage -Path '$($Appx.FullName)' $OtherParams" }
+            try {
+				Retry-Command -Command { Add-AppxPackage -Path $($Appx.FullName) -AllowUnsigned -ForceApplicationShutdown -ErrorAction Stop }
+			}
+			catch {
+				Retry-Command -Command { Add-AppxPackage -Path $($Appx.FullName) -ForceApplicationShutdown -ErrorAction Stop }
+			}
         }
 
-        Retry-Command -Command { Invoke-Expression "Add-AppxPackage -Path '$(Join-Path -Path $found -ChildPath 'Winget.msixbundle')' $OtherParams" }
+        try {
+			Retry-Command -Command { Add-AppxPackage -Path $(Join-Path -Path $found -ChildPath 'Winget.msixbundle') -AllowUnsigned -ForceApplicationShutdown -ErrorAction Stop }
+		}
+		catch {
+			Retry-Command -Command { Add-AppxPackage -Path $(Join-Path -Path $found -ChildPath 'Winget.msixbundle') -ForceApplicationShutdown -ErrorAction Stop }
+		}
     } 
     else {
         Write-Warning "An error occurred: $($_.Exception.Message)"
@@ -111,26 +118,48 @@ function Add-WingetRemotely {
     }
 
     foreach ($Appx in $AppxFiles) {
-        Retry-Command -Command { Invoke-Expression "Add-AppxPackage -Path '$($Appx.FullName)' $OtherParams" }
-    }
+		try {
+			Retry-Command -Command { Add-AppxPackage -Path $($Appx.FullName) -AllowUnsigned -ForceApplicationShutdown -ErrorAction Stop }
+		}
+		catch {
+			Retry-Command -Command { Add-AppxPackage -Path $($Appx.FullName) -ForceApplicationShutdown -ErrorAction Stop }
+		}
+	}
 
-    Retry-Command -Command { Invoke-Expression "Add-AppxPackage -Path '$WingetPath' $OtherParams" }
+	try {
+		Retry-Command -Command { Add-AppxPackage -Path $WingetPath -AllowUnsigned -ForceApplicationShutdown -ErrorAction Stop }
+	}
+	catch {
+		Retry-Command -Command { Add-AppxPackage -Path $WingetPath -ForceApplicationShutdown -ErrorAction Stop }
+	}
 }
 
 function Test-Winget {
-    $WingetVer = Invoke-Expression -Command "winget -v" 2> $null
-
-    if (!$WingetVer -or ([version]($WingetVer.Split('v')[1]) -lt [version]("1.9.25200"))) {
-        Write-Warning "Winget command failed or outdated. Downloading winget last version now..."
-
-        try {
+    try {
+        $WingetVer = Invoke-Expression -Command "winget -v" -ErrorAction Stop 2> $null
+        Write-Host "Winget tested successfully." -ForegroundColor Green
+    }
+    catch {
+        Write-Warning "Winget test failed."
+        $WingetVer = $null
+    }
+	
+	if (!$WingetVer -or -not ($WingetVer -match "(\d+\.\d+\.\d+)")) {
+		Write-Warning "Could not determine Winget version."
+	} 
+	elseif ([version]$matches[1] -lt [version]"1.9.25200") {
+		Write-Warning "Winget is outdated, updating now..."
+	
+	try {
             Add-WingetLocally
+			Write-Host "Winget was sucessfully updated!" -ForegroundColor Green
         }
         catch {
+			Write-Warning "Unable to install Winget locally, downloading now..."
             Add-WingetRemotely
         }
-    }
-    else {
+	}
+	else {
         Write-Host "Winget is up to date!" -ForegroundColor Green
     }
 }
@@ -138,12 +167,12 @@ function Test-Winget {
 function Add-WingetPkgs {
     foreach ($Pkg in $Pkgs) {
         try {
-            $installed = Invoke-Expression -Command "winget list $Pkg --accept-source-agreements"
+            $installed = winget list $Pkg --accept-source-agreements
             if ($installed -match ([regex]::Escape($Pkg))) {
                 Write-Warning "$Pkg is already installed."
             }
             else {
-                Retry-Command -Command { Invoke-Expression -Command "winget install --exact --id $Pkg --silent --accept-package-agreements --accept-source-agreements --source winget" -ErrorAction Stop }
+                Retry-Command -Command { winget install --exact --id $Pkg --silent --accept-package-agreements --accept-source-agreements --source winget }
                 if ($?) { Write-Host "Package $Pkg installed successfully." -ForegroundColor Green }
             }
         }
@@ -165,16 +194,6 @@ function Add-UserShortcut {
     Write-Host "Added UserProfile shortcut to desktop with custom icon." -ForegroundColor Green
 }
 
-function Set-GitProfile {
-    $GitConfigFile = Join-Path -Path $env:USERPROFILE -ChildPath ".gitconfig"
-
-    "[user]" | Out-File -FilePath $GitConfigFile
-    "    name = Reinaldo G. P. Neto" | Out-File -FilePath $GitConfigFile -Append
-    "    email = reinaldogpn@outlook.com" | Out-File -FilePath $GitConfigFile -Append
-
-    Write-Host "Added .gitconfig file." -ForegroundColor Green
-}
-
 # Execution
 
 Start-Transcript -Path $OutputLog 
@@ -182,7 +201,6 @@ Start-Transcript -Path $OutputLog
 Test-Winget
 Add-WingetPkgs
 Add-UserShortcut
-Set-GitProfile
 
 if (Test-Path $DownloadDir) { Remove-Item -Path $DownloadDir -Recurse -Force | Out-Null }
 
