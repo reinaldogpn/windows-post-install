@@ -1,6 +1,8 @@
 ﻿$Pkgs = @(
     "7zip.7zip",
+    "CharlesMilette.TranslucentTB",
     "Cloudflare.Warp",
+    "Datronicsoft.SpacedeskDriver.Server",
     "Discord.Discord",
     "Git.Git",
     "Google.Chrome.EXE",
