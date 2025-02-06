@@ -36,7 +36,7 @@ if (-not (Test-Path $DownloadDir)) { New-Item -ItemType Directory -Path $Downloa
 function Retry-Command {
     param (
         [ScriptBlock]$Command,
-        [int]$MaxRetries = 5,
+        [int]$MaxRetries = 3,
         [int]$RetryDelay = 5
     )
 
@@ -45,7 +45,7 @@ function Retry-Command {
 
     while (-not $success -and $attempts -lt $MaxRetries) {
         try {
-            &amp; $Command
+            & $Command
             $success = $true
         }
         catch {
@@ -99,8 +99,8 @@ function Add-WingetLocally {
         Write-Host "Winget was sucessfully updated!" -ForegroundColor Green
     } 
     else {
-        Write-Warning "An error occurred: $($_.Exception.Message)"
-        return
+        Write-Warning "Winget resources not found locally!"
+        throw "Resources not found."
     }
 }
 
@@ -148,7 +148,7 @@ function Test-Winget {
         Add-WingetLocally
     }
     catch {
-        Write-Warning "Unable to install Winget locally, downloading now..."
+        Write-Warning "Unable to install Winget locally, downloading resources now..."
         Add-WingetRemotely
     }
 }
