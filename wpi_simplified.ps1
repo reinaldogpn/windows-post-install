@@ -173,24 +173,12 @@ function Add-WingetPkgs {
     Write-Host "All packages processed."
 }
 
-function Add-UserShortcut {
-    $ShortcutLocation = [System.Environment]::GetFolderPath([System.Environment+SpecialFolder]::Desktop) + "\Pasta Pessoal.lnk"
-    $WScriptShell = New-Object -ComObject WScript.Shell
-    $Shortcut = $WScriptShell.CreateShortcut($ShortcutLocation)
-    $Shortcut.TargetPath = "$env:UserProfile"
-    $Shortcut.IconLocation = "C:\Windows\System32\shell32.dll,160"
-    $Shortcut.Save()
-
-    Write-Host "Added UserProfile shortcut to desktop with custom icon." -ForegroundColor Green
-}
-
 # Execution
 
 Start-Transcript -Path $OutputLog 
 
 Test-Winget
 Add-WingetPkgs
-Add-UserShortcut
 
 if (Test-Path $DownloadDir) { Remove-Item -Path $DownloadDir -Recurse -Force | Out-Null }
 
